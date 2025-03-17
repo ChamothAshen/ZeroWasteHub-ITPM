@@ -1,6 +1,6 @@
 import React from 'react'
 import { FaSearch } from "react-icons/fa";
-
+import { Link } from 'react-router-dom';
 function Header() {
   return (
     <header className="bg-white shadow-md py-4 px-8 flex items-center justify-between h-20">
@@ -25,17 +25,17 @@ function Header() {
     {/* Navigation */}
     <nav className="ml-auto">
       <ul className="flex space-x-6 text-green-700 font-semibold text-lg">
-        <li className="hover:text-green-500 cursor-pointer">Home</li>
-        <li className="hover:text-green-500 cursor-pointer">collection</li>
-        <li className="hover:text-green-500 cursor-pointer">smart bin </li>
+        <li className="hover:text-green-500 cursor-pointer"><Link to="/">Home</Link></li>
+        <li className="hover:text-green-500 cursor-pointer"><Link to= "/WasteCollection"> collection </Link></li>
+        <li className="hover:text-green-500 cursor-pointer"><Link to="/SmartBin">smart bin </Link></li>
         <li className="hover:text-green-500 cursor-pointer whitespace-nowrap">About Us</li>
       </ul>
     </nav>
     
     {/* Buttons */}
     <div className="flex space-x-4 ml-6">
-      <button className="px-4 py-2 text-green-700 bg-gray-200 rounded-full hover:bg-gray-300 text-md font-medium">Signin</button>
-      <button className="px-4 py-2 bg-green-600 text-white rounded-full hover:bg-green-700 text-md font-medium">SignUp</button>
+      <button className="px-4 py-2 text-green-700 bg-gray-200 rounded-full hover:bg-gray-300 text-md font-medium"><Link to="/sign-in">Signin </Link></button>
+      <button className="px-4 py-2 bg-green-600 text-white rounded-full hover:bg-green-700 text-md font-medium"><Link to="/sign-up">SignUp</Link></button>
     </div>
   </header>
 );
