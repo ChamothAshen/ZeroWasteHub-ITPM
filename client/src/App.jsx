@@ -6,6 +6,8 @@ import SignUp from './pages/SignUp';
 import Header from './components/Header';
 import Home from './pages/Home';
 import Dashboard from './pages/Dashboard';
+import SmartBin from './pages/SmartBin';
+import WasteCollection from './pages/WasteCollection';
 function App() {
   return (
     <BrowserRouter>
@@ -17,6 +19,8 @@ function App() {
         <Route path='/sign-in' element={<SignIn />} />
         <Route path='/sign-up' element={<SignUp />} />
         <Route path='/Dashboard' element={<Dashboard />} />
+        <Route path='/smartbin' element={<SmartBin/>} />
+        <Route path='/WasteCollection' element={<WasteCollection/>} />
        </Routes>
          
     </BrowserRouter>
