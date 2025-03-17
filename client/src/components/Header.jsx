@@ -28,7 +28,7 @@ function Header() {
         <li className="hover:text-green-500 cursor-pointer"><Link to="/">Home</Link></li>
         <li className="hover:text-green-500 cursor-pointer"><Link to= "/WasteCollection"> collection </Link></li>
         <li className="hover:text-green-500 cursor-pointer"><Link to="/SmartBin">smart bin </Link></li>
-        <li className="hover:text-green-500 cursor-pointer whitespace-nowrap">About Us</li>
+        <li className="hover:text-green-500 cursor-pointer whitespace-nowrap"><Link to= "/about">About Us </Link></li>
       </ul>
     </nav>
     
