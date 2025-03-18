@@ -11,7 +11,6 @@ function Header() {
       </div>
       <span className="text-green-700 font-extrabold text-2xl">Zero Waste</span>
     </div>
-    
     {/* Search Bar */}
     <div className="relative flex items-center mx-auto w-1/4">
       <input
