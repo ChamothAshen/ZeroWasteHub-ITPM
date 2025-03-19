@@ -2,6 +2,7 @@ import React, { useState } from 'react';
 import { FcGoogle } from 'react-icons/fc';
 import { FaLock, FaEnvelope } from 'react-icons/fa';
 import { BsTrash } from 'react-icons/bs';
+import { Link } from 'react-router-dom';
 
 function SignIn() {
   const [isLogin, setIsLogin] = useState(true);
@@ -112,7 +113,9 @@ function SignIn() {
               <p className="text-sm text-gray-600">
                 Don't have an account?
                 <a href="/register" className="ml-1 text-green-600 hover:text-green-800 font-medium">
-                  Sign up
+                  <Link to={"/sign-up"}>
+                      Sign up
+                  </Link>
                 </a>
               </p>
             </div>
