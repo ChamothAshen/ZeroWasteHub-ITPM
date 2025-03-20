@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { FaSearch, FaBars, FaTimes, FaUserCircle } from "react-icons/fa";
+import { FaSearch, FaBars, FaTimes } from "react-icons/fa";
 import { Link } from 'react-router-dom';
 import { useSelector, useDispatch } from 'react-redux';
 import { Avatar, Dropdown, Button } from 'flowbite-react';
@@ -10,6 +10,8 @@ function Header() {
   const dispatch = useDispatch();
   const { currentUser } = useSelector((state) => state.user);
   const auth = getAuth();
+
+ 
 
   const handleSignout = () => {
     console.log("User signed out"); 
@@ -46,38 +48,17 @@ function Header() {
           <Link className="hover:text-green-500" to="/EmployeeDashboard">Employee</Link>
         </nav>
 
-        {/* Profile Dropdown */}
-        {currentUser ? (
-          <Dropdown
-            arrowIcon={false}
-            inline
-            label={
-              <div className="relative flex items-center space-x-2">
-                {currentUser.profilePicture ? (
-                  <Avatar 
-                    alt="user" 
-                    img={currentUser.profilePicture} 
-                    rounded 
-                    className="w-10 h-10 border-2 border-green-500 shadow-md hover:shadow-xl transition duration-300"
-                    onError={(e) => {
-                      // If image fails to load, replace with fallback icon
-                      e.target.style.display = 'none';
-                      e.currentTarget.parentNode.appendChild(
-                        Object.assign(document.createElement('div'), {
-                          className: 'w-10 h-10 bg-green-200 rounded-full flex items-center justify-center',
-                          innerHTML: '<FaUserCircle className="text-green-700 text-xl" />'
-                        })
-                      );
-                    }}
-                  />
-                ) : (
-                  <div className="w-10 h-10 bg-green-200 rounded-full flex items-center justify-center">
-                    <FaUserCircle className="text-green-700 text-xl" />
-                  </div>
-                )}
-              </div>
-            } 
-          >
+       {/* Profile Dropdown */}
+{currentUser ? (
+  <Dropdown
+    arrowIcon={false}
+    inline
+    label={
+      <div className="relative flex items-center space-x-2">
+        <Avatar alt="user" img={currentUser.profilePicture} rounded className="w-10 h-10 border-2 border-green-500 shadow-md hover:shadow-xl transition duration-300" />
+        
+      </div>
+    } >
             <Dropdown.Header>
               <span className="block text-sm text-green-700">@{currentUser.username}</span>
               <span className="block text-sm font-medium text-gray-500 truncate">{currentUser.email}</span>
@@ -95,6 +76,7 @@ function Header() {
             </Button>
           </Link>
         )}
+
 
         {/* Mobile Menu Button */}
         <button className="md:hidden text-green-700 text-2xl" onClick={() => setMenuOpen(!menuOpen)}>
