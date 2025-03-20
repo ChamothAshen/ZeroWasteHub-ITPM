@@ -2,13 +2,40 @@ import React, { useState } from 'react';
 import { FcGoogle } from 'react-icons/fc';
 import { FaLock, FaEnvelope } from 'react-icons/fa';
 import { BsTrash } from 'react-icons/bs';
-import { Link } from 'react-router-dom';
+import { Link, useNavigate } from 'react-router-dom';
 
 function SignIn() {
-  const [isLogin, setIsLogin] = useState(true);
+  const [email, setEmail] = useState("");
+  const [password, setPassword] = useState("");
+  const [error, setError] = useState("");
+  const navigate = useNavigate();
 
-  const toggleForm = () => {
-    setIsLogin(!isLogin);
+  const handleLogin = async (e) => {
+    e.preventDefault();
+    setError("");
+
+    try {
+      const response = await fetch("api/auth/signin", {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json'
+        },
+        body: JSON.stringify({ email, password }),
+        credentials: 'include' // Ensure cookies are sent with request
+      });
+
+      if (!response.ok) {
+        const errorData = await response.json();
+        throw new Error(errorData.message || "Invalid credentials");
+      }
+
+      console.log("Login successful");
+      navigate("/");
+
+    } catch (err) {
+      console.error("Login error:", err.message);
+      setError(err.message);
+    }
   };
 
   return (
@@ -20,7 +47,7 @@ function SignIn() {
             <BsTrash className="text-7xl drop-shadow-lg" />
           </div>
           <h1 className="text-5xl font-extrabold mb-4 leading-tight drop-shadow-lg">
-              Zero Waste management
+            Zero Waste Management
           </h1>
           <p className="text-lg mb-8 font-light tracking-wide">
             Revolutionizing waste disposal with AI-powered technology for a cleaner, greener future.
@@ -44,7 +71,9 @@ function SignIn() {
             <p className="text-gray-600 mt-2">Welcome back! Please enter your details</p>
           </div>
 
-          <form className="space-y-6">
+          {error && <p className="text-red-500 text-sm text-center mb-4">{error}</p>}
+
+          <form onSubmit={handleLogin} className="space-y-6">
             <div>
               <label className="block text-sm font-medium text-gray-700 mb-1">Email</label>
               <div className="relative">
@@ -53,8 +82,11 @@ function SignIn() {
                 </span>
                 <input
                   type="email"
+                  value={email}
+                  onChange={(e) => setEmail(e.target.value)}
                   className="w-full py-3 pl-10 pr-4 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-green-500 focus:border-transparent"
                   placeholder="Enter your email"
+                  required
                 />
               </div>
             </div>
@@ -67,8 +99,11 @@ function SignIn() {
                 </span>
                 <input
                   type="password"
+                  value={password}
+                  onChange={(e) => setPassword(e.target.value)}
                   className="w-full py-3 pl-10 pr-4 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-green-500 focus:border-transparent"
                   placeholder="Enter your password"
+                  required
                 />
               </div>
             </div>
@@ -112,11 +147,9 @@ function SignIn() {
             <div className="text-center mt-4">
               <p className="text-sm text-gray-600">
                 Don't have an account?
-                <a href="/register" className="ml-1 text-green-600 hover:text-green-800 font-medium">
-                  <Link to={"/sign-up"}>
-                      Sign up
-                  </Link>
-                </a>
+                <Link to="/sign-up" className="ml-1 text-green-600 hover:text-green-800 font-medium">
+                  Sign up
+                </Link>
               </p>
             </div>
           </form>
