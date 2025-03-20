@@ -31,7 +31,7 @@ function Header() {
         <nav className="hidden md:flex space-x-6 text-green-700 font-semibold text-lg">
           <Link className="hover:text-green-500" to="/">Home</Link>
           <Link className="hover:text-green-500" to="/WasteCollection">Collection</Link>
-          <Link className="hover:text-green-500" to="/SmartBin">Smart Bin</Link>
+          <Link className="hover:text-green-500" to="/RequestSmartBinForm">Smart Bin</Link>
           <Link className="hover:text-green-500" to="/about">About Us</Link>
           <Link className="hover:text-green-500" to="/EmployeeDashboard">Employee</Link>
         </nav>
@@ -58,7 +58,7 @@ function Header() {
           <ul className="flex flex-col space-y-4 text-green-700 font-semibold text-lg">
             <Link className="hover:text-green-500" to="/">Home</Link>
             <Link className="hover:text-green-500" to="/WasteCollection">Collection</Link>
-            <Link className="hover:text-green-500" to="/SmartBin">Smart Bin</Link>
+            <Link className="hover:text-green-500" to="/RequestSmartBinForm">Smart Bin</Link>
             <Link className="hover:text-green-500" to="/about">About Us</Link>
             <Link className="hover:text-green-500" to="/EmployeeDashboard">Employee Dashboard</Link>
             <Link className="hover:text-green-500" to="/sign-in">Signin</Link>
