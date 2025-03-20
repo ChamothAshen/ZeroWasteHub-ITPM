@@ -3,6 +3,7 @@ import { FcGoogle } from 'react-icons/fc';
 import { FaLock, FaEnvelope, FaBuilding, FaPhone } from 'react-icons/fa';
 import { BsTrash } from 'react-icons/bs';
 import { Link, useNavigate } from 'react-router-dom';
+import OAuth from '../components/OAuth';
 
 function SignUp() {
   const [formData, setFormData] = useState({});
@@ -133,15 +134,7 @@ function SignUp() {
               <div className="border-t border-gray-300 w-full"></div>
               <div className="absolute bg-white px-3 text-sm text-gray-500">or continue with</div>
             </div>
-
-            <button
-              type="button"
-              className="w-full border border-gray-300 text-gray-700 py-3 rounded-lg hover:bg-gray-50 transition duration-300 flex items-center justify-center gap-2"
-            >
-              <FcGoogle className="text-xl" />
-              <span>Google</span>
-            </button>
-
+               <OAuth />
             <div className="text-center mt-4">
               <p className="text-sm text-gray-600">
                 Already have an account?{' '}
