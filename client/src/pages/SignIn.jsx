@@ -1,5 +1,4 @@
 import React, { useState } from 'react';
-import { FcGoogle } from 'react-icons/fc';
 import { FaLock, FaEnvelope } from 'react-icons/fa';
 import { BsTrash } from 'react-icons/bs';
 import { Link, useNavigate } from 'react-router-dom';
@@ -9,6 +8,7 @@ import {
   signInSuccess,
   signInFailure,
 } from '../redux/user/userSlice'; // ✅ Ensure correct path
+import OAuth from '../components/OAuth';
 
 function SignIn() {
   const [formData, setFormData] = useState({ email: '', password: '' });
@@ -151,13 +151,8 @@ function SignIn() {
             </div>
 
             {/* Google Login Button */}
-            <button
-              type="button"
-              className="w-full border border-gray-300 text-gray-700 py-3 rounded-lg hover:bg-gray-50 transition duration-300 flex items-center justify-center gap-2"
-            >
-              <FcGoogle className="text-xl" />
-              <span>Google</span>
-            </button>
+         
+            <OAuth />
 
             {/* Signup Redirect */}
             <div className="text-center mt-4">
