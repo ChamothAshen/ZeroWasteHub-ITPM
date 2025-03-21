@@ -12,6 +12,7 @@ import CardPayment from './pages/Payement/CardPayment';
 import ClientBill from './pages/Payement/ClientBill';
 import WasteCollection from './pages/WasteCollection';
 import EmployeeDashboard from './pages/EmpDash';
+import ProfileUI from './components/ProfileUI';
 
 function App() {
   return (
@@ -29,6 +30,7 @@ function App() {
         <Route path='/ClientBill' element={<ClientBill />} />
         <Route path='/WasteCollection' element={<WasteCollection />} />
         <Route path='/EmployeeDashboard' element={<EmployeeDashboard />} />
+        <Route path='/profileui' element={<ProfileUI/>} />
       </Routes>
     </BrowserRouter>
   );
