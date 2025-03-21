@@ -9,6 +9,9 @@ import Dashboard from './pages/Dashboard';
 import SmartBin from './pages/SmartBin';
 import WasteCollection from './pages/WasteCollection';
 import EmployeeDashboard from './pages/EmpDash';
+import EmpTeams from "./pages/EmpTeams";
+import Logs from "./pages/EmpLogs";
+
 function App() {
   return (
     <BrowserRouter>
@@ -23,6 +26,8 @@ function App() {
         <Route path='/smartbin' element={<SmartBin/>} />
         <Route path='/WasteCollection' element={<WasteCollection/>} />
         <Route path='/EmployeeDashboard' element={<EmployeeDashboard/>} />
+        <Route path='/EmpTeams' element={<EmpTeams/>} />
+        <Route path='/EmpLogs' element={<Logs/>} />
        </Routes>
          
     </BrowserRouter>

@@ -1,193 +1,183 @@
 import { useState } from "react";
-import { FiUsers, FiBarChart2, FiSettings, FiEdit, FiTrash, FiMenu, FiX, FiClipboard, FiTruck, FiTrello } from "react-icons/fi";
+import { FiEdit, FiTrash, FiSave, FiX } from "react-icons/fi";
+import Sidebar from "./EmpSidebar";
 
 export default function EmployeeDashboard() {
-  const [activeTab, setActiveTab] = useState("employees");
-  const [sidebarOpen, setSidebarOpen] = useState(false);
-
   const [employees, setEmployees] = useState([
-    { id: 1, name: "Sumathi", team: "Team10", shifts: "" },
-    { id: 2, name: "Paala", team: "Team15", shifts: "" },
-    { id: 3, name: "Daya", team: "Team10", shifts: "" },
+    { id: "T1001", name: "John Doe", shift: "2025-03-22T09:00" },
   ]);
-  const [teams, setTeams] = useState([
-    { id: 1, leader: "Sarth", members: ["Sumathi", "Paala", "Daya"] },
-    { id: 2, leader: "Ashoka", members: ["Raj", "Kavi", "Arun"] },
-  ]);
+  const [editingId, setEditingId] = useState(null);
+  const [newEmployee, setNewEmployee] = useState({ id: "", name: "", shift: "" });
+  const [showDeleteModal, setShowDeleteModal] = useState(false);
+  const [employeeToDelete, setEmployeeToDelete] = useState(null);
+  const [deletionError, setDeletionError] = useState("");
 
-  const [newEmployee, setNewEmployee] = useState({ name: "", team: "" });
-  const [editingEmployee, setEditingEmployee] = useState(null);
-  const [editingTeam, setEditingTeam] = useState(null);
+  const handleEdit = (id) => setEditingId(id);
+  const handleSave = (id) => setEditingId(null);
 
-  const handleEditEmployee = (id) => {
-    const employeeToEdit = employees.find((emp) => emp.id === id);
-    setEditingEmployee(employeeToEdit);
+  const confirmDelete = (id) => {
+    setEmployeeToDelete(id);
+    setShowDeleteModal(true);
+    setDeletionError("");
   };
 
-  const handleSaveEditEmployee = () => {
-    setEmployees(
-      employees.map((emp) => (emp.id === editingEmployee.id ? editingEmployee : emp))
-    );
-    setEditingEmployee(null);
-  };
-
-  const handleDeleteEmployee = (id) => {
-    setEmployees(employees.filter((employee) => employee.id !== id));
-  };
-
-  const handleAddEmployee = () => {
-    if (newEmployee.name && newEmployee.team) {
-      setEmployees([...employees, { id: employees.length + 1, ...newEmployee, shifts: "" }]);
-      setNewEmployee({ name: "", team: "" });
+  const executeDelete = (enteredId) => {
+    if (enteredId === employeeToDelete) {
+      setEmployees(employees.filter((emp) => emp.id !== employeeToDelete));
+      setShowDeleteModal(false);
+      setEmployeeToDelete(null);
+    } else {
+      setDeletionError("Entered ID does not match. Please type the employee ID to confirm deletion.");
     }
   };
 
-  const handleEditTeam = (id) => {
-    const teamToEdit = teams.find((team) => team.id === id);
-    setEditingTeam(teamToEdit);
-  };
-
-  const handleSaveEditTeam = () => {
-    setTeams(
-      teams.map((team) => (team.id === editingTeam.id ? editingTeam : team))
-    );
-    setEditingTeam(null);
-  };
-
-  const handleDeleteTeam = (id) => {
-    setTeams(teams.filter((team) => team.id !== id));
-  };
-
-  const handleAddTeam = () => {
-    // Implement team addition logic here
+  const handleAddEmployee = () => {
+    if (!/^T\d+$/.test(newEmployee.id) || newEmployee.name.length > 20 || !newEmployee.shift) {
+      alert("Invalid input: Ensure ID follows T[number], Name max 20 chars, and Shift is set.");
+      return;
+    }
+    setEmployees([...employees, newEmployee]);
+    setNewEmployee({ id: "", name: "", shift: "" });
   };
 
   return (
-    <div className="min-h-screen bg-green-50 text-gray-800 flex">
-      {/* Sidebar */}
-      <aside className={`fixed md:relative md:w-64 bg-green-700 text-white p-6 min-h-screen transition-transform z-50 ${sidebarOpen ? "translate-x-0" : "-translate-x-full"} md:translate-x-0`}>
-        <div className="flex justify-between items-center mb-6">
-          <h1 className="text-2xl font-bold">Employee Dashboard</h1>
-          <button className="md:hidden text-white text-2xl" onClick={() => setSidebarOpen(false)}>
-            <FiX />
-          </button>
-        </div>
-        <nav className="mt-6">
-          <ul>
-            <li className="mb-4">
-              <a href="#" className="flex items-center space-x-2 hover:text-gray-300" onClick={() => setActiveTab("employees")}>
-                <FiUsers /> <span>Employees</span>
-              </a>
-            </li>
-            <li className="mb-4">
-              <a href="#" className="flex items-center space-x-2 hover:text-gray-300" onClick={() => setActiveTab("teams")}>
-                <FiTrello /> <span>Teams</span>
-              </a>
-            </li>
-            <li className="mb-4">
-              <a href="#" className="flex items-center space-x-2 hover:text-gray-300">
-                <FiClipboard /> <span>Logs</span>
-              </a>
-            </li>
-            <li>
-              <a href="#" className="flex items-center space-x-2 hover:text-gray-300">
-                <FiTruck /> <span>Pick Ups</span>
-              </a>
-            </li>
-          </ul>
-        </nav>
-      </aside>
-
-      {/* Main Content */}
-      <main className="flex-1 p-6 transition-all">
-        <header className="flex justify-between items-center mb-6">
-          <button className="md:hidden text-green-600 text-2xl" onClick={() => setSidebarOpen(true)}>
-            <FiMenu />
-          </button>
-          <h2 className="text-3xl font-semibold capitalize">{activeTab}</h2>
-        </header>
-
-        <div className="bg-white p-6 rounded-lg shadow-md">
-          {activeTab === "employees" && (
-            <>
-              <div className="mb-4">
-                <input type="text" placeholder="Employee Name" value={newEmployee.name} onChange={(e) => setNewEmployee({ ...newEmployee, name: e.target.value })} className="border p-2 rounded mr-2" />
-                <input type="text" placeholder="Team" value={newEmployee.team} onChange={(e) => setNewEmployee({ ...newEmployee, team: e.target.value })} className="border p-2 rounded mr-2" />
-                <button onClick={handleAddEmployee} className="bg-green-600 text-white px-4 py-2 rounded">Add</button>
-              </div>
-              <div className="overflow-x-auto">
-                <table className="w-full border-collapse border border-gray-300">
-                  <thead>
-                    <tr className="bg-gray-200">
-                      <th className="border p-2">#</th>
-                      <th className="border p-2">Name</th>
-                      <th className="border p-2">Team</th>
-                      <th className="border p-2">Shifts</th>
-                      <th className="border p-2">Edit Details</th>
-                    </tr>
-                  </thead>
-                  <tbody>
-                    {employees.map((employee) => (
-                      <tr key={employee.id} className="border">
-                        <td className="border p-2 text-center">{employee.id}</td>
-                        <td className="border p-2">
-                          {editingEmployee?.id === employee.id ? (
-                            <input type="text" value={editingEmployee.name} onChange={(e) => setEditingEmployee({ ...editingEmployee, name: e.target.value })} className="border p-1 rounded w-full" />
-                          ) : (
-                            employee.name
-                          )}
-                        </td>
-                        <td className="border p-2">
-                          {editingEmployee?.id === employee.id ? (
-                            <input type="text" value={editingEmployee.team} onChange={(e) => setEditingEmployee({ ...editingEmployee, team: e.target.value })} className="border p-1 rounded w-full" />
-                          ) : (
-                            employee.team
-                          )}
-                        </td>
-                        <td className="border p-2 text-center">
-                          <input type="datetime-local" className="border p-1 rounded-md w-full" />
-                        </td>
-                        <td className="border p-2 flex justify-center gap-2">
-                          {editingEmployee?.id === employee.id ? (
-                            <button className="text-green-500" onClick={handleSaveEditEmployee}>Save</button>
-                          ) : (
-                            <button className="text-blue-500" onClick={() => handleEditEmployee(employee.id)}><FiEdit /></button>
-                          )}
-                          <button className="text-red-500" onClick={() => handleDeleteEmployee(employee.id)}><FiTrash /></button>
-                        </td>
-                      </tr>
-                    ))}
-                  </tbody>
-                </table>
-              </div>
-            </>
-          )}
-
-          {activeTab === "teams" && (
-            <div>
-              {teams.map((team) => (
-                <div key={team.id} className="mb-4 p-4 border rounded-lg shadow-md flex justify-between items-center">
-                  <div className="space-y-2">
-                    <h3 className="text-xl font-semibold">Team {team.id}</h3>
-                    <p>Leader: {editingTeam?.id === team.id ? (
-                      <input type="text" value={editingTeam.leader} onChange={(e) => setEditingTeam({ ...editingTeam, leader: e.target.value })} className="border p-1 rounded w-full" />
-                    ) : (
-                      team.leader
-                    )}</p>
-                    <p>Members: {team.members.join(", ")}</p>
-                  </div>
-                  <div className="flex gap-2">
-                    {editingTeam?.id === team.id ? (
-                      <button className="text-green-500" onClick={handleSaveEditTeam}>Save</button>
-                    ) : (
-                      <button className="text-blue-500" onClick={() => handleEditTeam(team.id)}><FiEdit /></button>
-                    )}
-                    <button className="text-red-500" onClick={() => handleDeleteTeam(team.id)}><FiTrash /></button>
-                  </div>
-                </div>
-              ))}
+    <div className="flex bg-green-50 min-h-screen">
+      <Sidebar />
+      
+      {/* Delete Confirmation Modal */}
+      {showDeleteModal && (
+        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
+          <div className="bg-white p-6 rounded-xl max-w-md w-full mx-4">
+            <div className="flex justify-between items-center mb-4">
+              <h3 className="text-xl font-bold text-red-600">Confirm Deletion</h3>
+              <button
+                onClick={() => setShowDeleteModal(false)}
+                className="text-gray-500 hover:text-gray-700"
+              >
+                <FiX size={24} />
+              </button>
             </div>
-          )}
+            <p className="text-gray-600 mb-4">
+              You are about to delete employee <strong>{employeeToDelete}</strong>.
+              This action cannot be undone. To confirm, please enter the employee ID below:
+            </p>
+            <input
+              type="text"
+              placeholder="Enter employee ID"
+              className="w-full p-3 border rounded-lg mb-4 focus:ring-2 focus:ring-red-500"
+              onChange={(e) => setEmployeeToDelete(e.target.value)}
+            />
+            {deletionError && <p className="text-red-500 text-sm mb-4">{deletionError}</p>}
+            <div className="flex justify-end gap-3">
+              <button
+                onClick={() => setShowDeleteModal(false)}
+                className="px-5 py-2 text-gray-600 hover:bg-gray-100 rounded-lg"
+              >
+                Cancel
+              </button>
+              <button
+                onClick={() => executeDelete(employeeToDelete)}
+                className="px-5 py-2 bg-red-600 text-white rounded-lg hover:bg-red-700 flex items-center gap-2"
+              >
+                <FiTrash size={18} />
+                Confirm Delete
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+
+      <main className="w-full p-8">
+        <div className="p-6 bg-white shadow-lg rounded-lg border border-gray-200">
+          <h2 className="text-3xl font-bold text-green-700 mb-6">Employee Dashboard</h2>
+          <div className="overflow-x-auto">
+            <table className="w-full border-collapse shadow-md rounded-lg overflow-hidden">
+              <thead>
+                <tr className="bg-green-600 text-white text-left">
+                  <th className="px-6 py-3">Emp ID</th>
+                  <th className="px-6 py-3">Name</th>
+                  <th className="px-6 py-3">Shifts</th>
+                  <th className="px-6 py-3 text-center">Actions</th>
+                </tr>
+              </thead>
+              <tbody>
+                {employees.map((emp) => (
+                  <tr key={emp.id} className="border-b border-gray-200 hover:bg-green-100 transition">
+                    <td className="px-6 py-4 font-semibold">{emp.id}</td>
+                    <td className="px-6 py-4">
+                      {editingId === emp.id ? (
+                        <input className="border p-2 rounded w-full" defaultValue={emp.name} />
+                      ) : (
+                        emp.name
+                      )}
+                    </td>
+                    <td className="px-6 py-4">
+                      {editingId === emp.id ? (
+                        <input 
+                          type="datetime-local" 
+                          className="border p-2 rounded w-full" 
+                          defaultValue={emp.shift} 
+                        />
+                      ) : (
+                        new Date(emp.shift).toLocaleString()
+                      )}
+                    </td>
+                    <td className="px-6 py-4 flex justify-center space-x-3">
+                      {editingId === emp.id ? (
+                        <button 
+                          onClick={() => handleSave(emp.id)} 
+                          className="text-green-600 hover:text-green-800"
+                        >
+                          <FiSave size={18} />
+                        </button>
+                      ) : (
+                        <button 
+                          onClick={() => handleEdit(emp.id)} 
+                          className="text-blue-600 hover:text-blue-800"
+                        >
+                          <FiEdit size={18} />
+                        </button>
+                      )}
+                      <button 
+                        onClick={() => confirmDelete(emp.id)} 
+                        className="text-red-600 hover:text-red-800"
+                      >
+                        <FiTrash size={18} />
+                      </button>
+                    </td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          </div>
+
+          <div className="mt-6 flex space-x-3">
+            <input
+              placeholder="Emp ID (T1002)"
+              className="border p-3 rounded w-1/4 focus:ring-2 focus:ring-green-500"
+              value={newEmployee.id}
+              onChange={(e) => setNewEmployee({ ...newEmployee, id: e.target.value })}
+            />
+            <input
+              placeholder="Name (max 20 chars)"
+              className="border p-3 rounded w-1/4 focus:ring-2 focus:ring-green-500"
+              value={newEmployee.name}
+              onChange={(e) => setNewEmployee({ ...newEmployee, name: e.target.value })}
+            />
+            <input
+              type="datetime-local"
+              className="border p-3 rounded w-1/4 focus:ring-2 focus:ring-green-500"
+              value={newEmployee.shift}
+              onChange={(e) => setNewEmployee({ ...newEmployee, shift: e.target.value })}
+            />
+            <button 
+              onClick={handleAddEmployee} 
+              className="bg-green-700 text-white px-6 py-3 rounded hover:bg-green-800 flex items-center gap-2 transition-colors"
+            >
+              <FiSave size={18} />
+              Add Employee
+            </button>
+          </div>
         </div>
       </main>
     </div>
