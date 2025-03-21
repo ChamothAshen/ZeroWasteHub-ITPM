@@ -5,13 +5,19 @@ import { initializeApp } from "firebase/app";
 
 // Your web app's Firebase configuration
 const firebaseConfig = {
-  apiKey: import.meta.env.VITE_FIREBASE_API_KEY,
-  authDomain: "zero-waste-management-7b9fe.firebaseapp.com",
-  projectId: "zero-waste-management-7b9fe",
-  storageBucket: "zero-waste-management-7b9fe.firebasestorage.app",
-  messagingSenderId: "381862974831",
-  appId: "1:381862974831:web:109445273df856434c849a"
+  apiKey:import.meta.env.VITE_FIREBASE_API_KEY,
+  authDomain: "waste-management-system-ca43a.firebaseapp.com",
+  projectId: "waste-management-system-ca43a",
+  storageBucket: "waste-management-system-ca43a.firebasestorage.app",
+  messagingSenderId: "56749472916",
+  appId: "1:56749472916:web:beb75405e3fd9d98364881"
 };
 
 // Initialize Firebase
 export const app = initializeApp(firebaseConfig);
+
+
+
+
+
+
