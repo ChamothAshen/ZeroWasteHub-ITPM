@@ -10,28 +10,13 @@ const ProfileSidebar = ({ currentUser }) => {
     { 
       name: 'Profile', 
       icon: <FaUser className="text-lg" />, 
-      path: '/dashboard/profile' 
+      path: '/profileui' 
     },
-    { 
-      name: 'Personal Info', 
-      icon: <FaAddressCard className="text-lg" />, 
-      path: '/dashboard/personal-info' 
-    },
-    { 
-      name: 'Activity History', 
-      icon: <FaHistory className="text-lg" />, 
-      path: '/dashboard/history' 
-    },
-    { 
+    {
       name: 'Notifications', 
       icon: <FaBell className="text-lg" />, 
       path: '/dashboard/notifications' 
     },
-    { 
-      name: 'Settings', 
-      icon: <FaCog className="text-lg" />, 
-      path: '/dashboard/settings' 
-    }
   ];
 
   // Check if a menu item is active
