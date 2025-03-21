@@ -46,6 +46,8 @@ function Header() {
           <Link className="hover:text-green-500" to="/RequestSmartBinForm">Smart Bin</Link>
           <Link className="hover:text-green-500" to="/about">About Us</Link>
           <Link className="hover:text-green-500" to="/EmployeeDashboard">Employee</Link>
+          <Link className="hover:text-green-500" to="/sign-in">Sign In</Link>
+
         </nav>
 
        {/* Profile Dropdown */}
