@@ -80,17 +80,6 @@ const ProfileSidebar = ({ currentUser }) => {
           ))}
         </ul>
       </nav>
-
-      {/* Sign Out Button */}
-      <div className="absolute bottom-0 w-full border-t border-green-100">
-        <button 
-          className="flex items-center w-full px-6 py-4 text-green-600 hover:bg-green-50 transition duration-200"
-          onClick={() => console.log("Sign out clicked")}
-        >
-          <FaSignOutAlt className="mr-3 text-green-500" />
-          <span>Sign Out</span>
-        </button>
-      </div>
     </div>
   );
 };
