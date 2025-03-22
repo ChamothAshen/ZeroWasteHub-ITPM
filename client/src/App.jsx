@@ -12,6 +12,7 @@ import ClientBill from './pages/Payement/ClientBill';
 import CollectRequestForm from './pages/RequestWaste/CollectRequestForm';
 import EmployeeDashboard from './pages/EmpDash';
 import ProfileUI from './components/ProfileUI';
+import UserDetailShow from './pages/ProfileData/UserDetailShow';
 
 function App() {
   return (
@@ -28,7 +29,8 @@ function App() {
         <Route path='/ClientBill' element={<ClientBill />} />
         <Route path='/pages/CollectRequestForm' element={<CollectRequestForm />} />
         <Route path='/EmployeeDashboard' element={<EmployeeDashboard />} />
-        <Route path='/profileui' element={<ProfileUI/>} />
+        <Route path='/profileui' element={<ProfileUI />} />
+        <Route path='/pages/ProfileData/UserDetailShow' element={<UserDetailShow />} />
       </Routes>
     </BrowserRouter>
   );
