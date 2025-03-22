@@ -12,6 +12,7 @@ import ClientBill from './pages/Payement/ClientBill';
 import CollectRequestForm from './pages/RequestWaste/CollectRequestForm';
 import EmployeeDashboard from './pages/EmpDash';
 import ProfileUI from './components/ProfileUI';
+import WasteManagementChatBot from './pages/chatbot/WasteManagementChatBot';
 
 function App() {
   return (
@@ -29,6 +30,7 @@ function App() {
         <Route path='/pages/CollectRequestForm' element={<CollectRequestForm />} />
         <Route path='/EmployeeDashboard' element={<EmployeeDashboard />} />
         <Route path='/profileui' element={<ProfileUI/>} />
+        <Route path='/wastebot' element={<WasteManagementChatBot/>} />
       </Routes>
     </BrowserRouter>
   );
