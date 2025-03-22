@@ -1,46 +1,60 @@
 import React, { useState } from 'react';
-import { FcGoogle } from 'react-icons/fc';
 import { FaLock, FaEnvelope } from 'react-icons/fa';
 import { BsTrash } from 'react-icons/bs';
 import { Link, useNavigate } from 'react-router-dom';
+import { useDispatch, useSelector } from 'react-redux';
+import {
+  signInStart,
+  signInSuccess,
+  signInFailure,
+} from '../redux/user/userSlice'; // ✅ Ensure correct path
+import OAuth from '../components/OAuth';
 
 function SignIn() {
-  const [email, setEmail] = useState("");
-  const [password, setPassword] = useState("");
-  const [error, setError] = useState("");
+  const [formData, setFormData] = useState({ email: '', password: '' });
+  const dispatch = useDispatch();
   const navigate = useNavigate();
 
-  const handleLogin = async (e) => {
+  // ✅ Ensure `state.user` exists in the Redux store
+  const { error } = useSelector((state) => state.user || { error: null });
+
+  const handleChange = (e) => {
+    setFormData({ ...formData, [e.target.id]: e.target.value.trim() });
+  };
+
+  const handleSubmit = async (e) => {
     e.preventDefault();
-    setError("");
+
+    if (!formData.email || !formData.password) {
+      return dispatch(signInFailure('Please fill all the fields'));
+    }
 
     try {
-      const response = await fetch("api/auth/signin", {
+      dispatch(signInStart());
+
+      const res = await fetch('/api/auth/signin', {
         method: 'POST',
-        headers: {
-          'Content-Type': 'application/json'
-        },
-        body: JSON.stringify({ email, password }),
-        credentials: 'include' // Ensure cookies are sent with request
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(formData),
       });
 
-      if (!response.ok) {
-        const errorData = await response.json();
-        throw new Error(errorData.message || "Invalid credentials");
+      const data = await res.json();
+
+      if (!res.ok) {
+        return dispatch(signInFailure(data.message || 'Login failed!'));
       }
 
-      console.log("Login successful");
-      navigate("/");
-
-    } catch (err) {
-      console.error("Login error:", err.message);
-      setError(err.message);
+      dispatch(signInSuccess(data));
+      navigate('/');
+    } catch (error) {
+      console.error('Login Error:', error); // ✅ Debugging
+      dispatch(signInFailure(error.message || 'An error occurred!'));
     }
   };
 
   return (
     <div className="min-h-screen bg-white flex flex-col md:flex-row">
-      {/* Left side - Brand/Logo */}
+      {/* Left side - Branding */}
       <div className="w-full md:w-1/2 bg-gradient-to-r from-green-500 to-green-700 flex flex-col justify-center items-center text-white p-10">
         <div className="text-center max-w-md">
           <div className="flex items-center justify-center mb-6">
@@ -52,14 +66,6 @@ function SignIn() {
           <p className="text-lg mb-8 font-light tracking-wide">
             Revolutionizing waste disposal with AI-powered technology for a cleaner, greener future.
           </p>
-          <div className="hidden md:block">
-            <div className="mb-6 p-6 bg-white text-green-800 rounded-2xl shadow-lg">
-              <p className="italic text-lg">
-                "This system transformed our city's cleanliness and efficiency!"
-              </p>
-              <p className="font-bold mt-3">- Satisfied Citizen</p>
-            </div>
-          </div>
         </div>
       </div>
 
@@ -71,9 +77,11 @@ function SignIn() {
             <p className="text-gray-600 mt-2">Welcome back! Please enter your details</p>
           </div>
 
+          {/* ✅ Display error message */}
           {error && <p className="text-red-500 text-sm text-center mb-4">{error}</p>}
 
-          <form onSubmit={handleLogin} className="space-y-6">
+          <form onSubmit={handleSubmit} className="space-y-6">
+            {/* Email Input */}
             <div>
               <label className="block text-sm font-medium text-gray-700 mb-1">Email</label>
               <div className="relative">
@@ -82,8 +90,9 @@ function SignIn() {
                 </span>
                 <input
                   type="email"
-                  value={email}
-                  onChange={(e) => setEmail(e.target.value)}
+                  id="email"
+                  value={formData.email}
+                  onChange={handleChange}
                   className="w-full py-3 pl-10 pr-4 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-green-500 focus:border-transparent"
                   placeholder="Enter your email"
                   required
@@ -91,6 +100,7 @@ function SignIn() {
               </div>
             </div>
 
+            {/* Password Input */}
             <div>
               <label className="block text-sm font-medium text-gray-700 mb-1">Password</label>
               <div className="relative">
@@ -99,8 +109,9 @@ function SignIn() {
                 </span>
                 <input
                   type="password"
-                  value={password}
-                  onChange={(e) => setPassword(e.target.value)}
+                  id="password"
+                  value={formData.password}
+                  onChange={handleChange}
                   className="w-full py-3 pl-10 pr-4 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-green-500 focus:border-transparent"
                   placeholder="Enter your password"
                   required
@@ -108,6 +119,7 @@ function SignIn() {
               </div>
             </div>
 
+            {/* Remember Me and Forgot Password */}
             <div className="flex justify-between items-center">
               <div className="flex items-center">
                 <input
@@ -124,6 +136,7 @@ function SignIn() {
               </a>
             </div>
 
+            {/* Login Button */}
             <button
               type="submit"
               className="w-full bg-green-600 text-white py-3 rounded-lg hover:bg-green-700 transition duration-300 font-medium"
@@ -131,19 +144,17 @@ function SignIn() {
               Login
             </button>
 
+            {/* Divider */}
             <div className="relative flex items-center justify-center mt-6">
               <div className="border-t border-gray-300 w-full"></div>
               <div className="absolute bg-white px-3 text-sm text-gray-500">or continue with</div>
             </div>
 
-            <button
-              type="button"
-              className="w-full border border-gray-300 text-gray-700 py-3 rounded-lg hover:bg-gray-50 transition duration-300 flex items-center justify-center gap-2"
-            >
-              <FcGoogle className="text-xl" />
-              <span>Google</span>
-            </button>
+            {/* Google Login Button */}
+         
+            <OAuth />
 
+            {/* Signup Redirect */}
             <div className="text-center mt-4">
               <p className="text-sm text-gray-600">
                 Don't have an account?
