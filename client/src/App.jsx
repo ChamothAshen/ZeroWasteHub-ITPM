@@ -6,11 +6,10 @@ import SignUp from './pages/SignUp';
 import Header from './components/Header';
 import Home from './pages/Home';
 import Dashboard from './pages/Dashboard';
-import CollectRequestForm from './pages/RequestWaste/CollectRequestForm';
 import RequestSmartBinForm from './pages/RequestWaste/RequestSmartBinForm';
 import CardPayment from './pages/Payement/CardPayment';
 import ClientBill from './pages/Payement/ClientBill';
-import WasteCollection from './pages/WasteCollection';
+import CollectRequestForm from './pages/RequestWaste/CollectRequestForm';
 import EmployeeDashboard from './pages/EmpDash';
 import ProfileUI from './components/ProfileUI';
 
@@ -24,11 +23,10 @@ function App() {
         <Route path='/sign-in' element={<SignIn />} />
         <Route path='/sign-up' element={<SignUp />} />
         <Route path='/Dashboard' element={<Dashboard />} />
-        <Route path='/CollectRequestForm' element={<CollectRequestForm />} />
-        <Route path='/RequestSmartBinForm' element={<RequestSmartBinForm />} />
+        <Route path='/pages/RequestSmartBinForm' element={<RequestSmartBinForm />} />
         <Route path='/CardPayment' element={<CardPayment />} />
         <Route path='/ClientBill' element={<ClientBill />} />
-        <Route path='/WasteCollection' element={<WasteCollection />} />
+        <Route path='/pages/CollectRequestForm' element={<CollectRequestForm />} />
         <Route path='/EmployeeDashboard' element={<EmployeeDashboard />} />
         <Route path='/profileui' element={<ProfileUI/>} />
       </Routes>

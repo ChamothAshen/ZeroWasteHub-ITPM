@@ -38,8 +38,9 @@ const CollectRequestForm = () => {
         }
     };
 
-    const handleSubmit = async (e) => {
+    const handleSubmit = (e) => {
         e.preventDefault();
+
         try {
             const submissionData = {
                 userId: uId,
@@ -52,9 +53,8 @@ const CollectRequestForm = () => {
                 specialInstructions: formData.specialInstructions
             };
 
-            // Temporary alert implementation
-            alert("Collection request submitted successfully!");
-            navigate("/client");
+            // Navigate to the Card Payment page instead of "/client"
+            navigate("/CardPayment", { state: { data: submissionData } });
         } catch (error) {
             // Temporary alert implementation
             alert("Failed to submit collection request. Please try again.");
@@ -68,41 +68,53 @@ const CollectRequestForm = () => {
         }
     };
 
+    // Icons for waste types
+    const wasteTypeIcons = {
+        general: "🗑️",
+        recycling: "♻️",
+        compost: "🌱",
+        paper: "📄",
+        electronics: "💻",
+        hazardous: "⚠️"
+    };
+
     return (
-        <div className="min-h-screen bg-gray-50">
+        <div className="min-h-screen bg-green-50">
             <div className="max-w-4xl mx-auto py-12 px-4 sm:px-6 lg:px-8">
-                <div className="bg-white shadow-lg rounded-lg overflow-hidden">
-                    <div className="px-6 py-8 border-b border-gray-200">
-                        <h2 className="text-3xl font-bold text-gray-800">Waste Collection Request</h2>
-                        <p className="mt-2 text-gray-600">Fill out the form below to schedule a waste collection</p>
+                <div className="bg-white shadow-lg rounded-lg overflow-hidden border border-green-200">
+                    <div className="px-6 py-8 border-b border-green-200 bg-gradient-to-r from-green-600 to-green-400 text-white">
+                        <h2 className="text-3xl font-bold text-white flex items-center">
+                            <span className="mr-2">♻️</span> Waste Collection Request
+                        </h2>
+                        <p className="mt-2 text-white opacity-90">Fill out the form below to schedule a waste collection</p>
                     </div>
 
                     <form onSubmit={handleSubmit} className="px-6 py-6 space-y-6">
                         <div>
-                            <label htmlFor="binType" className="block text-sm font-medium text-gray-700 mb-1">
-                                Waste Type
+                            <label htmlFor="binType" className="block text-sm font-medium text-gray-700 mb-1 flex items-center">
+                                <span className="mr-1">🗑️</span> Waste Type
                             </label>
                             <select
                                 id="binType"
                                 name="binType"
                                 value={formData.binType}
                                 onChange={handleChange}
-                                className="w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500 py-2 px-3"
+                                className="w-full rounded-md border-green-300 shadow-sm focus:border-green-500 focus:ring-green-500 py-2 px-3"
                                 required
                             >
                                 <option value="">Select Waste Type</option>
-                                <option value="general">General Waste</option>
-                                <option value="recycling">Recycling</option>
-                                <option value="compost">Organic Waste</option>
-                                <option value="paper">Paper/Cardboard</option>
-                                <option value="electronics">Electronic Waste</option>
-                                <option value="hazardous">Hazardous Waste</option>
+                                <option value="general">{wasteTypeIcons.general} General Waste</option>
+                                <option value="recycling">{wasteTypeIcons.recycling} Recycling</option>
+                                <option value="compost">{wasteTypeIcons.compost} Organic Waste</option>
+                                <option value="paper">{wasteTypeIcons.paper} Paper/Cardboard</option>
+                                <option value="electronics">{wasteTypeIcons.electronics} Electronic Waste</option>
+                                <option value="hazardous">{wasteTypeIcons.hazardous} Hazardous Waste</option>
                             </select>
                         </div>
 
                         <div>
-                            <label htmlFor="location" className="block text-sm font-medium text-gray-700 mb-1">
-                                Collection Location
+                            <label htmlFor="location" className="block text-sm font-medium text-gray-700 mb-1 flex items-center">
+                                <span className="mr-1">📍</span> Collection Location
                             </label>
                             <input
                                 type="text"
@@ -111,7 +123,7 @@ const CollectRequestForm = () => {
                                 value={formData.location}
                                 onChange={handleChange}
                                 placeholder="Enter complete address"
-                                className="w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500 py-2 px-3"
+                                className="w-full rounded-md border-green-300 shadow-sm focus:border-green-500 focus:ring-green-500 py-2 px-3"
                                 required
                             />
                         </div>
@@ -127,15 +139,15 @@ const CollectRequestForm = () => {
                                 value={formData.contactNo}
                                 onChange={handleChange}
                                 placeholder="Phone number for collection coordination"
-                                className="w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500 py-2 px-3"
+                                className="w-full rounded-md border-green-300 shadow-sm focus:border-green-500 focus:ring-green-500 py-2 px-3"
                                 required
                             />
                         </div>
 
                         <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                             <div>
-                                <label htmlFor="description" className="block text-sm font-medium text-gray-700 mb-1">
-                                    Waste Description
+                                <label htmlFor="description" className="block text-sm font-medium text-gray-700 mb-1 flex items-center">
+                                    <span className="mr-1">📝</span> Waste Description
                                 </label>
                                 <textarea
                                     id="description"
@@ -143,12 +155,12 @@ const CollectRequestForm = () => {
                                     value={formData.description}
                                     onChange={handleChange}
                                     placeholder="Describe the waste to be collected"
-                                    className="w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500 py-2 px-3"
+                                    className="w-full rounded-md border-green-300 shadow-sm focus:border-green-500 focus:ring-green-500 py-2 px-3"
                                     rows="4"
                                     required
                                 ></textarea>
                             </div>
-                            
+
                             <div>
                                 <label htmlFor="specialInstructions" className="block text-sm font-medium text-gray-700 mb-1">
                                     Special Instructions
@@ -159,15 +171,15 @@ const CollectRequestForm = () => {
                                     value={formData.specialInstructions}
                                     onChange={handleChange}
                                     placeholder="Any special handling or access instructions"
-                                    className="w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500 py-2 px-3"
+                                    className="w-full rounded-md border-green-300 shadow-sm focus:border-green-500 focus:ring-green-500 py-2 px-3"
                                     rows="4"
                                 ></textarea>
                             </div>
                         </div>
 
                         <div>
-                            <label htmlFor="quantity" className="block text-sm font-medium text-gray-700 mb-1">
-                                Estimated Volume (in bags/bins)
+                            <label htmlFor="quantity" className="block text-sm font-medium text-gray-700 mb-1 flex items-center">
+                                <span className="mr-1">🔢</span> Estimated Volume (in bags/bins)
                             </label>
                             <input
                                 type="number"
@@ -176,15 +188,15 @@ const CollectRequestForm = () => {
                                 value={formData.quantity}
                                 onChange={handleChange}
                                 min="1"
-                                className="w-full md:w-1/4 rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500 py-2 px-3"
+                                className="w-full md:w-1/4 rounded-md border-green-300 shadow-sm focus:border-green-500 focus:ring-green-500 py-2 px-3"
                                 required
                             />
                         </div>
 
                         <div className="flex flex-col sm:flex-row sm:items-center space-y-4 sm:space-y-0 sm:space-x-6">
                             <div className="flex-grow">
-                                <label htmlFor="date" className="block text-sm font-medium text-gray-700 mb-1">
-                                    Preferred Collection Date
+                                <label htmlFor="date" className="block text-sm font-medium text-gray-700 mb-1 flex items-center">
+                                    <span className="mr-1">📅</span> Preferred Collection Date
                                 </label>
                                 <input
                                     type="date"
@@ -192,7 +204,7 @@ const CollectRequestForm = () => {
                                     name="date"
                                     value={formData.date}
                                     onChange={handleChange}
-                                    className="w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500 py-2 px-3"
+                                    className="w-full rounded-md border-green-300 shadow-sm focus:border-green-500 focus:ring-green-500 py-2 px-3"
                                     disabled={formData.immediate}
                                 />
                             </div>
@@ -203,28 +215,28 @@ const CollectRequestForm = () => {
                                     name="immediate"
                                     checked={formData.immediate}
                                     onChange={handleChange}
-                                    className="h-4 w-4 rounded border-gray-300 text-blue-600 focus:ring-blue-500 mr-2"
+                                    className="h-4 w-4 rounded border-green-300 text-green-600 focus:ring-green-500 mr-2"
                                     disabled={formData.date !== ""}
                                 />
-                                <label htmlFor="immediate" className="text-sm text-gray-700">
-                                    Urgent Collection (ASAP)
+                                <label htmlFor="immediate" className="text-sm text-gray-700 flex items-center">
+                                    <span className="ml-1 mr-1">⚡</span> Urgent Collection (ASAP)
                                 </label>
                             </div>
                         </div>
 
-                        <div className="pt-4 flex justify-end space-x-4 border-t border-gray-200">
+                        <div className="pt-4 flex justify-end space-x-4 border-t border-green-200">
                             <button
                                 type="button"
-                                className="px-4 py-2 bg-white border border-gray-300 rounded-md shadow-sm text-sm font-medium text-gray-700 hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500"
+                                className="px-4 py-2 bg-white border border-green-300 rounded-md shadow-sm text-sm font-medium text-gray-700 hover:bg-green-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-green-500"
                                 onClick={cancel}
                             >
                                 Cancel
                             </button>
                             <button
                                 type="submit"
-                                className="px-4 py-2 bg-blue-600 border border-transparent rounded-md shadow-sm text-sm font-medium text-white hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500"
+                                className="px-4 py-2 bg-green-600 border border-transparent rounded-md shadow-sm text-sm font-medium text-white hover:bg-green-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-green-500 flex items-center"
                             >
-                                Submit Request
+                                <span className="mr-1">✅</span> Submit Request
                             </button>
                         </div>
                     </form>
