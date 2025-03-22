@@ -11,8 +11,6 @@ function Header() {
   const { currentUser } = useSelector((state) => state.user);
   const auth = getAuth();
 
- 
-
   const handleSignout = () => {
     console.log("User signed out"); 
     // You can add dispatch(logoutAction()) if using Redux for auth
@@ -46,21 +44,23 @@ function Header() {
           <Link className="hover:text-green-500" to="/RequestSmartBinForm">Smart Bin</Link>
           <Link className="hover:text-green-500" to="/about">About Us</Link>
           <Link className="hover:text-green-500" to="/EmployeeDashboard">Employee</Link>
-          <Link className="hover:text-green-500" to="/sign-in">Sign In</Link>
-
+          {/* Only show Sign In link if user is not logged in */}
+          {!currentUser && (
+            <Link className="hover:text-green-500" to="/sign-in">Sign In</Link>
+          )}
         </nav>
 
-       {/* Profile Dropdown */}
-{currentUser ? (
-  <Dropdown
-    arrowIcon={false}
-    inline
-    label={
-      <div className="relative flex items-center space-x-2">
-        <Avatar alt="user" img={currentUser.profilePicture} rounded className="w-10 h-10 border-2 border-green-500 shadow-md hover:shadow-xl transition duration-300" />
-        
-      </div>
-    } >
+        {/* Profile Dropdown or Sign In Button */}
+        {currentUser ? (
+          <Dropdown
+            arrowIcon={false}
+            inline
+            label={
+              <div className="relative flex items-center space-x-2">
+                <Avatar alt="user" img={currentUser.profilePicture} rounded className="w-10 h-10 border-2 border-green-500 shadow-md hover:shadow-xl transition duration-300" />
+              </div>
+            }
+          >
             <Dropdown.Header>
               <span className="block text-sm text-green-700">@{currentUser.username}</span>
               <span className="block text-sm font-medium text-gray-500 truncate">{currentUser.email}</span>
@@ -79,7 +79,6 @@ function Header() {
           </Link>
         )}
 
-
         {/* Mobile Menu Button */}
         <button className="md:hidden text-green-700 text-2xl" onClick={() => setMenuOpen(!menuOpen)}>
           {menuOpen ? <FaTimes /> : <FaBars />}
@@ -95,8 +94,13 @@ function Header() {
             <Link className="hover:text-green-500" to="/RequestSmartBinForm">Smart Bin</Link>
             <Link className="hover:text-green-500" to="/about">About Us</Link>
             <Link className="hover:text-green-500" to="/EmployeeDashboard">Employee Dashboard</Link>
-            <Link className="hover:text-green-500" to="/sign-in">Sign In</Link>
-            <Link className="hover:text-green-500" to="/sign-up">Sign Up</Link>
+            {/* Only show Sign In and Sign Up links if user is not logged in */}
+            {!currentUser && (
+              <>
+                <Link className="hover:text-green-500" to="/sign-in">Sign In</Link>
+                <Link className="hover:text-green-500" to="/sign-up">Sign Up</Link>
+              </>
+            )}
           </ul>
         </nav>
       )}
