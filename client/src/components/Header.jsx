@@ -5,8 +5,8 @@ import { useSelector, useDispatch } from 'react-redux';
 import { Avatar, Dropdown, Button } from 'flowbite-react';
 import { getAuth } from "firebase/auth";
 // Fix 1: Change the import statement to use default imports instead of named imports
-import CollectRequestForm from '../pages/RequestWaste/CollectRequestForm.jsx';
-import RequestSmartBinForm from '../pages/RequestWaste/RequestSmartBinForm.jsx';
+//import CollectRequestForm from '../pages/RequestWaste/CollectRequestForm.jsx';
+//import RequestSmartBinForm from '../pages/RequestWaste/RequestSmartBinForm.jsx';
 
 function Header() {
   const [menuOpen, setMenuOpen] = useState(false);
@@ -66,14 +66,14 @@ function Header() {
               <span className="block text-sm font-medium text-gray-500 truncate">{currentUser.email}</span>
             </Dropdown.Header>
             <Link to="/dashboard?tab=profile">
-              <Dropdown.Item className="text-green-700 hover:bg-green-100">Profile</Dropdown.Item>
+              <Dropdown.Item className="text-green-700 hover:bg-green-100">Dashbord</Dropdown.Item>
             </Link>
             <Dropdown.Divider />
             <Dropdown.Item onClick={handleSignout} className="text-red-600 hover:bg-red-100">Sign out</Dropdown.Item>
           </Dropdown>
         ) : (
           <Link to="/sign-in">
-            <Button gradientDuoTone="purpleToBlue" outline className="hover:bg-purple-100 transition duration-300">
+            <Button gradientDuoTone="purpleToBlue" outline className="hover:text-green-500">
               Sign In
             </Button>
           </Link>
@@ -103,4 +103,4 @@ function Header() {
   );
 }
 
-export default Header;
+export default Header;

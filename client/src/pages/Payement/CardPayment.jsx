@@ -7,7 +7,7 @@ const CardPayment = ({ onSubmit }) => {
     expiryDate: '',
     cvv: '',
   });
-
+   
   const handleChange = (e) => {
     const { name, value } = e.target;
     setCardInfo(prevState => ({
