@@ -3,7 +3,9 @@ import { FaSearch, FaBars, FaTimes } from "react-icons/fa";
 import { Link } from 'react-router-dom';
 import { useSelector, useDispatch } from 'react-redux';
 import { Avatar, Dropdown, Button } from 'flowbite-react';
-import { getAuth } from "firebase/auth";
+import { getAuth, signOut } from "firebase/auth"; 
+import CollectRequestForm from '../pages/RequestWaste/CollectRequestForm.jsx';
+import RequestSmartBinForm from '../pages/RequestWaste/RequestSmartBinForm.jsx';
 
 function Header() {
   const [menuOpen, setMenuOpen] = useState(false);
@@ -11,9 +13,15 @@ function Header() {
   const { currentUser } = useSelector((state) => state.user);
   const auth = getAuth();
 
-  const handleSignout = () => {
-    console.log("User signed out"); 
-    // You can add dispatch(logoutAction()) if using Redux for auth
+  const handleSignout = async () => {
+    try {
+      await signOut(auth);
+      console.log("User signed out");
+      // Dispatch logout action if using Redux
+      // dispatch(logoutAction());
+    } catch (error) {
+      console.error("Error signing out: ", error);
+    }
   };
 
   return (
@@ -40,11 +48,10 @@ function Header() {
       <div className="flex items-center space-x-6">
         <nav className="hidden md:flex space-x-6 text-green-700 font-semibold text-lg">
           <Link className="hover:text-green-500" to="/">Home</Link>
-          <Link className="hover:text-green-500" to="/WasteCollection">Collection</Link>
-          <Link className="hover:text-green-500" to="/RequestSmartBinForm">Smart Bin</Link>
+          <Link className="hover:text-green-500" to="/collect-request">Waste Collect Request</Link>
+          <Link className="hover:text-green-500" to="/request-smart-bin">Smart Bin Request</Link>
           <Link className="hover:text-green-500" to="/about">About Us</Link>
-          <Link className="hover:text-green-500" to="/EmployeeDashboard">Employee</Link>
-          {/* Only show Sign In link if user is not logged in */}
+          <Link className="hover:text-green-500" to="/employee-dashboard">Employee</Link>
           {!currentUser && (
             <Link className="hover:text-green-500" to="/sign-in">Sign In</Link>
           )}
@@ -57,7 +64,12 @@ function Header() {
             inline
             label={
               <div className="relative flex items-center space-x-2">
-                <Avatar alt="user" img={currentUser.profilePicture} rounded className="w-10 h-10 border-2 border-green-500 shadow-md hover:shadow-xl transition duration-300" />
+                <Avatar
+                  alt="user"
+                  img={currentUser.profilePicture}
+                  rounded
+                  className="w-10 h-10 border-2 border-green-500 shadow-md hover:shadow-xl transition duration-300"
+                />
               </div>
             }
           >
@@ -90,11 +102,10 @@ function Header() {
         <nav className="absolute top-20 left-0 w-full bg-white shadow-md p-4 md:hidden">
           <ul className="flex flex-col space-y-4 text-green-700 font-semibold text-lg">
             <Link className="hover:text-green-500" to="/">Home</Link>
-            <Link className="hover:text-green-500" to="/WasteCollection">Collection</Link>
-            <Link className="hover:text-green-500" to="/RequestSmartBinForm">Smart Bin</Link>
+            <Link className="hover:text-green-500" to="/collect-request">Waste Collect Request</Link>
+            <Link className="hover:text-green-500" to="/request-smart-bin">Smart Bin Request</Link>
             <Link className="hover:text-green-500" to="/about">About Us</Link>
-            <Link className="hover:text-green-500" to="/EmployeeDashboard">Employee Dashboard</Link>
-            {/* Only show Sign In and Sign Up links if user is not logged in */}
+            <Link className="hover:text-green-500" to="/employee-dashboard">Employee Dashboard</Link>
             {!currentUser && (
               <>
                 <Link className="hover:text-green-500" to="/sign-in">Sign In</Link>
