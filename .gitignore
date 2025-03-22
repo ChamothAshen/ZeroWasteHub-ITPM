@@ -24,3 +24,4 @@ dist-ssr
 *.sw?
 client/package-lock.json
 client/package-lock.json
+client/package-lock.json

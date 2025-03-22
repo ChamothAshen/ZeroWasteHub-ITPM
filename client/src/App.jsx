@@ -11,6 +11,7 @@ import WasteCollection from './pages/WasteCollection';
 import EmployeeDashboard from './pages/EmpDash';
 import Inventory from './pages/Inventory';
 import InventoryDashboard from './pages/InventoryDashboard';
+import BinManagement from './pages/BinManagement ';
 function App() {
   return (
     <BrowserRouter>
@@ -27,6 +28,7 @@ function App() {
         <Route path='/EmployeeDashboard' element={<EmployeeDashboard/>} />
         <Route path='/inventory' element={<Inventory/>} />
         <Route path='/inveDash' element={<InventoryDashboard/>} />
+        <Route path='/bin' element={<BinManagement/>} />
 
         
        </Routes>
