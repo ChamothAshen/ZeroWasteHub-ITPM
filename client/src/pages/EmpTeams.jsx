@@ -11,14 +11,12 @@ const EmpTeams = () => {
   const [showDeleteDialog, setShowDeleteDialog] = useState(false);
   const [teamToDelete, setTeamToDelete] = useState(null);
 
-  // Update team leader
   const updateLeader = (teamId, newLeader) => {
     setTeams(teams.map(team => 
       team.id === teamId ? { ...team, leader: newLeader } : team
     ));
   };
 
-  // Update team member
   const updateMember = (teamId, memberIndex, newName) => {
     setTeams(teams.map(team =>
       team.id === teamId ? {
@@ -28,39 +26,37 @@ const EmpTeams = () => {
     ));
   };
 
-  // Add new team
   const addTeam = () => {
-    setTeams([...teams, { 
-      id: Date.now(), 
-      leader: "", 
-      members: [] 
-    }]);
+    setTeams([...teams, { id: Date.now(), leader: "", members: [] }]);
   };
 
-  // Delete team confirmation
+  const addMember = (teamId) => {
+    setTeams(teams.map(team =>
+      team.id === teamId && team.members.length < 5
+        ? { ...team, members: [...team.members, `Member ${team.members.length + 1}`] }
+        : team
+    ));
+  };
+
   const confirmDelete = (teamId) => {
     setTeamToDelete(teamId);
     setShowDeleteDialog(true);
   };
 
-  // Execute team deletion
   const executeDelete = () => {
     setTeams(teams.filter(team => team.id !== teamToDelete));
     setShowDeleteDialog(false);
     setTeamToDelete(null);
   };
 
-  // Toggle edit mode
   const toggleEdit = (teamId) => {
     setEditingTeamId(editingTeamId === teamId ? null : teamId);
   };
 
   return (
     <div className="flex min-h-screen bg-gray-100">
-      {/* Sidebar */}
       <Sidebar className="w-64 bg-white shadow-xl" />
 
-      {/* Delete Confirmation Dialog */}
       {showDeleteDialog && (
         <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
           <div className="bg-white p-6 rounded-xl max-w-md w-full mx-4">
@@ -86,12 +82,10 @@ const EmpTeams = () => {
         </div>
       )}
 
-      {/* Main Content */}
       <div className="flex-1 p-6 lg:p-8">
         <div className="max-w-7xl mx-auto">
-          {/* Header Section */}
           <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 mb-8">
-            <h1 className="text-2xl md:text-3xl font-bold text-gray-800">Team Management</h1>
+            <h1 className="text-2xl md:text-3xl font-bold text-green-700">Team Management</h1>
             <button
               onClick={addTeam}
               className="w-full sm:w-auto bg-green-600 hover:bg-green-700 text-white px-5 py-3 rounded-lg transition-colors flex items-center justify-center gap-2"
@@ -101,11 +95,9 @@ const EmpTeams = () => {
             </button>
           </div>
 
-          {/* Teams Grid */}
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-5">
             {teams.map(team => (
               <div key={team.id} className="bg-white p-5 rounded-xl shadow-md hover:shadow-lg transition-shadow">
-                {/* Team Header */}
                 <div className="flex justify-between items-start mb-4">
                   <div className="flex items-center gap-2">
                     <h3 className="text-lg font-semibold text-gray-700">Team #{team.id}</h3>
@@ -128,9 +120,7 @@ const EmpTeams = () => {
                   </button>
                 </div>
 
-                {/* Team Details */}
                 <div className="space-y-4">
-                  {/* Leader Input */}
                   <div>
                     <label className="block text-sm font-medium text-gray-600 mb-2">Leader</label>
                     <input
@@ -146,7 +136,6 @@ const EmpTeams = () => {
                     />
                   </div>
 
-                  {/* Members List */}
                   <div>
                     <label className="block text-sm font-medium text-gray-600 mb-2">Members</label>
                     <div className="space-y-2">
@@ -168,7 +157,6 @@ const EmpTeams = () => {
                     </div>
                   </div>
 
-                  {/* Add Member Button */}
                   {editingTeamId === team.id && team.members.length < 5 && (
                     <button
                       onClick={() => addMember(team.id)}
