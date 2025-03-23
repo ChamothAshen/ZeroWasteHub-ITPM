@@ -17,17 +17,17 @@ export default function Sidebar({ sidebarOpen, setSidebarOpen }) {
       <nav className="mt-6">
         <ul className="space-y-4">
           <li>
-            <a href="#" className="flex items-center space-x-2 hover:text-gray-300">
+            <a href="EmployeeDashboard" className="flex items-center space-x-2 hover:text-gray-300">
               <FiUsers /> <span>Employees</span>
             </a>
           </li>
           <li>
-            <a href="#" className="flex items-center space-x-2 hover:text-gray-300">
+            <a href="EmpPickups" className="flex items-center space-x-2 hover:text-gray-300">
               <FiTruck /> <span>Pickups</span>
             </a>
           </li>
           <li>
-            <a href="#" className="flex items-center space-x-2 hover:text-gray-300">
+            <a href="EmpTeams" className="flex items-center space-x-2 hover:text-gray-300">
               <FiClock /> <span>Teams</span>
             </a>
           </li>
