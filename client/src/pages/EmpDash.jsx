@@ -11,6 +11,7 @@ export default function EmployeeDashboard() {
   ]);
   const [newEmployee, setNewEmployee] = useState({ name: "", team: "" });
   const [editingEmployee, setEditingEmployee] = useState(null);
+  const [employeeToDelete, setEmployeeToDelete] = useState(null); // Track employee to delete
 
   const handleEditEmployee = (id) => {
     const employeeToEdit = employees.find((emp) => emp.id === id);
@@ -25,12 +26,25 @@ export default function EmployeeDashboard() {
   };
 
   const handleDeleteEmployee = (id) => {
-    setEmployees(employees.filter((employee) => employee.id !== id));
+    const employee = employees.find((emp) => emp.id === id);
+    setEmployeeToDelete(employee); // Set the employee to delete
+  };
+
+  const confirmDelete = () => {
+    setEmployees(employees.filter((emp) => emp.id !== employeeToDelete.id));
+    setEmployeeToDelete(null); // Close the modal
+  };
+
+  const cancelDelete = () => {
+    setEmployeeToDelete(null); // Close the modal
   };
 
   const handleAddEmployee = () => {
     if (newEmployee.name && newEmployee.team) {
-      setEmployees([...employees, { id: employees.length + 1, ...newEmployee, shifts: "" }]);
+      setEmployees([
+        ...employees,
+        { id: employees.length + 1, ...newEmployee, shifts: "" },
+      ]);
       setNewEmployee({ name: "", team: "" });
     }
   };
@@ -43,7 +57,10 @@ export default function EmployeeDashboard() {
       {/* Main Content */}
       <main className="flex-1 p-6 transition-all">
         <header className="flex justify-between items-center mb-6">
-          <button className="md:hidden text-green-600 text-2xl" onClick={() => setSidebarOpen(true)}>
+          <button
+            className="md:hidden text-green-600 text-2xl"
+            onClick={() => setSidebarOpen(true)}
+          >
             <FiMenu />
           </button>
           <h2 className="text-3xl font-semibold">Employees</h2>
@@ -66,7 +83,10 @@ export default function EmployeeDashboard() {
               onChange={(e) => setNewEmployee({ ...newEmployee, team: e.target.value })}
               className="border p-2 rounded mr-2"
             />
-            <button onClick={handleAddEmployee} className="bg-green-600 text-white px-4 py-2 rounded">
+            <button
+              onClick={handleAddEmployee}
+              className="bg-green-600 text-white px-4 py-2 rounded"
+            >
               Add
             </button>
           </div>
@@ -92,7 +112,9 @@ export default function EmployeeDashboard() {
                         <input
                           type="text"
                           value={editingEmployee.name}
-                          onChange={(e) => setEditingEmployee({ ...editingEmployee, name: e.target.value })}
+                          onChange={(e) =>
+                            setEditingEmployee({ ...editingEmployee, name: e.target.value })
+                          }
                           className="border p-1 rounded w-full"
                         />
                       ) : (
@@ -104,7 +126,9 @@ export default function EmployeeDashboard() {
                         <input
                           type="text"
                           value={editingEmployee.team}
-                          onChange={(e) => setEditingEmployee({ ...editingEmployee, team: e.target.value })}
+                          onChange={(e) =>
+                            setEditingEmployee({ ...editingEmployee, team: e.target.value })
+                          }
                           className="border p-1 rounded w-full"
                         />
                       ) : (
@@ -112,19 +136,31 @@ export default function EmployeeDashboard() {
                       )}
                     </td>
                     <td className="border p-2 text-center">
-                      <input type="datetime-local" className="border p-1 rounded-md w-full" />
+                      <input
+                        type="datetime-local"
+                        className="border p-1 rounded-md w-full"
+                      />
                     </td>
                     <td className="border p-2 flex justify-center gap-2">
                       {editingEmployee?.id === employee.id ? (
-                        <button className="text-green-500" onClick={handleSaveEditEmployee}>
+                        <button
+                          className="text-green-500"
+                          onClick={handleSaveEditEmployee}
+                        >
                           Save
                         </button>
                       ) : (
-                        <button className="text-blue-500" onClick={() => handleEditEmployee(employee.id)}>
+                        <button
+                          className="text-blue-500"
+                          onClick={() => handleEditEmployee(employee.id)}
+                        >
                           <FiEdit />
                         </button>
                       )}
-                      <button className="text-red-500" onClick={() => handleDeleteEmployee(employee.id)}>
+                      <button
+                        className="text-red-500"
+                        onClick={() => handleDeleteEmployee(employee.id)}
+                      >
                         <FiTrash />
                       </button>
                     </td>
@@ -135,6 +171,33 @@ export default function EmployeeDashboard() {
           </div>
         </div>
       </main>
+
+      {/* Custom Confirmation Modal */}
+      {employeeToDelete && (
+        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center">
+          <div className="bg-white p-6 rounded-lg shadow-lg max-w-sm">
+            <h3 className="text-xl font-semibold mb-4">Confirm Delete</h3>
+            <p>
+              Are you sure you want to delete{" "}
+              <span className="font-semibold">{employeeToDelete.name}</span>?
+            </p>
+            <div className="flex justify-end gap-4 mt-6">
+              <button
+                onClick={cancelDelete}
+                className="bg-gray-500 text-white px-4 py-2 rounded"
+              >
+                Cancel
+              </button>
+              <button
+                onClick={confirmDelete}
+                className="bg-red-600 text-white px-4 py-2 rounded"
+              >
+                Delete
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 }
