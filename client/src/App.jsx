@@ -32,8 +32,6 @@ function App() {
         <Route path='/sign-in' element={<SignIn />} />
         <Route path='/sign-up' element={<SignUp />} />
         <Route path='/Dashboard' element={<Dashboard />} />
-  {/*       <Route path='/smartbin' element={<SmartBin/>} /> */}
-       {/*  <Route path='/WasteCollection' element={<WasteCollection/>} /> */}
         <Route path='/EmployeeDashboard' element={<EmployeeDashboard/>} />
         <Route path='/inventory' element={<Inventory/>} />
         <Route path='/inveDash' element={<InventoryDashboard/>} />
