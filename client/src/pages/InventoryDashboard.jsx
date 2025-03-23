@@ -132,7 +132,9 @@ const InventoryDashboard = () => {
             Inventory Dashboard
           </h1>
         </header>
-
+        <h2 className="text-xl font-semibold text-gray-800 mb-4">
+          Today Weight Counts 
+        </h2>
         {/* Top Boxes */}
         <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-5 gap-6 mb-8">
           {/* Box 1: Plastic */}
