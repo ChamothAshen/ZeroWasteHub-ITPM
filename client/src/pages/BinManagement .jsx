@@ -225,7 +225,7 @@ const BinManagement = () => {
           Monthly Inventory Overview (2023)
         </h2>
 
-        <div className="bg-white rounded-lg shadow-lg p-4">
+        <div className="bg-white rounded-lg shadow-lg p-4 mb-8">
           <table class="w-full min-w-max table-auto text-left">
             <thead>
               <tr>
@@ -472,8 +472,12 @@ const BinManagement = () => {
             </tbody>
           </table>
         </div>
+
+        <h2 className="text-xl font-semibold text-gray-800 mb-4">
+          Tools & Others
+        </h2>
+        
         <div className="bg-white rounded-lg shadow-lg p-4">
-        <div className="bg-white p-6 rounded-lg shadow-md">
       {/* Add Button */}
       <div className="flex justify-end mb-4">
         <button
@@ -574,7 +578,7 @@ const BinManagement = () => {
         </div>
       )}
     </div>
-          </div>
+         
       </main>
     </div>
   );

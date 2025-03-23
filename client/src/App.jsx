@@ -15,7 +15,7 @@ import Inventory from './pages/Inventory';
 import InventoryDashboard from './pages/InventoryDashboard';
 import BinManagement from './pages/BinManagement ';
 import ProfileUI from './components/ProfileUI';
-import SmartBin from './pages/SmartBin';
+/* import SmartBin from './pages/SmartBin'; */
 
 function App() {
   return (
@@ -27,16 +27,12 @@ function App() {
         <Route path='/sign-in' element={<SignIn />} />
         <Route path='/sign-up' element={<SignUp />} />
         <Route path='/Dashboard' element={<Dashboard />} />
-        <Route path='/smartbin' element={<SmartBin/>} />
-        <Route path='/WasteCollection' element={<WasteCollection/>} />
+  {/*       <Route path='/smartbin' element={<SmartBin/>} /> */}
+       {/*  <Route path='/WasteCollection' element={<WasteCollection/>} /> */}
         <Route path='/EmployeeDashboard' element={<EmployeeDashboard/>} />
         <Route path='/inventory' element={<Inventory/>} />
         <Route path='/inveDash' element={<InventoryDashboard/>} />
         <Route path='/bin' element={<BinManagement/>} />
-
-        
-     
-         
         <Route path='/CollectRequestForm' element={<CollectRequestForm />} />
         <Route path='/RequestSmartBinForm' element={<RequestSmartBinForm />} />
         <Route path='/pages/RequestSmartBinForm' element={<RequestSmartBinForm />} />
