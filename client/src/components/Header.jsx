@@ -5,8 +5,7 @@ import { useSelector, useDispatch } from 'react-redux';
 import { Avatar, Dropdown, Button } from 'flowbite-react';
 import { getAuth } from "firebase/auth";
 // Fix 1: Change the import statement to use default imports instead of named imports
-//import CollectRequestForm from '../pages/RequestWaste/CollectRequestForm.jsx';
-//import RequestSmartBinForm from '../pages/RequestWaste/RequestSmartBinForm.jsx';
+
 
 function Header() {
   const [menuOpen, setMenuOpen] = useState(false);
@@ -43,12 +42,8 @@ function Header() {
       <div className="flex items-center space-x-6">
         <nav className="hidden md:flex space-x-6 text-green-700 font-semibold text-lg">
           <Link className="hover:text-green-500" to="/">Home</Link>
-          {/* Fix 2: Remove the inline Form tag that was causing syntax errors */}
-          <Link className="hover:text-green-500" to="/pages/CollectRequestForm">Collect Request Form</Link>
-          {/* Fix 3: Fix typo in "Reques" -> "Request" */}
-          <Link className="hover:text-green-500" to="/pages/RequestSmartBinForm">Smart Bin Request Form</Link>
           <Link className="hover:text-green-500" to="/about">About Us</Link>
-          <Link className="hover:text-green-500" to="/EmployeeDashboard">Employee</Link>
+
         </nav>
 
         {/* Profile Dropdown */}
