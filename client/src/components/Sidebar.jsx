@@ -17,17 +17,17 @@ const Sidebar = ({ sidebarOpen, setSidebarOpen }) => {
       <nav className="mt-6">
         <ul>
           <li className="mb-4">
-            <a href="#" className="flex items-center space-x-2 hover:text-gray-300">
+            <a href="/inveDash" className="flex items-center space-x-2 hover:text-gray-300">
               <FiUsers /> <span>Inventory</span>
             </a>
           </li>
           <li className="mb-4">
-            <a href="#" className="flex items-center space-x-2 hover:text-gray-300">
-              <FiTrello /> <span>Teams</span>
+            <a href="/bin" className="flex items-center space-x-2 hover:text-gray-300">
+              <FiTrello /> <span>Bin Counts</span>
             </a>
           </li>
           <li className="mb-4">
-            <a href="#" className="flex items-center space-x-2 hover:text-gray-300">
+            <a href="/inventory" className="flex items-center space-x-2 hover:text-gray-300">
               <FiClipboard /> <span>Logs</span>
             </a>
           </li>
