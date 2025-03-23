@@ -16,6 +16,7 @@ import Inventory from './pages/Inventory';
 import InventoryDashboard from './pages/InventoryDashboard';
 import BinManagement from './pages/BinManagement ';
 import ProfileUI from './components/ProfileUI';
+import SmartBin from './pages/SmartBin';
 
 function App() {
   return (
