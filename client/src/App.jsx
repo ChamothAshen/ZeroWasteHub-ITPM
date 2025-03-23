@@ -36,7 +36,7 @@ function App() {
        {/*  <Route path='/WasteCollection' element={<WasteCollection/>} /> */}
         <Route path='/EmployeeDashboard' element={<EmployeeDashboard/>} />
         <Route path='/inventory' element={<Inventory/>} />
-       
+        <Route path='/inveDash' element={<InventoryDashboard/>} />
         <Route path='/bin' element={<BinManagement/>} />
         <Route path='/CollectRequestForm' element={<CollectRequestForm />} />
         <Route path='/RequestSmartBinForm' element={<RequestSmartBinForm />} />
@@ -52,7 +52,6 @@ function App() {
         <Route element={<OnlyAdminPrivateRoute />}>
           <Route path='/wastebot' element={<WasteManagementChatBot/>} />
           <Route path='/EmployeeDashboard' element={<EmployeeDashboard />} />
-          <Route path='/inveDash' element={<InventoryDashboard/>} />
           <Route path='/EmpPickups' element={<EmpPickups />} />
           <Route path='/EmpTeams' element={<EmpTeams />} />
           <Route path='/EmpSidebar' element={<Sidebar />} />
