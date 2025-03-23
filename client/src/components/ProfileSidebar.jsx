@@ -1,6 +1,6 @@
 import React from 'react';
 import { Link, useLocation } from 'react-router-dom';
-import { FaUser, FaSignOutAlt, FaHistory, FaCog, FaBell, FaAddressCard } from 'react-icons/fa';
+import { FaUser, FaSignOutAlt, FaHistory, FaCog, FaBell, FaAddressCard, FaTrash, FaBullseye } from 'react-icons/fa';
 
 const ProfileSidebar = ({ currentUser }) => {
   const location = useLocation();
@@ -12,12 +12,41 @@ const ProfileSidebar = ({ currentUser }) => {
       icon: <FaUser className="text-lg" />, 
       path: '/profileui' 
     },
-    {
+    !currentUser?.isAdmin && {
+        name: 'Smart Bin Request Form', 
+        icon: <FaTrash className="text-lg" />, 
+        path: '/pages/RequestSmartBinForm' 
+      },
+
+      !currentUser?.isAdmin &&  {
+        name: 'Collect Request Form', 
+        icon: <FaTrash className="text-lg" />,  
+        path: '/pages/CollectRequestForm' 
+      },
+      !currentUser?.isAdmin &&  {
       name: 'Notifications', 
       icon: <FaBell className="text-lg" />, 
       path: '/dashboard/notifications' 
     },
-  ];
+    // Show "Wastebot" only if the currentUser is an admin
+    currentUser?.isAdmin && {
+        name: 'Wastebot', 
+        icon: <FaTrash className="text-lg" />, 
+        path: '/wastebot' 
+      },
+      currentUser?.isAdmin && {
+        name: 'Employee Management Dashboard', 
+        icon: <FaTrash className="text-lg" />, 
+        path: '/EmployeeDashboard' 
+      },
+
+      currentUser?.isAdmin && {
+        name: 'Inventory Management Dashboard', 
+        icon: <FaTrash className="text-lg" />, 
+        path: '/inveDash' 
+      },
+    // Add the shootable (target) icon here
+  ].filter(Boolean); // Filter out any null values if currentUser.isAdmin is false
 
   // Check if a menu item is active
   const isActive = (path) => {
@@ -52,7 +81,7 @@ const ProfileSidebar = ({ currentUser }) => {
               {currentUser?.username || "User"}
             </p>
             <p className="text-xs text-green-400">
-              {currentUser?.role || "Member"}
+              {currentUser?.isAdmin ? "Admin" : "Member"}
             </p>
           </div>
         </div>
