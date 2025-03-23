@@ -1,6 +1,7 @@
 import React from "react";
 import { motion } from "framer-motion";
 import { FaRecycle, FaLeaf, FaLightbulb } from "react-icons/fa";
+import { Link } from "react-router-dom"; // Import Link for navigation
 import homeImage from "../assets/Homepic.png";
 
 const Home = () => {
@@ -22,9 +23,12 @@ const Home = () => {
             reduce their environmental footprint while improving operational efficiency.
           </p>
           <div className="mt-10 flex gap-6">
-            <button className="bg-green-700 text-white px-8 py-4 rounded-xl shadow-lg hover:bg-green-800 transition text-lg font-semibold">
-              Get Started →
-            </button>
+            {/* Link to SignIn Page */}
+            <Link to="/sign-in">
+              <button className="bg-green-700 text-white px-8 py-4 rounded-xl shadow-lg hover:bg-green-800 transition text-lg font-semibold">
+                Get Started →
+              </button>
+            </Link>
             <button className="border-2 border-gray-700 text-gray-700 px-8 py-4 rounded-xl hover:bg-gray-200 transition text-lg font-semibold">
               Learn More
             </button>

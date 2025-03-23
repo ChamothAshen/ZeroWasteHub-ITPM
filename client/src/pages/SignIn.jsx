@@ -45,7 +45,7 @@ function SignIn() {
       }
 
       dispatch(signInSuccess(data));
-      navigate('/');
+      navigate('/Dashboard');
     } catch (error) {
       console.error('Login Error:', error); // ✅ Debugging
       dispatch(signInFailure(error.message || 'An error occurred!'));
