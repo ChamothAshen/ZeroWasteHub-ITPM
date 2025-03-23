@@ -4,6 +4,8 @@ import { useNavigate } from "react-router-dom";
 const RequestSmartBinForm = () => {
   const navigate = useNavigate();
   const [uId, setUId] = useState("");
+  const [isSubmitting, setIsSubmitting] = useState(false);
+  const [submitError, setSubmitError] = useState("");
 
   useEffect(() => {
     setUId('bb797925-dfae-4531-aadd-294a87fd73f2');
@@ -65,14 +67,21 @@ const RequestSmartBinForm = () => {
 
   const handleSubmit = async (e) => {
     e.preventDefault();
-
+    
+    // Reset error state
+    setSubmitError("");
+    
     // Validate form
     if (!formData.termsAccepted) {
-      alert("Please accept the terms and conditions to proceed.");
+      setSubmitError("Please accept the terms and conditions to proceed.");
       return;
     }
 
     try {
+      // Set loading state
+      setIsSubmitting(true);
+      
+      // Prepare submission data
       const submissionData = {
         userId: uId,
         personalInfo: {
@@ -85,34 +94,67 @@ const RequestSmartBinForm = () => {
           addressLine1: formData.addressLine1,
           addressLine2: formData.addressLine2,
           city: formData.city,
-          zipCode: formData.zipCode
+          zipCode: formData.zipCode,
+          propertyType: formData.propertyType,
+          accessCode: formData.accessCode
         },
         binRequest: {
           binType: formData.binType,
           binSize: formData.binSize,
-          quantity: formData.quantity
+          quantity: parseInt(formData.quantity, 10)
         },
         schedule: {
           scheduleDate: formData.immediate ? new Date().toISOString() : formData.date,
           collectionFrequency: formData.collectionFrequency,
           preferredDayOfWeek: formData.preferredDayOfWeek,
-          preferredTimeOfDay: formData.preferredTimeOfDay
+          preferredTimeOfDay: formData.preferredTimeOfDay,
+          immediate: formData.immediate
         },
         additionalInfo: {
-          accessCode: formData.accessCode,
-          propertyType: formData.propertyType,
           description: formData.description,
           specialInstructions: formData.specialInstructions
         },
-        paymentMethod: formData.paymentMethod
+        payment: {
+          paymentMethod: formData.paymentMethod
+        },
+        termsAccepted: formData.termsAccepted
       };
 
-      console.log("Form Submitted:", submissionData);
-
-      navigate("/CardPayment", { state: { requestData: submissionData } }); // Pass data to payment page
+      console.log("Submitting form data:", submissionData);
+      
+      // Send data to API
+      const response = await fetch('http://localhost:5000/api/BinRequest', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json'
+        },
+        body: JSON.stringify(submissionData)
+      });
+      
+      // Parse response
+      const result = await response.json();
+      
+      // Check if request was successful
+      if (!response.ok) {
+        throw new Error(result.message || 'Failed to submit request');
+      }
+      
+      console.log("Form submission successful:", result);
+      
+      // Navigate to payment page with request data and response data
+      navigate("/CardPayment", { 
+        state: { 
+          requestData: submissionData,
+          requestId: result.data.requestId,
+          responseData: result.data
+        } 
+      });
     } catch (error) {
-      alert("Failed to submit collection request. Please try again.");
       console.error("Form submission error:", error);
+      setSubmitError(error.message || "Failed to submit request. Please try again.");
+    } finally {
+      // Reset loading state
+      setIsSubmitting(false);
     }
   };
 
@@ -168,6 +210,14 @@ const RequestSmartBinForm = () => {
             </h2>
             <p className="mt-2 opacity-90">Fill out the form below to request a smart waste collection bin for your location</p>
           </div>
+
+          {submitError && (
+            <div className="m-6 p-4 bg-red-50 border border-red-200 text-red-700 rounded-md">
+              <p className="flex items-center">
+                <span className="mr-2">⚠️</span> {submitError}
+              </p>
+            </div>
+          )}
 
           <form onSubmit={handleSubmit} className="px-6 py-6 space-y-6">
             {/* Personal Information Section */}
@@ -399,10 +449,7 @@ const RequestSmartBinForm = () => {
                   >
                     {[1, 2, 3, 4, 5].map(num => (
                       <option key={num} value={num.toString()}>
-                        {num === 1 ? "" :
-                          num === 2 ? "" :
-                            num === 3 ? "" :
-                              num === 4 ? "" : ""} {num}
+                        {num}
                       </option>
                     ))}
                   </select>
@@ -494,8 +541,8 @@ const RequestSmartBinForm = () => {
                             className="w-full rounded-md border-green-300 shadow-sm focus:border-green-500 focus:ring-green-500 py-2 px-3"
                           >
                             <option value="">No preference</option>
-                            <option value="monday"> Monday</option>
-                            <option value="tuesday"> Tuesday</option>
+                            <option value="monday">Monday</option>
+                            <option value="tuesday">Tuesday</option>
                             <option value="wednesday">Wednesday</option>
                             <option value="thursday">Thursday</option>
                             <option value="friday">Friday</option>
@@ -612,14 +659,28 @@ const RequestSmartBinForm = () => {
                 type="button"
                 className="px-4 py-2 bg-white border border-green-300 rounded-md shadow-sm text-sm font-medium text-gray-700 hover:bg-green-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-green-500 flex items-center"
                 onClick={cancel}
+                disabled={isSubmitting}
               >
                 <span className="mr-1">❌</span> Cancel
               </button>
               <button
                 type="submit"
+                disabled={isSubmitting}
                 className="px-6 py-2 bg-gradient-to-r from-green-500 to-green-600 border border-transparent rounded-md shadow-sm text-sm font-medium text-white hover:from-green-600 hover:to-green-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-green-500 flex items-center transition-all duration-300 transform hover:scale-105"
               >
-                <span className="mr-1"></span> Proceed to Payment
+                {isSubmitting ? (
+                  <>
+                    <svg className="animate-spin -ml-1 mr-2 h-4 w-4 text-white" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+                      <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
+                      <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+                    </svg>
+                    Processing...
+                  </>
+                ) : (
+                  <>
+                    <span className="mr-1"></span> Proceed to Payment
+                  </>
+                )}
               </button>
             </div>
           </form>
