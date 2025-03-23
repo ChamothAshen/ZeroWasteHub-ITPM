@@ -39,6 +39,12 @@ const ProfileSidebar = ({ currentUser }) => {
         icon: <FaTrash className="text-lg" />, 
         path: '/EmployeeDashboard' 
       },
+
+      currentUser?.isAdmin && {
+        name: 'Inventory Management Dashboard', 
+        icon: <FaTrash className="text-lg" />, 
+        path: '/inveDash' 
+      },
     // Add the shootable (target) icon here
   ].filter(Boolean); // Filter out any null values if currentUser.isAdmin is false
 
