@@ -42,9 +42,8 @@ function Header() {
       <div className="flex items-center space-x-6">
         <nav className="hidden md:flex space-x-6 text-green-700 font-semibold text-lg">
           <Link className="hover:text-green-500" to="/">Home</Link>
-          {/* Fix 2: Remove the inline Form tag that was causing syntax errors */}
           <Link className="hover:text-green-500" to="/about">About Us</Link>
-          <Link className="hover:text-green-500" to="/EmployeeDashboard">Employee</Link>
+
         </nav>
 
         {/* Profile Dropdown */}
