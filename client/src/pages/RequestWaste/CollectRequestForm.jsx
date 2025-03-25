@@ -10,7 +10,6 @@ const CollectRequestForm = () => {
     }, []);
 
     const [formData, setFormData] = useState({
-        userId: uId,
         binType: "",
         location: "",
         contactNo: "",
@@ -20,6 +19,12 @@ const CollectRequestForm = () => {
         date: "",
         immediate: false
     });
+
+    useEffect(() => {
+        if (uId) {
+            console.log("User ID set:", uId);
+        }
+    }, [uId]);
 
     const handleChange = (e) => {
         const { name, value, type, checked } = e.target;
@@ -38,26 +43,75 @@ const CollectRequestForm = () => {
         }
     };
 
-    const handleSubmit = (e) => {
+    const handleSubmit = async (e) => {
         e.preventDefault();
 
         try {
+            // Ensure we're using the current value of uId
+            if (!uId) {
+                alert("User ID is not available. Please try again.");
+                return;
+            }
+
+            let formattedDate;
+            if (formData.immediate) {
+                formattedDate = new Date().toISOString();
+            } else if (formData.date) {
+                formattedDate = new Date(formData.date).toISOString();
+            } else {
+                alert("Please select a date or choose immediate collection");
+                return;
+            }
+
             const submissionData = {
                 userId: uId,
-                scheduleDate: formData.immediate ? new Date().toISOString() : formData.date,
+                scheduleDate: formattedDate,
                 location: formData.location,
                 binType: formData.binType,
-                quantity: formData.quantity,
+                quantity: parseInt(formData.quantity, 10) || 1,
                 description: formData.description,
                 contactNo: formData.contactNo,
-                specialInstructions: formData.specialInstructions
+                specialInstructions: formData.specialInstructions || ""
             };
 
-            // Navigate to the Card Payment page instead of "/client"
-            navigate("/CardPayment", { state: { data: submissionData } });
+            console.log("Submitting data:", submissionData);
+
+            // Submit the data to the API
+          const response = await fetch('http://localhost:3000/api/collection-requests', {
+    method: 'POST',
+    headers: {
+        'Content-Type': 'application/json',
+    },
+    credentials: 'include',
+    body: JSON.stringify(submissionData),
+});
+
+            console.log("Response status:", response.status);
+
+            if (!response.ok) {
+                const errorText = await response.text();
+                console.error("Error response:", errorText);
+                throw new Error(`Server responded with status: ${response.status}, message: ${errorText}`);
+            }
+
+            const result = await response.json();
+            console.log("Response data:", result);
+
+            if (result.success) {
+                alert("Collection request submitted successfully!");
+                // Navigate to the Card Payment page
+                navigate("/CardPayment", {
+                    state: {
+                        data: submissionData,
+                        requestId: result.data.requestId
+                    }
+                });
+            } else {
+                alert(result.message || "Failed to submit collection request");
+            }
         } catch (error) {
-            // Temporary alert implementation
-            alert("Failed to submit collection request. Please try again.");
+            console.error("Error submitting form:", error);
+            alert(`Failed to submit collection request: ${error.message}`);
         }
     };
 
@@ -206,6 +260,7 @@ const CollectRequestForm = () => {
                                     onChange={handleChange}
                                     className="w-full rounded-md border-green-300 shadow-sm focus:border-green-500 focus:ring-green-500 py-2 px-3"
                                     disabled={formData.immediate}
+                                    required={!formData.immediate}
                                 />
                             </div>
                             <div className="flex items-center pt-6">
