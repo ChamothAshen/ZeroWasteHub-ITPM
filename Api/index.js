@@ -4,6 +4,11 @@ import dotenv from 'dotenv';
 import userRoutes from './routes/user.route.js';
 import authRoutes from './routes/auth.route.js';
 import cookieParser from 'cookie-parser';
+import collectRequestRoutes from './routes/CollectRequestRoute.js';
+import createSmartBinRequest from './routes/RequestSmartBinRoute.js';
+import inventoryRoutes from './routes/inventoryRoutes.js';
+
+import cors from 'cors';
 dotenv.config();
 mongoose.connect(
   process.env.MONGOUrl).then(() => {
@@ -22,6 +27,10 @@ app.listen(port, () => {
 });
 app.use('/api/user', userRoutes);
 app.use('/api/auth', authRoutes);
+app.use('/api/collection-requests', collectRequestRoutes);
+app.use('/api/BinRequest', createSmartBinRequest);
+app.use('/api/inventory', inventoryRoutes);
+
 
 
 app.use((err, req, res, next) => {
