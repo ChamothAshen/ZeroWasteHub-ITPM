@@ -1,8 +1,7 @@
-// models/SmartBinRequest.js
-const mongoose = require('mongoose');
-const Schema = mongoose.Schema;
+//models/SmartBinRequest.js
+import mongoose from 'mongoose';
 
-const SmartBinRequestSchema = new Schema({
+const SmartBinRequestSchema = new mongoose.Schema({
   // User identification
   userId: {
     type: String,
@@ -218,4 +217,5 @@ SmartBinRequestSchema.virtual('fullAddress').get(function() {
   return address;
 });
 
-module.exports = mongoose.model('SmartBinRequest', SmartBinRequestSchema);
+// Fixed the export statement
+export default mongoose.model('SmartBinRequest', SmartBinRequestSchema);

@@ -1,10 +1,7 @@
-// models/CollectionRequest.js
-const mongoose = require('mongoose');
-const Schema = mongoose.Schema;
 // models/CollectRequestModel.js
-import mongoose from "mongoose";
+import mongoose from 'mongoose';
 
-const CollectionRequestSchema = new Schema({
+const CollectionRequestSchema = new mongoose.Schema({
   userId: {
     type: String,
     required: true,
@@ -77,4 +74,4 @@ const CollectionRequestSchema = new Schema({
   },
 });
 
-export default mongoose.model("CollectionRequest", CollectionRequestSchema);
+export default mongoose.model('CollectionRequest', CollectionRequestSchema);

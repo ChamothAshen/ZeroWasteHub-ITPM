@@ -197,7 +197,7 @@ const ProfileUI = () => {
         dispatch(signoutSuccess());
         showPopupMessage("Signed out successfully", "success");
         setTimeout(() => {
-          navigate("/");
+          navigate("/sign-in");
         }, 1500);
       }
     } catch (error) {

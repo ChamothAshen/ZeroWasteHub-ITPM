@@ -18,6 +18,7 @@ import Inventory from './pages/Inventory';
 import InventoryDashboard from './pages/InventoryDashboard';
 import BinManagement from './pages/BinManagement ';
 import ProfileUI from './components/ProfileUI';
+import UserDetailShow from './pages/ProfileData/UserDetailShow';
 
 import WasteManagementChatBot from './pages/chatbot/WasteManagementChatBot';
 import OnlyAdminPrivateRoute from './components/OnlyAdminPrivateRoute';
@@ -32,11 +33,9 @@ function App() {
         <Route path='/sign-in' element={<SignIn />} />
         <Route path='/sign-up' element={<SignUp />} />
         <Route path='/Dashboard' element={<Dashboard />} />
-  {/*       <Route path='/smartbin' element={<SmartBin/>} /> */}
-       {/*  <Route path='/WasteCollection' element={<WasteCollection/>} /> */}
         <Route path='/EmployeeDashboard' element={<EmployeeDashboard/>} />
         <Route path='/inventory' element={<Inventory/>} />
-       
+        <Route path='/inveDash' element={<InventoryDashboard/>} />
         <Route path='/bin' element={<BinManagement/>} />
         <Route path='/CollectRequestForm' element={<CollectRequestForm />} />
         <Route path='/RequestSmartBinForm' element={<RequestSmartBinForm />} />
@@ -44,6 +43,11 @@ function App() {
         <Route path='/CardPayment' element={<CardPayment />} />
         <Route path='/ClientBill' element={<ClientBill />} />
         <Route path='/pages/CollectRequestForm' element={<CollectRequestForm />} />
+<<<<<<< HEAD
+        <Route path='/EmployeeDashboard' element={<EmployeeDashboard />} />
+        <Route path='/profileui' element={<ProfileUI />} />
+        <Route path='/pages/ProfileData/UserDetailShow' element={<UserDetailShow />} />
+=======
         <Route path='/profileui' element={<ProfileUI/>} />
         <Route element={<PrivateRoute/>}>
          <Route path='/Dashboard' element={<Dashboard />} />
@@ -52,11 +56,11 @@ function App() {
         <Route element={<OnlyAdminPrivateRoute />}>
           <Route path='/wastebot' element={<WasteManagementChatBot/>} />
           <Route path='/EmployeeDashboard' element={<EmployeeDashboard />} />
-          <Route path='/inveDash' element={<InventoryDashboard/>} />
           <Route path='/EmpPickups' element={<EmpPickups />} />
           <Route path='/EmpTeams' element={<EmpTeams />} />
           <Route path='/EmpSidebar' element={<Sidebar />} />
        </Route>
+>>>>>>> main
       </Routes>
     </BrowserRouter>
   );
