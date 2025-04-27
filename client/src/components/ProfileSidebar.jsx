@@ -17,7 +17,7 @@ const ProfileSidebar = ({ currentUser }) => {
         icon: <FaTrash className="text-lg" />, 
         path: '/pages/RequestSmartBinForm' 
       },
-
+          
       !currentUser?.isAdmin &&  {
         name: 'Collect Request Form', 
         icon: <FaTrash className="text-lg" />,  
