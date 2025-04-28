@@ -87,7 +87,7 @@ const SmartBinRequestSchema = new mongoose.Schema({
       type: String,
       required: true,
       enum: ['small', 'medium', 'large', 'xlarge', 'commercial'],
-      default: 'medium'
+      required: true
     },
     quantity: {
       type: Number,
