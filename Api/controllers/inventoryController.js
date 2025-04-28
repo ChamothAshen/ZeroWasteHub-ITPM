@@ -112,5 +112,40 @@ export const getTodayWeight = async (req, res) => {
     });
   }
 };
+export const getTodayInventory = async (req, res) => {
+  try {
+    const today = new Date();
+    const startOfDay = new Date(today.setHours(0, 0, 0, 0));
+    const endOfDay = new Date(today.setHours(23, 59, 59, 999));
+
+    const result = await Inventory.aggregate([
+      {
+        $match: {
+          date: { $gte: startOfDay, $lte: endOfDay }
+        }
+      },
+      {
+        $group: {
+          _id: "$category",
+          totalWeight: { $sum: { $toDouble: "$weights" } }
+        }
+      }
+    ]);
+
+    res.status(200).json({
+      success: true,
+      message: "Today's weight by category",
+      data: result
+    });
+  } catch (err) {
+    res.status(500).json({
+      success: false,
+      message: `Error fetching today's category weights: ${err.message}`
+    });
+  }
+};
+
+
+
 
 
