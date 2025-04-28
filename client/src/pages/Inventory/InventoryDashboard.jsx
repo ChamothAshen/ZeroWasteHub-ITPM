@@ -1,7 +1,7 @@
 import React from "react";
 import { FaRecycle, FaTrash, FaUtensils, FaBox, FaLeaf } from "react-icons/fa";
 import { FiMenu } from "react-icons/fi";
-import Sidebar from "../components/Sidebar"; // Import the Sidebar component
+import Sidebar from "../../components/Sidebar"; // Import the Sidebar component
 import { Bar } from "react-chartjs-2";
 import { useEffect, useState } from "react";
 import axios from "axios"; // Import axios for API calls

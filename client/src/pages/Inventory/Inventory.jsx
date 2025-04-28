@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from "react";
 import { FiMenu, FiEdit, FiTrash } from "react-icons/fi";
 import axios from "axios";
-import Sidebar from "../components/Sidebar";
+import Sidebar from "../../components/Sidebar";
 
 export default function Inventory() {
   const [activeTab, setActiveTab] = useState("inventory");

@@ -1,7 +1,8 @@
 import React,{ useState } from "react";
 import { FaRecycle, FaTrash, FaUtensils, FaBox, FaLeaf } from "react-icons/fa";
 import { FiMenu } from "react-icons/fi";
-import Sidebar from "../components/Sidebar"; // Import the Sidebar component
+import Sidebar from "../../components/Sidebar"; // Import the Sidebar component
+import SmartBinRequestsTable from '../Inventory/SmartBinRequestsTable.jsx' // Import the SmartBinRequestsTable component
 
 const BinManagement = () => {
   const [sidebarOpen, setSidebarOpen] = React.useState(false);
@@ -222,36 +223,37 @@ const BinManagement = () => {
         {/* Large Box for Chart or Data Visualization */}
 
         <h2 className="text-xl font-semibold text-gray-800 mb-4">
-          Monthly Inventory Overview (2023)
+          Request Bins 
         </h2>
 
         <div className="bg-white rounded-lg shadow-lg p-4 mb-8">
-          <table class="w-full min-w-max table-auto text-left">
+         {/*  <table class="w-full min-w-max table-auto text-left">
             <thead>
               <tr>
                 <th class="border-y border-blue-gray-100 bg-blue-gray-50/50 p-4">
                   <p class="block antialiased font-sans text-sm text-blue-gray-900 font-normal leading-none opacity-70">
-                    Company
+                    Name
                   </p>
                 </th>
                 <th class="border-y border-blue-gray-100 bg-blue-gray-50/50 p-4">
                   <p class="block antialiased font-sans text-sm text-blue-gray-900 font-normal leading-none opacity-70">
-                    Bin Type
+                  Property Type
                   </p>
                 </th>
                 <th class="border-y border-blue-gray-100 bg-blue-gray-50/50 p-4">
                   <p class="block antialiased font-sans text-sm text-blue-gray-900 font-normal leading-none opacity-70">
-                    Date
+                  Waste Type
                   </p>
                 </th>
                 <th class="border-y border-blue-gray-100 bg-blue-gray-50/50 p-4">
                   <p class="block antialiased font-sans text-sm text-blue-gray-900 font-normal leading-none opacity-70">
-                    Status
+                  Bin Size
+
                   </p>
                 </th>
                 <th class="border-y border-blue-gray-100 bg-blue-gray-50/50 p-4">
                   <p class="block antialiased font-sans text-sm text-blue-gray-900 font-normal leading-none opacity-70">
-                    Units
+                  Status
                   </p>
                 </th>
                 <th class="border-y border-blue-gray-100 bg-blue-gray-50/50 p-4">
@@ -312,165 +314,11 @@ const BinManagement = () => {
                   </button>
                 </td>
               </tr>
-              <tr>
-                <td class="p-4 border-b border-blue-gray-50">
-                  <div class="flex items-center gap-3">
-                    <img
-                      src="https://docs.material-tailwind.com/img/logos/logo-pinterest.svg"
-                      alt="Pinterest"
-                      class="inline-block relative object-center !rounded-full w-12 h-12 rounded-lg border border-blue-gray-50 bg-blue-gray-50/50 object-contain p-1"
-                    />
-                    <p class="block antialiased font-sans text-sm leading-normal text-blue-gray-900 font-bold">
-                      Pinterest
-                    </p>
-                  </div>
-                </td>
-                <td class="p-4 border-b border-blue-gray-50">
-                  <p class="block antialiased font-sans text-sm leading-normal text-blue-gray-900 font-normal">
-                  Paper
-                  </p>
-                </td>
-                <td class="p-4 border-b border-blue-gray-50">
-                  <p class="block antialiased font-sans text-sm leading-normal text-blue-gray-900 font-normal">
-                    Mon 7:40pm
-                  </p>
-                </td>
-                <td class="p-4 border-b border-blue-gray-50">
-                  <div class="w-max">
-                    <div class="relative grid items-center font-sans font-bold uppercase whitespace-nowrap select-none bg-amber-500/20 text-amber-900 py-1 px-2 text-xs rounded-md">
-                      <span class="">pending</span>
-                    </div>
-                  </div>
-                </td>
-                <td class="p-4 border-b border-blue-gray-50">
-                  <div class="flex items-center gap-3">5</div>
-                </td>
-                <td class="p-4 border-b border-blue-gray-50">
-                  <button
-                    class="relative align-middle select-none font-sans font-medium text-center uppercase transition-all disabled:opacity-50 disabled:shadow-none disabled:pointer-events-none w-10 max-w-[40px] h-10 max-h-[40px] rounded-lg text-xs text-gray-900 hover:bg-gray-900/10 active:bg-gray-900/20"
-                    type="button"
-                  >
-                    <span class="absolute top-1/2 left-1/2 transform -translate-y-1/2 -translate-x-1/2">
-                      <svg
-                        xmlns="http://www.w3.org/2000/svg"
-                        viewBox="0 0 24 24"
-                        fill="currentColor"
-                        aria-hidden="true"
-                        class="h-4 w-4"
-                      >
-                        <path d="M21.731 2.269a2.625 2.625 0 00-3.712 0l-1.157 1.157 3.712 3.712 1.157-1.157a2.625 2.625 0 000-3.712zM19.513 8.199l-3.712-3.712-12.15 12.15a5.25 5.25 0 00-1.32 2.214l-.8 2.685a.75.75 0 00.933.933l2.685-.8a5.25 5.25 0 002.214-1.32L19.513 8.2z"></path>
-                      </svg>
-                    </span>
-                  </button>
-                </td>
-              </tr>
-              <tr>
-                <td class="p-4 border-b border-blue-gray-50">
-                  <div class="flex items-center gap-3">
-                    <img
-                      src="https://docs.material-tailwind.com/img/logos/logo-google.svg"
-                      alt="Google"
-                      class="inline-block relative object-center !rounded-full w-12 h-12 rounded-lg border border-blue-gray-50 bg-blue-gray-50/50 object-contain p-1"
-                    />
-                    <p class="block antialiased font-sans text-sm leading-normal text-blue-gray-900 font-bold">
-                      Google
-                    </p>
-                  </div>
-                </td>
-                <td class="p-4 border-b border-blue-gray-50">
-                  <p class="block antialiased font-sans text-sm leading-normal text-blue-gray-900 font-normal">
-                  Food
-
-                  </p>
-                </td>
-                <td class="p-4 border-b border-blue-gray-50">
-                  <p class="block antialiased font-sans text-sm leading-normal text-blue-gray-900 font-normal">
-                    Wed 5:00pm
-                  </p>
-                </td>
-                <td class="p-4 border-b border-blue-gray-50">
-                  <div class="w-max">
-                    <div class="relative grid items-center font-sans font-bold uppercase whitespace-nowrap select-none bg-green-500/20 text-green-900 py-1 px-2 text-xs rounded-md">
-                      <span class="">paid</span>
-                    </div>
-                  </div>
-                </td>
-                <td class="p-4 border-b border-blue-gray-50">
-                  <div class="flex items-center gap-3">5</div>
-                </td>
-                <td class="p-4 border-b border-blue-gray-50">
-                  <button
-                    class="relative align-middle select-none font-sans font-medium text-center uppercase transition-all disabled:opacity-50 disabled:shadow-none disabled:pointer-events-none w-10 max-w-[40px] h-10 max-h-[40px] rounded-lg text-xs text-gray-900 hover:bg-gray-900/10 active:bg-gray-900/20"
-                    type="button"
-                  >
-                    <span class="absolute top-1/2 left-1/2 transform -translate-y-1/2 -translate-x-1/2">
-                      <svg
-                        xmlns="http://www.w3.org/2000/svg"
-                        viewBox="0 0 24 24"
-                        fill="currentColor"
-                        aria-hidden="true"
-                        class="h-4 w-4"
-                      >
-                        <path d="M21.731 2.269a2.625 2.625 0 00-3.712 0l-1.157 1.157 3.712 3.712 1.157-1.157a2.625 2.625 0 000-3.712zM19.513 8.199l-3.712-3.712-12.15 12.15a5.25 5.25 0 00-1.32 2.214l-.8 2.685a.75.75 0 00.933.933l2.685-.8a5.25 5.25 0 002.214-1.32L19.513 8.2z"></path>
-                      </svg>
-                    </span>
-                  </button>
-                </td>
-              </tr>
-              <tr>
-                <td class="p-4">
-                  <div class="flex items-center gap-3">
-                    <img
-                      src="https://docs.material-tailwind.com/img/logos/logo-netflix.svg"
-                      alt="netflix"
-                      class="inline-block relative object-center !rounded-full w-12 h-12 rounded-lg border border-blue-gray-50 bg-blue-gray-50/50 object-contain p-1"
-                    />
-                    <p class="block antialiased font-sans text-sm leading-normal text-blue-gray-900 font-bold">
-                      netflix
-                    </p>
-                  </div>
-                </td>
-                <td class="p-4">
-                  <p class="block antialiased font-sans text-sm leading-normal text-blue-gray-900 font-normal">
-                  General Wasten
-                  </p>
-                </td>
-                <td class="p-4">
-                  <p class="block antialiased font-sans text-sm leading-normal text-blue-gray-900 font-normal">
-                    Wed 3:30am
-                  </p>
-                </td>
-                <td class="p-4">
-                  <div class="w-max">
-                    <div class="relative grid items-center font-sans font-bold uppercase whitespace-nowrap select-none bg-red-500/20 text-red-900 py-1 px-2 text-xs rounded-md">
-                      <span class="">cancelled</span>
-                    </div>
-                  </div>
-                </td>
-                <td class="p-4">
-                  <div class="flex items-center gap-3">5</div>
-                </td>
-                <td class="p-4">
-                  <button
-                    class="relative align-middle select-none font-sans font-medium text-center uppercase transition-all disabled:opacity-50 disabled:shadow-none disabled:pointer-events-none w-10 max-w-[40px] h-10 max-h-[40px] rounded-lg text-xs text-gray-900 hover:bg-gray-900/10 active:bg-gray-900/20"
-                    type="button"
-                  >
-                    <span class="absolute top-1/2 left-1/2 transform -translate-y-1/2 -translate-x-1/2">
-                      <svg
-                        xmlns="http://www.w3.org/2000/svg"
-                        viewBox="0 0 24 24"
-                        fill="currentColor"
-                        aria-hidden="true"
-                        class="h-4 w-4"
-                      >
-                        <path d="M21.731 2.269a2.625 2.625 0 00-3.712 0l-1.157 1.157 3.712 3.712 1.157-1.157a2.625 2.625 0 000-3.712zM19.513 8.199l-3.712-3.712-12.15 12.15a5.25 5.25 0 00-1.32 2.214l-.8 2.685a.75.75 0 00.933.933l2.685-.8a5.25 5.25 0 002.214-1.32L19.513 8.2z"></path>
-                      </svg>
-                    </span>
-                  </button>
-                </td>
-              </tr>
+            
+         
             </tbody>
-          </table>
+          </table> */}
+          <SmartBinRequestsTable/>
         </div>
 
         <h2 className="text-xl font-semibold text-gray-800 mb-4">
