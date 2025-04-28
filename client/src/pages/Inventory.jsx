@@ -17,12 +17,15 @@ export default function Inventory() {
   });
 
   const [tableData, setTableData] = useState([]);
+  const categories = ["Plastic", "Paper", "Food", "General Waste", "Recycling"];
 
   // Fetch inventory items
   useEffect(() => {
     const fetchInventory = async () => {
       try {
-        const res = await axios.get("http://localhost:3000/api/inventory/getInv");
+        const res = await axios.get(
+          "http://localhost:3000/api/Inventory/getInv"
+        );
         setTableData(res.data);
       } catch (error) {
         console.error("Failed to fetch inventory:", error);
@@ -41,7 +44,10 @@ export default function Inventory() {
   const handleSubmit = async (e) => {
     e.preventDefault();
     try {
-      const res = await axios.post("http://localhost:3000/api/inventory/addInv", formData);
+      const res = await axios.post(
+        "http://localhost:3000/api/Inventory/addInv",
+        formData
+      );
       setTableData((prev) => [...prev, res.data]);
       setFormData({
         company: "",
@@ -53,6 +59,15 @@ export default function Inventory() {
       });
     } catch (error) {
       console.error("Failed to create item:", error);
+    }
+  };
+  //CREATE DELETe FUNCTION
+  const handleDelete = async (id) => {
+    try {
+      await axios.delete(`http://localhost:3000/api/Inventory/deleteInv/${id}`);
+      setTableData((prev) => prev.filter((item) => item._id !== id));
+    } catch (error) {
+      console.error("Failed to delete item:", error);
     }
   };
 
@@ -76,15 +91,74 @@ export default function Inventory() {
 
         {/* Form */}
         <div className="bg-white p-6 rounded-lg shadow-md mb-6">
-          <h3 className="text-xl font-semibold mb-4">Add Garbage Details Per Day</h3>
+          <h3 className="text-xl font-semibold mb-4">
+            Add Garbage Details Per Day
+          </h3>
           <form onSubmit={handleSubmit} className="grid grid-cols-2 gap-4">
-            <input type="text" name="company" value={formData.company} onChange={handleChange} placeholder="Company" className="p-2 border rounded" required />
-            <input type="text" name="category" value={formData.category} onChange={handleChange} placeholder="Category" className="p-2 border rounded" required />
-            <input type="text" name="weights" value={formData.weights} onChange={handleChange} placeholder="Weights" className="p-2 border rounded" required />
-            <input type="number" name="quantity" value={formData.quantity} onChange={handleChange} placeholder="Quantity" className="p-2 border rounded" required />
-            <input type="text" name="binSize" value={formData.binSize} onChange={handleChange} placeholder="Bin Size" className="p-2 border rounded" required />
-            <input type="date" name="date" value={formData.date} onChange={handleChange} className="p-2 border rounded" required />
-            <button type="submit" className="col-span-2 bg-green-600 text-white py-2 rounded">Add Item</button>
+            <input
+              type="text"
+              name="company"
+              value={formData.company}
+              onChange={handleChange}
+              placeholder="Company"
+              className="p-2 border rounded"
+              required
+            />
+            <select
+              name="category"
+              value={formData.category}
+              onChange={handleChange}
+              className="w-full border px-3 py-2 rounded-lg"
+              required
+            >
+              <option value="">Select Category</option>
+              {categories.map((cat, idx) => (
+                <option key={idx} value={cat}>
+                  {cat}
+                </option>
+              ))}
+            </select>
+            <input
+              type="number"
+              name="weights"
+              value={formData.weights}
+              onChange={handleChange}
+              placeholder="Weights"
+              className="p-2 border rounded"
+              required
+            />
+            <input
+              type="number"
+              name="quantity"
+              value={formData.quantity}
+              onChange={handleChange}
+              placeholder="Quantity"
+              className="p-2 border rounded"
+              required
+            />
+            <input
+              type="text"
+              name="binSize"
+              value={formData.binSize}
+              onChange={handleChange}
+              placeholder="Bin Size"
+              className="p-2 border rounded"
+              required
+            />
+            <input
+              type="date"
+              name="date"
+              value={formData.date}
+              onChange={handleChange}
+              className="p-2 border rounded"
+              required
+            />
+            <button
+              type="submit"
+              className="col-span-2 bg-green-600 text-white py-2 rounded"
+            >
+              Add Item
+            </button>
           </form>
         </div>
 
@@ -94,32 +168,66 @@ export default function Inventory() {
             <table className="min-w-full bg-white">
               <thead className="bg-gray-100">
                 <tr>
-                  <th className="py-3 px-4 text-left text-sm font-semibold text-gray-700 uppercase">Company</th>
-                  <th className="py-3 px-4 text-left text-sm font-semibold text-gray-700 uppercase">Category</th>
-                  <th className="py-3 px-4 text-left text-sm font-semibold text-gray-700 uppercase">Weights</th>
-                  <th className="py-3 px-4 text-left text-sm font-semibold text-gray-700 uppercase">Quantity</th>
-                  <th className="py-3 px-4 text-left text-sm font-semibold text-gray-700 uppercase">Bin Size</th>
-                  <th className="py-3 px-4 text-left text-sm font-semibold text-gray-700 uppercase">Date</th>
-                  <th className="py-3 px-4 text-left text-sm font-semibold text-gray-700 uppercase">Edit</th>
-                  <th className="py-3 px-4 text-left text-sm font-semibold text-gray-700 uppercase">Delete</th>
+                  <th className="py-3 px-4 text-left text-sm font-semibold text-gray-700 uppercase">
+                    Company
+                  </th>
+                  <th className="py-3 px-4 text-left text-sm font-semibold text-gray-700 uppercase">
+                    Category
+                  </th>
+                  <th className="py-3 px-4 text-left text-sm font-semibold text-gray-700 uppercase">
+                    Weights(kg)
+                  </th>
+                  <th className="py-3 px-4 text-left text-sm font-semibold text-gray-700 uppercase">
+                    Quantity
+                  </th>
+                  <th className="py-3 px-4 text-left text-sm font-semibold text-gray-700 uppercase">
+                    Bin Size
+                  </th>
+                  <th className="py-3 px-4 text-left text-sm font-semibold text-gray-700 uppercase">
+                    Date
+                  </th>
+                  <th className="py-3 px-4 text-left text-sm font-semibold text-gray-700 uppercase">
+                    Edit
+                  </th>
+                  <th className="py-3 px-4 text-left text-sm font-semibold text-gray-700 uppercase">
+                    Delete
+                  </th>
                 </tr>
               </thead>
               <tbody>
                 {tableData.map((item) => (
-                  <tr key={item._id} className="border-b border-gray-200 hover:bg-gray-50">
-                    <td className="py-3 px-4 text-sm text-gray-700">{item.company}</td>
-                    <td className="py-3 px-4 text-sm text-gray-700">{item.category}</td>
-                    <td className="py-3 px-4 text-sm text-gray-700">{item.weights}</td>
-                    <td className="py-3 px-4 text-sm text-gray-700">{item.quantity}</td>
-                    <td className="py-3 px-4 text-sm text-gray-700">{item.binSize}</td>
-                    <td className="py-3 px-4 text-sm text-gray-700">{new Date(item.date).toLocaleDateString()}</td>
+                  <tr
+                    key={item._id}
+                    className="border-b border-gray-200 hover:bg-gray-50"
+                  >
+                    <td className="py-3 px-4 text-sm text-gray-700">
+                      {item.company}
+                    </td>
+                    <td className="py-3 px-4 text-sm text-gray-700">
+                      {item.category}
+                    </td>
+                    <td className="py-3 px-4 text-sm text-gray-700">
+                      {item.weights}
+                    </td>
+                    <td className="py-3 px-4 text-sm text-gray-700">
+                      {item.quantity}
+                    </td>
+                    <td className="py-3 px-4 text-sm text-gray-700">
+                      {item.binSize}
+                    </td>
+                    <td className="py-3 px-4 text-sm text-gray-700">
+                      {new Date(item.date).toLocaleDateString()}
+                    </td>
                     <td className="py-3 px-4 text-sm text-gray-700">
                       <button className="text-green-600 hover:text-green-800">
                         <FiEdit />
                       </button>
                     </td>
                     <td className="py-3 px-4 text-sm text-gray-700">
-                      <button className="text-red-600 hover:text-red-800">
+                      <button
+                        className="text-red-600 hover:text-red-800"
+                        onClick={() => handleDelete(item._id)}
+                      >
                         <FiTrash />
                       </button>
                     </td>
