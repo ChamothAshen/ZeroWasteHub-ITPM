@@ -5,7 +5,7 @@ import userRoutes from './routes/user.route.js';
 import authRoutes from './routes/auth.route.js';
 import cookieParser from 'cookie-parser';
 import collectRequestRoutes from './routes/CollectRequestRoute.js';
-import createSmartBinRequest from './routes/RequestSmartBinRoute.js';
+import RequestSmartBinRoutes from './routes/RequestSmartBinRoute.js';   
 import cardPaymentRoutes from './routes/CardPaymentRoute.js';
 import cors from 'cors';
 
@@ -43,7 +43,7 @@ app.listen(port, () => {
 app.use('/api/user', userRoutes);
 app.use('/api/auth', authRoutes);
 app.use('/api/collection-requests', collectRequestRoutes);
-app.use('/api/BinRequest', createSmartBinRequest);
+app.use('/api/BinRequest', RequestSmartBinRoutes);
 app.use('/api/card-payment', cardPaymentRoutes);
 
 // Error Handling Middleware
