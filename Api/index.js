@@ -6,8 +6,12 @@ import authRoutes from './routes/auth.route.js';
 import cookieParser from 'cookie-parser';
 import collectRequestRoutes from './routes/CollectRequestRoute.js';
 import createSmartBinRequest from './routes/RequestSmartBinRoute.js';
+<<<<<<< HEAD
 import inventoryRoutes from './routes/inventoryRoutes.js'; // Ensure this route is defined
 
+=======
+import cardPaymentRoutes from './routes/CardPaymentRoute.js';
+>>>>>>> edbe0bfc52081013d4acaa86d911cc4075e2330d
 import cors from 'cors';
 
 dotenv.config();
@@ -45,7 +49,11 @@ app.use('/api/user', userRoutes);
 app.use('/api/auth', authRoutes);
 app.use('/api/collection-requests', collectRequestRoutes);
 app.use('/api/BinRequest', createSmartBinRequest);
+<<<<<<< HEAD
 app.use('/api/Inventory', inventoryRoutes); // Ensure this route is defined
+=======
+app.use('/api/card-payment', cardPaymentRoutes);
+>>>>>>> edbe0bfc52081013d4acaa86d911cc4075e2330d
 
 // Error Handling Middleware
 app.use((err, req, res, next) => {

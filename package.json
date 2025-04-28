@@ -21,6 +21,10 @@
     "express": "^4.21.2",
     "jsonwebtoken": "^9.0.2",
     "mongoose": "^8.12.1",
+<<<<<<< HEAD
+=======
+    "react-chartjs-2": "^5.3.0",
+>>>>>>> edbe0bfc52081013d4acaa86d911cc4075e2330d
     "uuid": "^11.1.0"
   },
   "devDependencies": {
