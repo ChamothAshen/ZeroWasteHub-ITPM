@@ -1,3 +1,4 @@
+
 // controllers/SmartBinRequestController.js
 import { v4 as uuidv4 } from 'uuid';
 import SmartBinRequest from '../models/RequestSmartBinModel.js';
@@ -62,3 +63,48 @@ export const createSmartBinRequest = async (req, res) => {
     });
   }
 };
+
+//get all smart bin requests
+export const getAllSmartBinRequests = async (req, res) => {
+  try {
+    const requests = await SmartBinRequest.find();
+    return res.status(200).json({
+      success: true,
+      data: requests
+    });
+  } catch (error) {
+    console.error('Error fetching smart bin requests:', error);
+    return res.status(500).json({
+      success: false,
+      message: 'Server error while fetching smart bin requests'
+    });
+  }
+};
+//get smart bin request by id
+export const getSmartBinRequestById = async (req, res) => {
+  try {
+    const { id } = req.params;
+    const request = await SmartBinRequest.findById(id);
+    
+    if (!request) {
+      return res.status(404).json({
+        success: false,
+        message: 'Smart bin request not found'
+      });
+    }
+    
+    return res.status(200).json({
+      success: true,
+      data: request
+    });
+  } catch (error) {
+    console.error('Error fetching smart bin request:', error);
+    return res.status(500).json({
+      success: false,
+      message: 'Server error while fetching smart bin request'
+    });
+  }
+};
+
+
+

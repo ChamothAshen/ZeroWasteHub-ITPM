@@ -24,9 +24,9 @@ const ProfileSidebar = ({ currentUser }) => {
         path: '/pages/CollectRequestForm' 
       },
       !currentUser?.isAdmin &&  {
-      name: 'Notifications', 
+      name: 'History', 
       icon: <FaBell className="text-lg" />, 
-      path: '/dashboard/notifications' 
+      path: '/pages/ProfileData/UserDetailShow' 
     },
     // Show "Wastebot" only if the currentUser is an admin
     currentUser?.isAdmin && {

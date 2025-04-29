@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
+import BinRequestForm from "./BinRequestForm";
 
 const RequestSmartBinForm = () => {
   const navigate = useNavigate();
@@ -8,7 +9,7 @@ const RequestSmartBinForm = () => {
   const [submitError, setSubmitError] = useState("");
 
   useEffect(() => {
-    setUId('bb797925-dfae-4531-aadd-294a87fd73f2');
+    setUId("bb797925-dfae-4531-aadd-294a87fd73f2");
   }, []);
 
   const [formData, setFormData] = useState({
@@ -26,9 +27,11 @@ const RequestSmartBinForm = () => {
     zipCode: "",
 
     // Bin Request Details
-    binType: "",
-    binSize: "medium",
-    quantity: "1",
+    /*    binType: "",
+       binSize: "medium",
+       quantity: "1", */
+
+    binRequest: [], // Array to hold multiple bin requests
 
     // Collection Schedule
     collectionFrequency: "weekly",
@@ -47,7 +50,7 @@ const RequestSmartBinForm = () => {
     termsAccepted: false,
 
     // Payment Information (kept minimal as payment will be on next page)
-    paymentMethod: "creditCard"
+    paymentMethod: "creditCard",
   });
 
   const handleChange = (e) => {
@@ -67,10 +70,10 @@ const RequestSmartBinForm = () => {
 
   const handleSubmit = async (e) => {
     e.preventDefault();
-    
+
     // Reset error state
     setSubmitError("");
-    
+
     // Validate form
     if (!formData.termsAccepted) {
       setSubmitError("Please accept the terms and conditions to proceed.");
@@ -80,7 +83,7 @@ const RequestSmartBinForm = () => {
     try {
       // Set loading state
       setIsSubmitting(true);
-      
+
       // Prepare submission data
       const submissionData = {
         userId: uId,
@@ -88,7 +91,7 @@ const RequestSmartBinForm = () => {
           firstName: formData.firstName,
           lastName: formData.lastName,
           email: formData.email,
-          contactNo: formData.contactNo
+          contactNo: formData.contactNo,
         },
         address: {
           addressLine1: formData.addressLine1,
@@ -96,62 +99,62 @@ const RequestSmartBinForm = () => {
           city: formData.city,
           zipCode: formData.zipCode,
           propertyType: formData.propertyType,
-          accessCode: formData.accessCode
+          accessCode: formData.accessCode,
         },
-        binRequest: {
-          binType: formData.binType,
-          binSize: formData.binSize,
-          quantity: parseInt(formData.quantity, 10)
-        },
+        binRequest: formData.binRequest,
         schedule: {
-          scheduleDate: formData.immediate ? new Date().toISOString() : formData.date,
+          scheduleDate: formData.immediate
+            ? new Date().toISOString()
+            : formData.date,
           collectionFrequency: formData.collectionFrequency,
           preferredDayOfWeek: formData.preferredDayOfWeek,
           preferredTimeOfDay: formData.preferredTimeOfDay,
-          immediate: formData.immediate
+          immediate: formData.immediate,
         },
         additionalInfo: {
           description: formData.description,
-          specialInstructions: formData.specialInstructions
+          specialInstructions: formData.specialInstructions,
         },
         payment: {
-          paymentMethod: formData.paymentMethod
+          paymentMethod: formData.paymentMethod,
         },
-        termsAccepted: formData.termsAccepted
+        termsAccepted: formData.termsAccepted,
       };
 
       console.log("Submitting form data:", submissionData);
-      
+
       // Send data to API
-      const response = await fetch('http://localhost:5000/api/BinRequest', {
-        method: 'POST',
+      const response = await fetch("http://localhost:3000/api/BinRequest", {
+        method: "POST",
         headers: {
-          'Content-Type': 'application/json'
+          "Content-Type": "application/json",
         },
-        body: JSON.stringify(submissionData)
+        body: JSON.stringify(submissionData),
       });
-      
+
       // Parse response
       const result = await response.json();
-      
+
       // Check if request was successful
       if (!response.ok) {
-        throw new Error(result.message || 'Failed to submit request');
+        throw new Error(result.message || "Failed to submit request");
       }
-      
+
       console.log("Form submission successful:", result);
-      
+
       // Navigate to payment page with request data and response data
-      navigate("/CardPayment", { 
-        state: { 
+      navigate("/CardPayment", {
+        state: {
           requestData: submissionData,
           requestId: result.data.requestId,
-          responseData: result.data
-        } 
+          responseData: result.data,
+        },
       });
     } catch (error) {
       console.error("Form submission error:", error);
-      setSubmitError(error.message || "Failed to submit request. Please try again.");
+      setSubmitError(
+        error.message || "Failed to submit request. Please try again."
+      );
     } finally {
       // Reset loading state
       setIsSubmitting(false);
@@ -159,7 +162,11 @@ const RequestSmartBinForm = () => {
   };
 
   const cancel = () => {
-    if (window.confirm("Are you sure you want to cancel? All entered information will be lost.")) {
+    if (
+      window.confirm(
+        "Are you sure you want to cancel? All entered information will be lost."
+      )
+    ) {
       navigate("/client");
     }
   };
@@ -171,7 +178,7 @@ const RequestSmartBinForm = () => {
     bin: "♻️",
     schedule: "📅",
     additional: "ℹ️",
-    payment: "💳"
+    payment: "💳",
   };
 
   // Bin type icons
@@ -186,7 +193,7 @@ const RequestSmartBinForm = () => {
     electronics: "💻",
     hazardous: "⚠️",
     construction: "🏗️",
-    medical: "🩺"
+    medical: "🩺",
   };
 
   // Days of week icons
@@ -196,7 +203,14 @@ const RequestSmartBinForm = () => {
     wednesday: "3️⃣",
     thursday: "4️⃣",
     friday: "5️⃣",
-    saturday: "6️⃣"
+    saturday: "6️⃣",
+  };
+
+  const handleBinRequestChange = (newBinRequest) => {
+    setFormData((prevState) => ({
+      ...prevState,
+      binRequest: [...prevState.binRequest, ...newBinRequest],
+    }));
   };
 
   return (
@@ -208,7 +222,10 @@ const RequestSmartBinForm = () => {
               <span className="text-4xl mr-2">🌎</span>
               Request Smart Waste Bin
             </h2>
-            <p className="mt-2 opacity-90">Fill out the form below to request a smart waste collection bin for your location</p>
+            <p className="mt-2 opacity-90">
+              Fill out the form below to request a smart waste collection bin
+              for your location
+            </p>
           </div>
 
           {submitError && (
@@ -223,11 +240,15 @@ const RequestSmartBinForm = () => {
             {/* Personal Information Section */}
             <div className="border-b border-green-100 pb-4">
               <h3 className="text-xl font-medium text-gray-800 mb-4 flex items-center">
-                <span className="text-2xl mr-2">{sectionIcons.personal}</span> Personal Information
+                <span className="text-2xl mr-2">{sectionIcons.personal}</span>{" "}
+                Personal Information
               </h3>
               <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                 <div>
-                  <label htmlFor="firstName" className="block text-sm font-medium text-gray-700 mb-1">
+                  <label
+                    htmlFor="firstName"
+                    className="block text-sm font-medium text-gray-700 mb-1"
+                  >
                     First Name
                   </label>
                   <input
@@ -241,7 +262,10 @@ const RequestSmartBinForm = () => {
                   />
                 </div>
                 <div>
-                  <label htmlFor="lastName" className="block text-sm font-medium text-gray-700 mb-1">
+                  <label
+                    htmlFor="lastName"
+                    className="block text-sm font-medium text-gray-700 mb-1"
+                  >
                     Last Name
                   </label>
                   <input
@@ -255,7 +279,10 @@ const RequestSmartBinForm = () => {
                   />
                 </div>
                 <div>
-                  <label htmlFor="email" className="block text-sm font-medium text-gray-700 mb-1 flex items-center">
+                  <label
+                    htmlFor="email"
+                    className="block text-sm font-medium text-gray-700 mb-1 flex items-center"
+                  >
                     <span className="mr-1">✉️</span> Email Address
                   </label>
                   <input
@@ -269,7 +296,10 @@ const RequestSmartBinForm = () => {
                   />
                 </div>
                 <div>
-                  <label htmlFor="contactNo" className="block text-sm font-medium text-gray-700 mb-1 flex items-center">
+                  <label
+                    htmlFor="contactNo"
+                    className="block text-sm font-medium text-gray-700 mb-1 flex items-center"
+                  >
                     <span className="mr-1">📞</span> Contact Number
                   </label>
                   <input
@@ -289,11 +319,15 @@ const RequestSmartBinForm = () => {
             {/* Address Section */}
             <div className="border-b border-green-100 pb-4">
               <h3 className="text-xl font-medium text-gray-800 mb-4 flex items-center">
-                <span className="text-2xl mr-2">{sectionIcons.address}</span> Bin Delivery & Collection Location
+                <span className="text-2xl mr-2">{sectionIcons.address}</span>{" "}
+                Bin Delivery & Collection Location
               </h3>
               <div className="space-y-4">
                 <div>
-                  <label htmlFor="addressLine1" className="block text-sm font-medium text-gray-700 mb-1 flex items-center">
+                  <label
+                    htmlFor="addressLine1"
+                    className="block text-sm font-medium text-gray-700 mb-1 flex items-center"
+                  >
                     <span className="mr-1">📍</span> Address Line 1
                   </label>
                   <input
@@ -308,7 +342,10 @@ const RequestSmartBinForm = () => {
                   />
                 </div>
                 <div>
-                  <label htmlFor="addressLine2" className="block text-sm font-medium text-gray-700 mb-1">
+                  <label
+                    htmlFor="addressLine2"
+                    className="block text-sm font-medium text-gray-700 mb-1"
+                  >
                     Address Line 2 (Optional)
                   </label>
                   <input
@@ -323,7 +360,10 @@ const RequestSmartBinForm = () => {
                 </div>
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                   <div>
-                    <label htmlFor="city" className="block text-sm font-medium text-gray-700 mb-1 flex items-center">
+                    <label
+                      htmlFor="city"
+                      className="block text-sm font-medium text-gray-700 mb-1 flex items-center"
+                    >
                       <span className="mr-1">🏙️</span> City
                     </label>
                     <input
@@ -337,7 +377,10 @@ const RequestSmartBinForm = () => {
                     />
                   </div>
                   <div>
-                    <label htmlFor="zipCode" className="block text-sm font-medium text-gray-700 mb-1">
+                    <label
+                      htmlFor="zipCode"
+                      className="block text-sm font-medium text-gray-700 mb-1"
+                    >
                       ZIP / Postal Code
                     </label>
                     <input
@@ -352,7 +395,10 @@ const RequestSmartBinForm = () => {
                   </div>
                 </div>
                 <div>
-                  <label htmlFor="propertyType" className="block text-sm font-medium text-gray-700 mb-1 flex items-center">
+                  <label
+                    htmlFor="propertyType"
+                    className="block text-sm font-medium text-gray-700 mb-1 flex items-center"
+                  >
                     <span className="mr-1">🏢</span> Property Type
                   </label>
                   <select
@@ -369,7 +415,10 @@ const RequestSmartBinForm = () => {
                   </select>
                 </div>
                 <div>
-                  <label htmlFor="accessCode" className="block text-sm font-medium text-gray-700 mb-1 flex items-center">
+                  <label
+                    htmlFor="accessCode"
+                    className="block text-sm font-medium text-gray-700 mb-1 flex items-center"
+                  >
                     <span className="mr-1">🔑</span> Access Code (Optional)
                   </label>
                   <input
@@ -386,7 +435,7 @@ const RequestSmartBinForm = () => {
             </div>
 
             {/* Bin Request Details Section */}
-            <div className="border-b border-green-100 pb-4">
+            {/*    <div className="border-b border-green-100 pb-4">
               <h3 className="text-xl font-medium text-gray-800 mb-4 flex items-center">
                 <span className="text-2xl mr-2">{sectionIcons.bin}</span> Bin Request Details
               </h3>
@@ -469,12 +518,52 @@ const RequestSmartBinForm = () => {
                   />
                 </div>
               </div>
+            </div> */}
+            {/* Bin Request Form Component */}
+            <div>
+              <h2 className="text-2xl font-semibold mb-4">Request Smart Bin</h2>
+
+              {/* Pass the form data and handleChange function as props to BinRequestForm */}
+              <BinRequestForm
+                formData={formData}
+                handleChange={handleChange}
+                handleBinRequestChange={handleBinRequestChange}
+              />
+
+              {/* Display the table of bin requests */}
+              <div className="mt-4">
+                <table className="min-w-full table-auto border-collapse">
+                  <thead>
+                    <tr>
+                      <th className="px-4 py-2 border">Bin Type</th>
+                      <th className="px-4 py-2 border">Bin Size</th>
+                      <th className="px-4 py-2 border">Quantity</th>
+                      <th className="px-4 py-2 border">Description</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    {formData.binRequest.map((bin, index) => (
+                      <tr key={index}>
+                        <td className="border px-4 py-2">{bin.binType}</td>
+                        <td className="border px-4 py-2">{bin.binSize}</td>
+                        <td className="border px-4 py-2">{bin.quantity}</td>
+                        <td className="border px-4 py-2">
+                          {bin.description || "N/A"}
+                        </td>
+                      </tr>
+                    ))}
+                  </tbody>
+                </table>
+              </div>
+
+              {/* Add a Submit button to submit all bin requests */}
             </div>
 
             {/* Collection Schedule Section */}
             <div className="border-b border-green-100 pb-4">
               <h3 className="text-xl font-medium text-gray-800 mb-4 flex items-center">
-                <span className="text-2xl mr-2">{sectionIcons.schedule}</span> Collection Schedule
+                <span className="text-2xl mr-2">{sectionIcons.schedule}</span>{" "}
+                Collection Schedule
               </h3>
               <div className="space-y-4">
                 <div className="flex items-center p-3 bg-green-50 rounded-md border border-green-100">
@@ -486,15 +575,22 @@ const RequestSmartBinForm = () => {
                     onChange={handleChange}
                     className="h-4 w-4 text-green-600 focus:ring-green-500 border-green-300 rounded"
                   />
-                  <label htmlFor="immediate" className="ml-2 block text-sm text-gray-900 flex items-center">
-                    <span className="mr-1">⚡</span> I need immediate service (within 24-48 hours)
+                  <label
+                    htmlFor="immediate"
+                    className="ml-2 block text-sm text-gray-900 flex items-center"
+                  >
+                    <span className="mr-1">⚡</span> I need immediate service
+                    (within 24-48 hours)
                   </label>
                 </div>
 
                 {!formData.immediate && (
                   <>
                     <div>
-                      <label htmlFor="date" className="block text-sm font-medium text-gray-700 mb-1 flex items-center">
+                      <label
+                        htmlFor="date"
+                        className="block text-sm font-medium text-gray-700 mb-1 flex items-center"
+                      >
                         <span className="mr-1">📆</span> Preferred Start Date
                       </label>
                       <input
@@ -504,14 +600,17 @@ const RequestSmartBinForm = () => {
                         value={formData.date}
                         onChange={handleChange}
                         className="w-full rounded-md border-green-300 shadow-sm focus:border-green-500 focus:ring-green-500 py-2 px-3"
-                        min={new Date().toISOString().split('T')[0]}
+                        min={new Date().toISOString().split("T")[0]}
                         required={!formData.immediate}
                       />
                     </div>
 
                     <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                       <div>
-                        <label htmlFor="collectionFrequency" className="block text-sm font-medium text-gray-700 mb-1 flex items-center">
+                        <label
+                          htmlFor="collectionFrequency"
+                          className="block text-sm font-medium text-gray-700 mb-1 flex items-center"
+                        >
                           <span className="mr-1">🔄</span> Collection Frequency
                         </label>
                         <select
@@ -530,7 +629,10 @@ const RequestSmartBinForm = () => {
 
                       {formData.collectionFrequency !== "onetime" && (
                         <div>
-                          <label htmlFor="preferredDayOfWeek" className="block text-sm font-medium text-gray-700 mb-1">
+                          <label
+                            htmlFor="preferredDayOfWeek"
+                            className="block text-sm font-medium text-gray-700 mb-1"
+                          >
                             Preferred Day
                           </label>
                           <select
@@ -552,7 +654,10 @@ const RequestSmartBinForm = () => {
                       )}
 
                       <div>
-                        <label htmlFor="preferredTimeOfDay" className="block text-sm font-medium text-gray-700 mb-1">
+                        <label
+                          htmlFor="preferredTimeOfDay"
+                          className="block text-sm font-medium text-gray-700 mb-1"
+                        >
                           Preferred Time
                         </label>
                         <select
@@ -563,7 +668,9 @@ const RequestSmartBinForm = () => {
                           className="w-full rounded-md border-green-300 shadow-sm focus:border-green-500 focus:ring-green-500 py-2 px-3"
                         >
                           <option value="morning">Morning (8AM - 12PM)</option>
-                          <option value="afternoon">Afternoon (12PM - 5PM)</option>
+                          <option value="afternoon">
+                            Afternoon (12PM - 5PM)
+                          </option>
                           <option value="anytime">Anytime</option>
                         </select>
                       </div>
@@ -576,11 +683,16 @@ const RequestSmartBinForm = () => {
             {/* Additional Instructions */}
             <div className="border-b border-green-100 pb-4">
               <h3 className="text-xl font-medium text-gray-800 mb-4 flex items-center">
-                <span className="text-2xl mr-2">{sectionIcons.additional}</span> Additional Information
+                <span className="text-2xl mr-2">{sectionIcons.additional}</span>{" "}
+                Additional Information
               </h3>
               <div>
-                <label htmlFor="specialInstructions" className="block text-sm font-medium text-gray-700 mb-1 flex items-center">
-                  <span className="mr-1">📋</span> Special Instructions (Optional)
+                <label
+                  htmlFor="specialInstructions"
+                  className="block text-sm font-medium text-gray-700 mb-1 flex items-center"
+                >
+                  <span className="mr-1">📋</span> Special Instructions
+                  (Optional)
                 </label>
                 <textarea
                   id="specialInstructions"
@@ -597,10 +709,14 @@ const RequestSmartBinForm = () => {
             {/* Payment Method Preview */}
             <div className="border-b border-green-100 pb-4">
               <h3 className="text-xl font-medium text-gray-800 mb-4 flex items-center">
-                <span className="text-2xl mr-2">{sectionIcons.payment}</span> Payment Method
+                <span className="text-2xl mr-2">{sectionIcons.payment}</span>{" "}
+                Payment Method
               </h3>
               <div>
-                <p className="text-sm text-gray-600 mb-2">Select your preferred payment method. Details will be collected on the next page.</p>
+                <p className="text-sm text-gray-600 mb-2">
+                  Select your preferred payment method. Details will be
+                  collected on the next page.
+                </p>
                 <div className="space-y-2">
                   <div className="flex items-center p-3 bg-green-50 rounded-md border border-green-100">
                     <input
@@ -612,7 +728,10 @@ const RequestSmartBinForm = () => {
                       onChange={handleChange}
                       className="h-4 w-4 text-green-600 focus:ring-green-500 border-green-300"
                     />
-                    <label htmlFor="creditCard" className="ml-2 block text-sm text-gray-900 flex items-center">
+                    <label
+                      htmlFor="creditCard"
+                      className="ml-2 block text-sm text-gray-900 flex items-center"
+                    >
                       <span className="mr-1">💳</span> Credit/Debit Card
                     </label>
                   </div>
@@ -635,8 +754,12 @@ const RequestSmartBinForm = () => {
                   />
                 </div>
                 <div className="ml-3 text-sm">
-                  <label htmlFor="termsAccepted" className="font-medium text-gray-700 flex items-center">
-                    <span className="mr-1">📜</span> I agree to the terms and conditions
+                  <label
+                    htmlFor="termsAccepted"
+                    className="font-medium text-gray-700 flex items-center"
+                  >
+                    <span className="mr-1">📜</span> I agree to the terms and
+                    conditions
                   </label>
                   <p className="text-gray-500">
                     By checking this box, you agree to our{" "}
@@ -670,9 +793,25 @@ const RequestSmartBinForm = () => {
               >
                 {isSubmitting ? (
                   <>
-                    <svg className="animate-spin -ml-1 mr-2 h-4 w-4 text-white" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
-                      <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
-                      <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+                    <svg
+                      className="animate-spin -ml-1 mr-2 h-4 w-4 text-white"
+                      xmlns="http://www.w3.org/2000/svg"
+                      fill="none"
+                      viewBox="0 0 24 24"
+                    >
+                      <circle
+                        className="opacity-25"
+                        cx="12"
+                        cy="12"
+                        r="10"
+                        stroke="currentColor"
+                        strokeWidth="4"
+                      ></circle>
+                      <path
+                        className="opacity-75"
+                        fill="currentColor"
+                        d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"
+                      ></path>
                     </svg>
                     Processing...
                   </>

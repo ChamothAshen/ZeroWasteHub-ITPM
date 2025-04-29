@@ -43,6 +43,9 @@ function App() {
         <Route path='/CardPayment' element={<CardPayment />} />
         <Route path='/ClientBill' element={<ClientBill />} />
         <Route path='/pages/CollectRequestForm' element={<CollectRequestForm />} />
+        <Route path='/EmployeeDashboard' element={<EmployeeDashboard />} />
+        <Route path='/profileui' element={<ProfileUI />} />
+        <Route path='/pages/ProfileData/UserDetailShow' element={<UserDetailShow />} />
         <Route path='/profileui' element={<ProfileUI/>} />
         <Route element={<PrivateRoute/>}>
          <Route path='/Dashboard' element={<Dashboard />} />

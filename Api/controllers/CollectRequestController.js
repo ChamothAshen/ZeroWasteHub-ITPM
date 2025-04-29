@@ -154,3 +154,54 @@ export const getUserCollectionRequests = async (req, res) => {
     });
   }
 };
+
+// Update a collection request by ID
+export const updateCollectionRequest = async (req, res) => {
+  try {
+    const { id } = req.params;
+    const updateData = req.body;
+
+    if (!id) {
+      return res.status(400).json({
+        success: false,
+        message: 'Request ID is required'
+      });
+    }
+
+    // Find and update the request
+    const updatedRequest = await CollectionRequest.findByIdAndUpdate(
+      id,
+      { $set: updateData },
+      { new: true, runValidators: true }
+    );
+
+    if (!updatedRequest) {
+      return res.status(404).json({
+        success: false,
+        message: 'Collection request not found'
+      });
+    }
+
+    res.status(200).json({
+      success: true,
+      data: updatedRequest,
+      message: 'Collection request updated successfully'
+    });
+  } catch (error) {
+    console.error('Error updating collection request:', error);
+    
+    // Handle MongoDB validation errors
+    if (error.name === 'ValidationError') {
+      const messages = Object.values(error.errors).map(val => val.message);
+      return res.status(400).json({
+        success: false,
+        message: messages.join(', ')
+      });
+    }
+    
+    res.status(500).json({
+      success: false,
+      message: 'Server error while updating collection request'
+    });
+  }
+};
