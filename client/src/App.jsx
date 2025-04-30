@@ -23,6 +23,7 @@ import WasteManagementChatBot from './pages/chatbot/WasteManagementChatBot';
 import OnlyAdminPrivateRoute from './components/OnlyAdminPrivateRoute';
 import PrivateRoute from './components/PrivateRoute';
 import SmartBinRequestsTable from './pages/Inventory/SmartBinRequestsTable';
+import UpdateInventoryForm from './pages/Inventory/UpdateInventoryForm';
 function App() {
   return (
     <BrowserRouter>
@@ -50,6 +51,8 @@ function App() {
         <Route element={<PrivateRoute/>}>
          <Route path='/Dashboard' element={<Dashboard />} />
          <Route path='/test' element={<SmartBinRequestsTable />} />
+         <Route path="/inventory/update/:id" element={<UpdateInventoryForm />} />
+
           
         </Route>
         <Route element={<OnlyAdminPrivateRoute />}>

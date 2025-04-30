@@ -2,8 +2,10 @@ import React, { useState, useEffect } from "react";
 import { FiMenu, FiEdit, FiTrash } from "react-icons/fi";
 import axios from "axios";
 import Sidebar from "../../components/Sidebar";
+import { useNavigate } from "react-router-dom";
 
 export default function Inventory() {
+  const navigate = useNavigate();
   const [activeTab, setActiveTab] = useState("inventory");
   const [sidebarOpen, setSidebarOpen] = useState(false);
 
@@ -219,10 +221,14 @@ export default function Inventory() {
                       {new Date(item.date).toLocaleDateString()}
                     </td>
                     <td className="py-3 px-4 text-sm text-gray-700">
-                      <button className="text-green-600 hover:text-green-800">
+                      <button
+                        className="text-green-600 hover:text-green-800"
+                        onClick={() => navigate(`/inventory/update/${item._id}`)} // replace with your route
+                      >
                         <FiEdit />
                       </button>
                     </td>
+
                     <td className="py-3 px-4 text-sm text-gray-700">
                       <button
                         className="text-red-600 hover:text-red-800"
