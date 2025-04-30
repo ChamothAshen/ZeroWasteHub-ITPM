@@ -2,303 +2,571 @@ import React, { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 
 const CollectRequestForm = () => {
-    const navigate = useNavigate();
-    const [uId, setuId] = useState("");
+  const navigate = useNavigate();
+  const [uId, setUId] = useState("");
+  const [isSubmitting, setIsSubmitting] = useState(false);
+  const [submitError, setSubmitError] = useState("");
+  const [currentStep, setCurrentStep] = useState(1);
+  const totalSteps = 3;
 
-    useEffect(() => {
-        setuId('bb797925-dfae-4531-aadd-294a87fd73f2');
-    }, []);
+  // Form data state
+  const [formData, setFormData] = useState({
+    binType: "",
+    location: "",
+    contactNo: "",
+    description: "",
+    specialInstructions: "",
+    quantity: "1",
+    date: "",
+    immediate: false
+  });
 
-    const [formData, setFormData] = useState({
-        binType: "",
-        location: "",
-        contactNo: "",
-        description: "",
-        specialInstructions: "",
-        quantity: "1",
-        date: "",
-        immediate: false
-    });
+  useEffect(() => {
+    setUId('bb797925-dfae-4531-aadd-294a87fd73f2');
+  }, []);
 
-    useEffect(() => {
-        if (uId) {
-            console.log("User ID set:", uId);
-        }
-    }, [uId]);
+  useEffect(() => {
+    if (uId) {
+      console.log("User ID set:", uId);
+    }
+  }, [uId]);
 
-    const handleChange = (e) => {
-        const { name, value, type, checked } = e.target;
-        setFormData((prevData) => ({
-            ...prevData,
-            [name]: type === "checkbox" ? checked : value,
-        }));
+  const handleChange = (e) => {
+    const { name, value, type, checked } = e.target;
+    setFormData((prevData) => ({
+      ...prevData,
+      [name]: type === "checkbox" ? checked : value,
+    }));
 
-        // If immediate is checked, clear the date
-        if (name === "immediate" && checked) {
-            setFormData((prevData) => ({ ...prevData, date: "" }));
-        }
-        // If date is set, uncheck immediate
-        if (name === "date" && value) {
-            setFormData((prevData) => ({ ...prevData, immediate: false }));
-        }
-    };
+    // If immediate is checked, clear the date
+    if (name === "immediate" && checked) {
+      setFormData((prevData) => ({ ...prevData, date: "" }));
+    }
+    // If date is set, uncheck immediate
+    if (name === "date" && value) {
+      setFormData((prevData) => ({ ...prevData, immediate: false }));
+    }
+  };
 
-    const handleSubmit = async (e) => {
-        e.preventDefault();
+  const nextStep = () => {
+    // Validate current step before proceeding
+    if (currentStep === 1) {
+      if (!formData.binType) {
+        setSubmitError("Please select a waste type");
+        return;
+      }
+      if (!formData.location) {
+        setSubmitError("Please enter a collection location");
+        return;
+      }
+      if (!formData.contactNo) {
+        setSubmitError("Please enter a contact number");
+        return;
+      }
+    } else if (currentStep === 2) {
+      if (!formData.description) {
+        setSubmitError("Please provide a waste description");
+        return;
+      }
+      if (!formData.quantity || formData.quantity < 1) {
+        setSubmitError("Please enter a valid quantity");
+        return;
+      }
+    }
 
-        try {
-            // Ensure we're using the current value of uId
-            if (!uId) {
-                alert("User ID is not available. Please try again.");
-                return;
-            }
+    setSubmitError("");
+    setCurrentStep(prev => Math.min(prev + 1, totalSteps));
+  };
 
-            let formattedDate;
-            if (formData.immediate) {
-                formattedDate = new Date().toISOString();
-            } else if (formData.date) {
-                formattedDate = new Date(formData.date).toISOString();
-            } else {
-                alert("Please select a date or choose immediate collection");
-                return;
-            }
+  const prevStep = () => {
+    setSubmitError("");
+    setCurrentStep(prev => Math.max(prev - 1, 1));
+  };
 
-            const submissionData = {
-                userId: uId,
-                scheduleDate: formattedDate,
-                location: formData.location,
-                binType: formData.binType,
-                quantity: parseInt(formData.quantity, 10) || 1,
-                description: formData.description,
-                contactNo: formData.contactNo,
-                specialInstructions: formData.specialInstructions || ""
-            };
+  const handleSubmit = async (e) => {
+    e.preventDefault();
+    setSubmitError("");
 
-            console.log("Submitting data:", submissionData);
+    // Final validation
+    if (!formData.immediate && !formData.date) {
+      setSubmitError("Please select a date or choose immediate collection");
+      return;
+    }
 
-            // Submit the data to the API
-          const response = await fetch('http://localhost:3000/api/collection-requests', {
-    method: 'POST',
-    headers: {
-        'Content-Type': 'application/json',
-    },
-    credentials: 'include',
-    body: JSON.stringify(submissionData),
-});
+    try {
+      setIsSubmitting(true);
 
-            console.log("Response status:", response.status);
+      // Ensure we're using the current value of uId
+      if (!uId) {
+        setSubmitError("User ID is not available. Please try again.");
+        return;
+      }
 
-            if (!response.ok) {
-                const errorText = await response.text();
-                console.error("Error response:", errorText);
-                throw new Error(`Server responded with status: ${response.status}, message: ${errorText}`);
-            }
+      let formattedDate;
+      if (formData.immediate) {
+        formattedDate = new Date().toISOString();
+      } else if (formData.date) {
+        formattedDate = new Date(formData.date).toISOString();
+      } else {
+        setSubmitError("Please select a date or choose immediate collection");
+        return;
+      }
 
-            const result = await response.json();
-            console.log("Response data:", result);
+      const submissionData = {
+        userId: uId,
+        scheduleDate: formattedDate,
+        location: formData.location,
+        binType: formData.binType,
+        quantity: parseInt(formData.quantity, 10) || 1,
+        description: formData.description,
+        contactNo: formData.contactNo,
+        specialInstructions: formData.specialInstructions || ""
+      };
 
-            if (result.success) {
-                alert("Collection request submitted successfully!");
-                // Navigate to the Card Payment page
-                navigate("/CardPayment", {
-                    state: {
-                        data: submissionData,
-                        requestId: result.data.requestId
-                    }
-                });
-            } else {
-                alert(result.message || "Failed to submit collection request");
-            }
-        } catch (error) {
-            console.error("Error submitting form:", error);
-            alert(`Failed to submit collection request: ${error.message}`);
-        }
-    };
+      console.log("Submitting data:", submissionData);
 
-    const cancel = () => {
-        // Temporary confirm implementation
-        if (window.confirm("Are you sure you want to cancel?")) {
-            navigate("/client");
-        }
-    };
+      // Submit the data to the API
+      const response = await fetch('http://localhost:3000/api/collection-requests', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        credentials: 'include',
+        body: JSON.stringify(submissionData),
+      });
 
-    // Icons for waste types
-    const wasteTypeIcons = {
-        general: "🗑️",
-        recycling: "♻️",
-        compost: "🌱",
-        paper: "📄",
-        electronics: "💻",
-        hazardous: "⚠️"
-    };
+      console.log("Response status:", response.status);
 
+      if (!response.ok) {
+        const errorText = await response.text();
+        console.error("Error response:", errorText);
+        throw new Error(`Server responded with status: ${response.status}, message: ${errorText}`);
+      }
+
+      const result = await response.json();
+      console.log("Response data:", result);
+
+      if (result.success) {
+        // Navigate to the Card Payment page
+        navigate("/CardPayment", {
+          state: {
+            data: submissionData,
+            requestId: result.data.requestId
+          }
+        });
+      } else {
+        throw new Error(result.message || "Failed to submit collection request");
+      }
+    } catch (error) {
+      console.error("Error submitting form:", error);
+      setSubmitError(`Failed to submit request: ${error.message}`);
+    } finally {
+      setIsSubmitting(false);
+    }
+  };
+
+  const cancel = () => {
+    if (window.confirm("Are you sure you want to cancel? All entered information will be lost.")) {
+      navigate("/client");
+    }
+  };
+
+  // Waste type icons and display names
+  const wasteTypes = {
+    general: { icon: "🗑️", name: "General Waste" },
+    recycling: { icon: "♻️", name: "Recycling" },
+    compost: { icon: "🌱", name: "Organic Waste" },
+    paper: { icon: "📄", name: "Paper/Cardboard" },
+    electronics: { icon: "💻", name: "Electronic Waste" },
+    hazardous: { icon: "⚠️", name: "Hazardous Waste" }
+  };
+
+  // Function to render the progress bar
+  const renderProgressBar = () => {
     return (
-        <div className="min-h-screen bg-green-50">
-            <div className="max-w-4xl mx-auto py-12 px-4 sm:px-6 lg:px-8">
-                <div className="bg-white shadow-lg rounded-lg overflow-hidden border border-green-200">
-                    <div className="px-6 py-8 border-b border-green-200 bg-gradient-to-r from-green-600 to-green-400 text-white">
-                        <h2 className="text-3xl font-bold text-white flex items-center">
-                            <span className="mr-2">♻️</span> Waste Collection Request
-                        </h2>
-                        <p className="mt-2 text-white opacity-90">Fill out the form below to schedule a waste collection</p>
-                    </div>
-
-                    <form onSubmit={handleSubmit} className="px-6 py-6 space-y-6">
-                        <div>
-                            <label htmlFor="binType" className="block text-sm font-medium text-gray-700 mb-1 flex items-center">
-                                <span className="mr-1">🗑️</span> Waste Type
-                            </label>
-                            <select
-                                id="binType"
-                                name="binType"
-                                value={formData.binType}
-                                onChange={handleChange}
-                                className="w-full rounded-md border-green-300 shadow-sm focus:border-green-500 focus:ring-green-500 py-2 px-3"
-                                required
-                            >
-                                <option value="">Select Waste Type</option>
-                                <option value="general">{wasteTypeIcons.general} General Waste</option>
-                                <option value="recycling">{wasteTypeIcons.recycling} Recycling</option>
-                                <option value="compost">{wasteTypeIcons.compost} Organic Waste</option>
-                                <option value="paper">{wasteTypeIcons.paper} Paper/Cardboard</option>
-                                <option value="electronics">{wasteTypeIcons.electronics} Electronic Waste</option>
-                                <option value="hazardous">{wasteTypeIcons.hazardous} Hazardous Waste</option>
-                            </select>
-                        </div>
-
-                        <div>
-                            <label htmlFor="location" className="block text-sm font-medium text-gray-700 mb-1 flex items-center">
-                                <span className="mr-1">📍</span> Collection Location
-                            </label>
-                            <input
-                                type="text"
-                                id="location"
-                                name="location"
-                                value={formData.location}
-                                onChange={handleChange}
-                                placeholder="Enter complete address"
-                                className="w-full rounded-md border-green-300 shadow-sm focus:border-green-500 focus:ring-green-500 py-2 px-3"
-                                required
-                            />
-                        </div>
-
-                        <div>
-                            <label htmlFor="contactNo" className="block text-sm font-medium text-gray-700 mb-1">
-                                Contact Number
-                            </label>
-                            <input
-                                type="tel"
-                                id="contactNo"
-                                name="contactNo"
-                                value={formData.contactNo}
-                                onChange={handleChange}
-                                placeholder="Phone number for collection coordination"
-                                className="w-full rounded-md border-green-300 shadow-sm focus:border-green-500 focus:ring-green-500 py-2 px-3"
-                                required
-                            />
-                        </div>
-
-                        <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                            <div>
-                                <label htmlFor="description" className="block text-sm font-medium text-gray-700 mb-1 flex items-center">
-                                    <span className="mr-1">📝</span> Waste Description
-                                </label>
-                                <textarea
-                                    id="description"
-                                    name="description"
-                                    value={formData.description}
-                                    onChange={handleChange}
-                                    placeholder="Describe the waste to be collected"
-                                    className="w-full rounded-md border-green-300 shadow-sm focus:border-green-500 focus:ring-green-500 py-2 px-3"
-                                    rows="4"
-                                    required
-                                ></textarea>
-                            </div>
-
-                            <div>
-                                <label htmlFor="specialInstructions" className="block text-sm font-medium text-gray-700 mb-1">
-                                    Special Instructions
-                                </label>
-                                <textarea
-                                    id="specialInstructions"
-                                    name="specialInstructions"
-                                    value={formData.specialInstructions}
-                                    onChange={handleChange}
-                                    placeholder="Any special handling or access instructions"
-                                    className="w-full rounded-md border-green-300 shadow-sm focus:border-green-500 focus:ring-green-500 py-2 px-3"
-                                    rows="4"
-                                ></textarea>
-                            </div>
-                        </div>
-
-                        <div>
-                            <label htmlFor="quantity" className="block text-sm font-medium text-gray-700 mb-1 flex items-center">
-                                <span className="mr-1">🔢</span> Estimated Volume (in bags/bins)
-                            </label>
-                            <input
-                                type="number"
-                                id="quantity"
-                                name="quantity"
-                                value={formData.quantity}
-                                onChange={handleChange}
-                                min="1"
-                                className="w-full md:w-1/4 rounded-md border-green-300 shadow-sm focus:border-green-500 focus:ring-green-500 py-2 px-3"
-                                required
-                            />
-                        </div>
-
-                        <div className="flex flex-col sm:flex-row sm:items-center space-y-4 sm:space-y-0 sm:space-x-6">
-                            <div className="flex-grow">
-                                <label htmlFor="date" className="block text-sm font-medium text-gray-700 mb-1 flex items-center">
-                                    <span className="mr-1">📅</span> Preferred Collection Date
-                                </label>
-                                <input
-                                    type="date"
-                                    id="date"
-                                    name="date"
-                                    value={formData.date}
-                                    onChange={handleChange}
-                                    className="w-full rounded-md border-green-300 shadow-sm focus:border-green-500 focus:ring-green-500 py-2 px-3"
-                                    disabled={formData.immediate}
-                                    required={!formData.immediate}
-                                />
-                            </div>
-                            <div className="flex items-center pt-6">
-                                <input
-                                    type="checkbox"
-                                    id="immediate"
-                                    name="immediate"
-                                    checked={formData.immediate}
-                                    onChange={handleChange}
-                                    className="h-4 w-4 rounded border-green-300 text-green-600 focus:ring-green-500 mr-2"
-                                    disabled={formData.date !== ""}
-                                />
-                                <label htmlFor="immediate" className="text-sm text-gray-700 flex items-center">
-                                    <span className="ml-1 mr-1">⚡</span> Urgent Collection (ASAP)
-                                </label>
-                            </div>
-                        </div>
-
-                        <div className="pt-4 flex justify-end space-x-4 border-t border-green-200">
-                            <button
-                                type="button"
-                                className="px-4 py-2 bg-white border border-green-300 rounded-md shadow-sm text-sm font-medium text-gray-700 hover:bg-green-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-green-500"
-                                onClick={cancel}
-                            >
-                                Cancel
-                            </button>
-                            <button
-                                type="submit"
-                                className="px-4 py-2 bg-green-600 border border-transparent rounded-md shadow-sm text-sm font-medium text-white hover:bg-green-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-green-500 flex items-center"
-                            >
-                                <span className="mr-1">✅</span> Submit Request
-                            </button>
-                        </div>
-                    </form>
-                </div>
+      <div className="mb-8">
+        <div className="flex justify-between mb-2">
+          {Array.from({ length: totalSteps }, (_, i) => (
+            <div 
+              key={i} 
+              className={`flex items-center justify-center w-8 h-8 rounded-full ${
+                i + 1 <= currentStep 
+                  ? 'bg-green-600 text-white' 
+                  : 'bg-gray-200 text-gray-600'
+              }`}
+            >
+              {i + 1}
             </div>
+          ))}
         </div>
+        <div className="w-full bg-gray-200 rounded-full h-2.5">
+          <div 
+            className="bg-green-600 h-2.5 rounded-full transition-all duration-300" 
+            style={{ width: `${(currentStep / totalSteps) * 100}%` }}
+          ></div>
+        </div>
+        <div className="flex justify-between mt-1 text-xs text-gray-500">
+          <span>Waste Type</span>
+          <span>Details</span>
+          <span>Schedule</span>
+        </div>
+      </div>
     );
+  };
+
+  // Function to render different form sections based on the current step
+  const renderFormStep = () => {
+    switch (currentStep) {
+      case 1:
+        return (
+          <div className="space-y-6">
+            <h3 className="text-xl font-medium text-gray-800 mb-4">Waste Type Information</h3>
+            
+            <div>
+              <label htmlFor="binType" className="block text-sm font-medium text-gray-700 mb-1">
+                Waste Type
+              </label>
+              <select
+                id="binType"
+                name="binType"
+                value={formData.binType}
+                onChange={handleChange}
+                className="w-full rounded-md border-gray-300 shadow-sm focus:border-green-500 focus:ring-green-500"
+                required
+              >
+                <option value="">Select Waste Type</option>
+                {Object.entries(wasteTypes).map(([key, { icon, name }]) => (
+                  <option key={key} value={key}>
+                    {icon} {name}
+                  </option>
+                ))}
+              </select>
+            </div>
+
+            <div>
+              <label htmlFor="location" className="block text-sm font-medium text-gray-700 mb-1">
+                Collection Location
+              </label>
+              <input
+                type="text"
+                id="location"
+                name="location"
+                value={formData.location}
+                onChange={handleChange}
+                placeholder="Enter complete address"
+                className="w-full rounded-md border-gray-300 shadow-sm focus:border-green-500 focus:ring-green-500"
+                required
+              />
+            </div>
+
+            <div>
+              <label htmlFor="contactNo" className="block text-sm font-medium text-gray-700 mb-1">
+                Contact Number
+              </label>
+              <input
+                type="tel"
+                id="contactNo"
+                name="contactNo"
+                value={formData.contactNo}
+                onChange={handleChange}
+                placeholder="Phone number for collection coordination"
+                className="w-full rounded-md border-gray-300 shadow-sm focus:border-green-500 focus:ring-green-500"
+                required
+              />
+            </div>
+          </div>
+        );
+      case 2:
+        return (
+          <div className="space-y-6">
+            <h3 className="text-xl font-medium text-gray-800 mb-4">Waste Details</h3>
+            
+            <div>
+              <label htmlFor="description" className="block text-sm font-medium text-gray-700 mb-1">
+                Waste Description
+              </label>
+              <textarea
+                id="description"
+                name="description"
+                value={formData.description}
+                onChange={handleChange}
+                placeholder="Describe the waste to be collected"
+                className="w-full rounded-md border-gray-300 shadow-sm focus:border-green-500 focus:ring-green-500"
+                rows="4"
+                required
+              ></textarea>
+            </div>
+
+            <div>
+              <label htmlFor="specialInstructions" className="block text-sm font-medium text-gray-700 mb-1">
+                Special Instructions (Optional)
+              </label>
+              <textarea
+                id="specialInstructions"
+                name="specialInstructions"
+                value={formData.specialInstructions}
+                onChange={handleChange}
+                placeholder="Any special handling or access instructions"
+                className="w-full rounded-md border-gray-300 shadow-sm focus:border-green-500 focus:ring-green-500"
+                rows="4"
+              ></textarea>
+            </div>
+
+            <div>
+              <label htmlFor="quantity" className="block text-sm font-medium text-gray-700 mb-1">
+                Estimated Volume (in bags/bins)
+              </label>
+              <input
+                type="number"
+                id="quantity"
+                name="quantity"
+                value={formData.quantity}
+                onChange={handleChange}
+                min="1"
+                className="w-full md:w-1/4 rounded-md border-gray-300 shadow-sm focus:border-green-500 focus:ring-green-500"
+                required
+              />
+            </div>
+          </div>
+        );
+      case 3:
+        return (
+          <div className="space-y-6">
+            <h3 className="text-xl font-medium text-gray-800 mb-4">Collection Schedule</h3>
+            
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+              <div>
+                <label htmlFor="date" className="block text-sm font-medium text-gray-700 mb-1">
+                  Preferred Collection Date
+                </label>
+                <input
+                  type="date"
+                  id="date"
+                  name="date"
+                  value={formData.date}
+                  onChange={handleChange}
+                  className="w-full rounded-md border-gray-300 shadow-sm focus:border-green-500 focus:ring-green-500"
+                  disabled={formData.immediate}
+                  required={!formData.immediate}
+                  min={new Date().toISOString().split("T")[0]}
+                />
+              </div>
+              
+              <div className="flex items-center pt-6">
+                <input
+                  type="checkbox"
+                  id="immediate"
+                  name="immediate"
+                  checked={formData.immediate}
+                  onChange={handleChange}
+                  className="h-4 w-4 text-green-600 focus:ring-green-500 border-gray-300 rounded"
+                />
+                <label htmlFor="immediate" className="ml-2 block text-sm text-gray-700">
+                  Urgent Collection (ASAP)
+                </label>
+              </div>
+            </div>
+            
+            <div className="bg-green-50 p-4 rounded-lg border border-green-100 mt-6">
+              <h4 className="font-medium text-gray-800 mb-2">Request Summary</h4>
+              <dl className="grid grid-cols-1 md:grid-cols-2 gap-x-4 gap-y-2 text-sm">
+                <div className="sm:col-span-1">
+                  <dt className="text-gray-500">Waste Type:</dt>
+                  <dd className="font-medium text-gray-900">
+                    {formData.binType ? wasteTypes[formData.binType].name : "—"}
+                  </dd>
+                </div>
+                <div className="sm:col-span-1">
+                  <dt className="text-gray-500">Quantity:</dt>
+                  <dd className="font-medium text-gray-900">{formData.quantity} bags/bins</dd>
+                </div>
+                <div className="sm:col-span-1">
+                  <dt className="text-gray-500">Location:</dt>
+                  <dd className="font-medium text-gray-900">{formData.location || "—"}</dd>
+                </div>
+                <div className="sm:col-span-1">
+                  <dt className="text-gray-500">Contact:</dt>
+                  <dd className="font-medium text-gray-900">{formData.contactNo || "—"}</dd>
+                </div>
+                <div className="sm:col-span-2">
+                  <dt className="text-gray-500">Collection Date:</dt>
+                  <dd className="font-medium text-gray-900">
+                    {formData.immediate 
+                      ? "As soon as possible" 
+                      : formData.date 
+                        ? new Date(formData.date).toLocaleDateString() 
+                        : "Not specified"}
+                  </dd>
+                </div>
+              </dl>
+            </div>
+          </div>
+        );
+      default:
+        return null;
+    }
+  };
+
+  return (
+    <div className="min-h-screen bg-gray-50 py-12">
+      <div className="max-w-3xl mx-auto px-4 sm:px-6 lg:px-8">
+        <div className="bg-white rounded-lg shadow-lg overflow-hidden">
+          {/* Header */}
+          <div className="bg-gradient-to-r from-green-700 to-green-500 px-6 py-8 text-white">
+            <h1 className="text-3xl font-bold">Waste Collection Request</h1>
+            <p className="mt-2 text-green-100">
+              Schedule a pickup for your waste materials
+            </p>
+          </div>
+          
+          {/* Error Message */}
+          {submitError && (
+            <div className="m-6 p-4 bg-red-50 border border-red-200 text-red-700 rounded-md">
+              <p className="flex items-center font-medium">
+                {submitError}
+              </p>
+            </div>
+          )}
+          
+          {/* Form Content */}
+          <div className="px-6 py-8">
+            {renderProgressBar()}
+            
+            <form onSubmit={handleSubmit}>
+              {renderFormStep()}
+              
+              {/* Navigation Buttons */}
+              <div className="mt-8 pt-5 border-t border-gray-200 flex justify-between">
+                <div>
+                  {currentStep > 1 && (
+                    <button
+                      type="button"
+                      onClick={prevStep}
+                      className="bg-white py-2 px-4 border border-gray-300 rounded-md shadow-sm text-sm font-medium text-gray-700 hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-green-500"
+                    >
+                      Back
+                    </button>
+                  )}
+                </div>
+                
+                <div className="flex space-x-3">
+                  <button
+                    type="button"
+                    onClick={cancel}
+                    className="bg-white py-2 px-4 border border-gray-300 rounded-md shadow-sm text-sm font-medium text-gray-700 hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-green-500"
+                  >
+                    Cancel
+                  </button>
+                  
+                  {currentStep < totalSteps ? (
+                    <button
+                      type="button"
+                      onClick={nextStep}
+                      className="inline-flex justify-center py-2 px-4 border border-transparent shadow-sm text-sm font-medium rounded-md text-white bg-green-600 hover:bg-green-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-green-500"
+                    >
+                      Continue
+                    </button>
+                  ) : (
+                    <button
+                      type="submit"
+                      disabled={isSubmitting}
+                      className="inline-flex justify-center py-2 px-4 border border-transparent shadow-sm text-sm font-medium rounded-md text-white bg-green-600 hover:bg-green-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-green-500"
+                    >
+                      {isSubmitting ? (
+                        <span className="flex items-center">
+                          <svg 
+                            className="animate-spin -ml-1 mr-2 h-4 w-4 text-white" 
+                            xmlns="http://www.w3.org/2000/svg" 
+                            fill="none" 
+                            viewBox="0 0 24 24"
+                          >
+                            <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
+                            <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+                          </svg>
+                          Processing...
+                        </span>
+                      ) : (
+                        "Submit Request"
+                      )}
+                    </button>
+                  )}
+                </div>
+              </div>
+            </form>
+          </div>
+        </div>
+        
+        {/* Request Overview */}
+        {currentStep > 1 && (
+          <div className="mt-6 bg-white rounded-lg shadow overflow-hidden border-t border-gray-200">
+            <div className="px-4 py-5 sm:px-6 bg-green-50">
+              <h3 className="text-lg font-medium leading-6 text-gray-900">Collection Request Overview</h3>
+              <p className="mt-1 max-w-2xl text-sm text-gray-500">Details of your waste collection request</p>
+            </div>
+            <div className="border-t border-gray-200 px-4 py-5 sm:p-0">
+              <dl className="sm:divide-y sm:divide-gray-200">
+                {formData.binType && (
+                  <div className="py-4 sm:py-5 sm:grid sm:grid-cols-3 sm:gap-4 sm:px-6">
+                    <dt className="text-sm font-medium text-gray-500">Waste Type</dt>
+                    <dd className="mt-1 text-sm text-gray-900 sm:mt-0 sm:col-span-2 flex items-center">
+                      <span className="mr-2">{wasteTypes[formData.binType].icon}</span>
+                      {wasteTypes[formData.binType].name}
+                    </dd>
+                  </div>
+                )}
+                
+                {formData.location && (
+                  <div className="py-4 sm:py-5 sm:grid sm:grid-cols-3 sm:gap-4 sm:px-6">
+                    <dt className="text-sm font-medium text-gray-500">Collection Location</dt>
+                    <dd className="mt-1 text-sm text-gray-900 sm:mt-0 sm:col-span-2">{formData.location}</dd>
+                  </div>
+                )}
+
+                {formData.contactNo && (
+                  <div className="py-4 sm:py-5 sm:grid sm:grid-cols-3 sm:gap-4 sm:px-6">
+                    <dt className="text-sm font-medium text-gray-500">Contact Number</dt>
+                    <dd className="mt-1 text-sm text-gray-900 sm:mt-0 sm:col-span-2">{formData.contactNo}</dd>
+                  </div>
+                )}
+                
+                {currentStep > 2 && formData.description && (
+                  <div className="py-4 sm:py-5 sm:grid sm:grid-cols-3 sm:gap-4 sm:px-6">
+                    <dt className="text-sm font-medium text-gray-500">Description</dt>
+                    <dd className="mt-1 text-sm text-gray-900 sm:mt-0 sm:col-span-2">{formData.description}</dd>
+                  </div>
+                )}
+                
+                {currentStep > 2 && (
+                  <div className="py-4 sm:py-5 sm:grid sm:grid-cols-3 sm:gap-4 sm:px-6">
+                    <dt className="text-sm font-medium text-gray-500">Estimated Volume</dt>
+                    <dd className="mt-1 text-sm text-gray-900 sm:mt-0 sm:col-span-2">{formData.quantity} bags/bins</dd>
+                  </div>
+                )}
+
+                {formData.specialInstructions && currentStep > 2 && (
+                  <div className="py-4 sm:py-5 sm:grid sm:grid-cols-3 sm:gap-4 sm:px-6">
+                    <dt className="text-sm font-medium text-gray-500">Special Instructions</dt>
+                    <dd className="mt-1 text-sm text-gray-900 sm:mt-0 sm:col-span-2">{formData.specialInstructions}</dd>
+                  </div>
+                )}
+
+                {currentStep === 3 && (formData.date || formData.immediate) && (
+                  <div className="py-4 sm:py-5 sm:grid sm:grid-cols-3 sm:gap-4 sm:px-6">
+                    <dt className="text-sm font-medium text-gray-500">Collection Date</dt>
+                    <dd className="mt-1 text-sm text-gray-900 sm:mt-0 sm:col-span-2">
+                      {formData.immediate 
+                        ? "As soon as possible (urgent)" 
+                        : new Date(formData.date).toLocaleDateString()}
+                    </dd>
+                  </div>
+                )}
+              </dl>
+            </div>
+          </div>
+        )}
+      </div>
+    </div>
+  );
 };
 
 export default CollectRequestForm;

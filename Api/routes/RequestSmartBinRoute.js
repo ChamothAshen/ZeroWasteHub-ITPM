@@ -1,4 +1,4 @@
-// routes/RequestSmartBinRoutes.js
+
 import express from 'express';
 import  {createSmartBinRequest, getAllSmartBinRequests,getSmartBinRequestById}  from '../controllers/RequestSmartBinController.js';
 

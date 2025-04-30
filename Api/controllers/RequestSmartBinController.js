@@ -1,3 +1,4 @@
+
 // controllers/SmartBinRequestController.js
 import { v4 as uuidv4 } from 'uuid';
 import SmartBinRequest from '../models/RequestSmartBinModel.js';
@@ -104,3 +105,6 @@ export const getSmartBinRequestById = async (req, res) => {
     });
   }
 };
+
+
+
