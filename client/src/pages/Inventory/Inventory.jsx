@@ -144,13 +144,15 @@ export default function Inventory() {
                         colSpan={8}
                         className="py-3 px-4 font-semibold text-green-800"
                       >
-                        {item.company}
-                        <button
-                          className="text-red-600 hover:text-red-800"
-                          onClick={() => handleDeleteCompany(item._id)}
-                        >
-                          <FiTrash />
-                        </button>
+                        <div className="flex justify-between items-center">
+                          <span>{item.company}</span>
+                          <button
+                            className="p-2 bg-red-100 text-red-600 rounded-full hover:bg-red-200"
+                            onClick={() => handleDeleteCompany(item._id)}
+                          >
+                            <FiTrash className="w-5 h-5" />
+                          </button>
+                        </div>
                       </td>
                     </tr>
 
