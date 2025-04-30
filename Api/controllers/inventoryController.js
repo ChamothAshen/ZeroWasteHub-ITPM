@@ -80,6 +80,34 @@ export const deleteInventory = async (req, res, next) => {
   }
 };
 
+export const deleteEntry = async (req, res) => {
+  const { companyId, entryId } = req.params;
+
+  if (!mongoose.Types.ObjectId.isValid(companyId) || !mongoose.Types.ObjectId.isValid(entryId)) {
+    return res.status(400).json({ message: "Invalid company or entry ID" });
+  }
+
+  try {
+    const company = await Inventory.findById(companyId);
+    if (!company) return res.status(404).json({ message: "Company not found" });
+
+    const originalLength = company.entries.length;
+    company.entries = company.entries.filter(entry => entry._id.toString() !== entryId);
+
+    if (company.entries.length === originalLength) {
+      return res.status(404).json({ message: "Entry not found" });
+    }
+
+    await company.save();
+    res.status(200).json({ message: "Entry deleted successfully", updatedCompany: company });
+  } catch (error) {
+    console.error("Error deleting entry:", error);
+    res.status(500).json({ message: "Server error", error });
+  }
+};
+
+
+
 export const getTodayWeight = async (req, res) => {
   try {
     const today = new Date();

@@ -3,6 +3,7 @@ import { FiMenu, FiEdit, FiTrash } from "react-icons/fi";
 import axios from "axios";
 import Sidebar from "../../components/Sidebar";
 import { useNavigate } from "react-router-dom";
+import InventoryForm from "../Inventory/InventoryForm.jsx";
 
 export default function Inventory() {
   const navigate = useNavigate();
@@ -19,7 +20,6 @@ export default function Inventory() {
   });
 
   const [tableData, setTableData] = useState([]);
-  const categories = ["Plastic", "Paper", "Food", "General Waste", "Recycling"];
 
   // Fetch inventory items
   useEffect(() => {
@@ -38,38 +38,40 @@ export default function Inventory() {
   }, []);
 
   // Handle input changes
-  const handleChange = (e) => {
+  /*   const handleChange = (e) => {
     setFormData({ ...formData, [e.target.name]: e.target.value });
   };
+ */
 
-  // Handle form submit
-  const handleSubmit = async (e) => {
-    e.preventDefault();
+  //CREATE DELETe FUNCTION
+  const handleDeleteCompany = async (companyId) => {
     try {
-      const res = await axios.post(
-        "http://localhost:3000/api/Inventory/addInv",
-        formData
+      await axios.delete(
+        `http://localhost:3000/api/Inventory/deleteInv/${companyId}`
       );
-      setTableData((prev) => [...prev, res.data]);
-      setFormData({
-        company: "",
-        category: "",
-        weights: "",
-        quantity: "",
-        binSize: "",
-        date: "",
-      });
+      setTableData((prev) => prev.filter((item) => item._id !== companyId));
     } catch (error) {
-      console.error("Failed to create item:", error);
+      console.error("Failed to delete company:", error);
     }
   };
-  //CREATE DELETe FUNCTION
-  const handleDelete = async (id) => {
+
+  const handleDeleteEntry = async (companyId, entryId) => {
     try {
-      await axios.delete(`http://localhost:3000/api/Inventory/deleteInv/${id}`);
-      setTableData((prev) => prev.filter((item) => item._id !== id));
+      await axios.delete(
+        `http://localhost:3000/api/Inventory/deleteEntry/${companyId}/${entryId}`
+      );
+      setTableData((prev) =>
+        prev.map((item) =>
+          item._id === companyId
+            ? {
+                ...item,
+                entries: item.entries.filter((entry) => entry._id !== entryId),
+              }
+            : item
+        )
+      );
     } catch (error) {
-      console.error("Failed to delete item:", error);
+      console.error("Failed to delete entry:", error);
     }
   };
 
@@ -96,72 +98,9 @@ export default function Inventory() {
           <h3 className="text-xl font-semibold mb-4">
             Add Garbage Details Per Day
           </h3>
-          <form onSubmit={handleSubmit} className="grid grid-cols-2 gap-4">
-            <input
-              type="text"
-              name="company"
-              value={formData.company}
-              onChange={handleChange}
-              placeholder="Company"
-              className="p-2 border rounded"
-              required
-            />
-            <select
-              name="category"
-              value={formData.category}
-              onChange={handleChange}
-              className="w-full border px-3 py-2 rounded-lg"
-              required
-            >
-              <option value="">Select Category</option>
-              {categories.map((cat, idx) => (
-                <option key={idx} value={cat}>
-                  {cat}
-                </option>
-              ))}
-            </select>
-            <input
-              type="number"
-              name="weights"
-              value={formData.weights}
-              onChange={handleChange}
-              placeholder="Weights"
-              className="p-2 border rounded"
-              required
-            />
-            <input
-              type="number"
-              name="quantity"
-              value={formData.quantity}
-              onChange={handleChange}
-              placeholder="Quantity"
-              className="p-2 border rounded"
-              required
-            />
-            <input
-              type="text"
-              name="binSize"
-              value={formData.binSize}
-              onChange={handleChange}
-              placeholder="Bin Size"
-              className="p-2 border rounded"
-              required
-            />
-            <input
-              type="date"
-              name="date"
-              value={formData.date}
-              onChange={handleChange}
-              className="p-2 border rounded"
-              required
-            />
-            <button
-              type="submit"
-              className="col-span-2 bg-green-600 text-white py-2 rounded"
-            >
-              Add Item
-            </button>
-          </form>
+          <div>
+            <InventoryForm />
+          </div>
         </div>
 
         {/* Table */}
@@ -198,46 +137,107 @@ export default function Inventory() {
               </thead>
               <tbody>
                 {tableData.map((item) => (
-                  <tr
-                    key={item._id}
-                    className="border-b border-gray-200 hover:bg-gray-50"
-                  >
-                    <td className="py-3 px-4 text-sm text-gray-700">
-                      {item.company}
-                    </td>
-                    <td className="py-3 px-4 text-sm text-gray-700">
-                      {item.category}
-                    </td>
-                    <td className="py-3 px-4 text-sm text-gray-700">
-                      {item.weights}
-                    </td>
-                    <td className="py-3 px-4 text-sm text-gray-700">
-                      {item.quantity}
-                    </td>
-                    <td className="py-3 px-4 text-sm text-gray-700">
-                      {item.binSize}
-                    </td>
-                    <td className="py-3 px-4 text-sm text-gray-700">
-                      {new Date(item.date).toLocaleDateString()}
-                    </td>
-                    <td className="py-3 px-4 text-sm text-gray-700">
-                      <button
-                        className="text-green-600 hover:text-green-800"
-                        onClick={() => navigate(`/inventory/update/${item._id}`)} // replace with your route
+                  <React.Fragment key={item._id}>
+                    {/* Group header: Company name */}
+                    <tr className="bg-green-100">
+                      <td
+                        colSpan={8}
+                        className="py-3 px-4 font-semibold text-green-800"
                       >
-                        <FiEdit />
-                      </button>
-                    </td>
+                        {item.company}
+                        <button
+                          className="text-red-600 hover:text-red-800"
+                          onClick={() => handleDeleteCompany(item._id)}
+                        >
+                          <FiTrash />
+                        </button>
+                      </td>
+                    </tr>
 
-                    <td className="py-3 px-4 text-sm text-gray-700">
-                      <button
-                        className="text-red-600 hover:text-red-800"
-                        onClick={() => handleDelete(item._id)}
-                      >
-                        <FiTrash />
-                      </button>
-                    </td>
-                  </tr>
+                    {/* Entries for the company */}
+                    {Array.isArray(item.entries) && item.entries.length > 0 ? (
+                      item.entries.map((entry, idx) => (
+                        <tr
+                          key={`${item._id}-${entry._id || idx}`}
+                          className="border-b border-gray-200 hover:bg-gray-50"
+                        >
+                          <td className="py-3 px-4 text-sm text-gray-700"></td>
+                          <td className="py-3 px-4 text-sm text-gray-700">
+                            {entry.category}
+                          </td>
+                          <td className="py-3 px-4 text-sm text-gray-700">
+                            {entry.weights}
+                          </td>
+                          <td className="py-3 px-4 text-sm text-gray-700">
+                            {entry.quantity}
+                          </td>
+                          <td className="py-3 px-4 text-sm text-gray-700">
+                            {entry.binSize}
+                          </td>
+                          <td className="py-3 px-4 text-sm text-gray-700">
+                            {new Date(item.date).toLocaleDateString()}
+                          </td>
+                          <td className="py-3 px-4 text-sm text-gray-700">
+                            <button
+                              className="text-green-600 hover:text-green-800"
+                              onClick={() =>
+                                navigate(`/inventory/update/${item._id}`)
+                              }
+                            >
+                              <FiEdit />
+                            </button>
+                          </td>
+                          <td className="py-3 px-4 text-sm text-gray-700">
+                            <button
+                              className="text-red-600 hover:text-red-800"
+                              onClick={() =>
+                                handleDeleteEntry(item._id, entry._id)
+                              }
+                            >
+                              <FiTrash />
+                            </button>
+                          </td>
+                        </tr>
+                      ))
+                    ) : (
+                      <tr className="border-b border-gray-200 hover:bg-gray-50">
+                        <td className="py-3 px-4 text-sm text-gray-700"></td>
+                        <td className="py-3 px-4 text-sm text-gray-700">
+                          {item.category}
+                        </td>
+                        <td className="py-3 px-4 text-sm text-gray-700">
+                          {item.weights}
+                        </td>
+                        <td className="py-3 px-4 text-sm text-gray-700">
+                          {item.quantity}
+                        </td>
+                        <td className="py-3 px-4 text-sm text-gray-700">
+                          {item.binSize}
+                        </td>
+                        <td className="py-3 px-4 text-sm text-gray-700">
+                          {new Date(item.date).toLocaleDateString()}
+                        </td>
+                        <td className="py-3 px-4 text-sm text-gray-700">
+                          <button
+                            className="text-green-600 hover:text-green-800"
+                            onClick={() =>
+                              navigate(`/inventory/update/${item._id}`)
+                            }
+                          >
+                            <FiEdit />
+                          </button>
+                        </td>
+                        <td className="py-3 px-4 text-sm text-gray-700">
+                          <button
+                            className="text-red-600 hover:text-red-800"
+                            onClick={() => handleDelete(item._id)}
+                          >
+                            <FiTrash />
+                          </button>
+                        </td>
+                      </tr>
+                    )}
+                  </React.Fragment>
                 ))}
               </tbody>
             </table>
