@@ -1,6 +1,5 @@
 import React, { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
-import BinRequestForm from "./BinRequestForm";
 
 // Component for requesting individual bins
 const BinRequestForm = ({ handleBinRequestChange }) => {
@@ -302,11 +301,7 @@ const RequestSmartBinForm = () => {
   };
 
   const cancel = () => {
-    if (
-      window.confirm(
-        "Are you sure you want to cancel? All entered information will be lost."
-      )
-    ) {
+    if (window.confirm("Are you sure you want to cancel? All entered information will be lost.")) {
       navigate("/client");
     }
   };
