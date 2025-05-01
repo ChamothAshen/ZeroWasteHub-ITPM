@@ -117,26 +117,40 @@ export const getTodayWeight = async (req, res) => {
     const result = await Inventory.aggregate([
       {
         $match: {
-          date: { $gte: startOfDay, $lte: endOfDay }
-        }
+          date: { $gte: startOfDay, $lte: endOfDay },
+        },
+      },
+      {
+        $unwind: "$entries",
       },
       {
         $group: {
-          _id: "$category",
-          totalWeight: { $sum: { $toDouble: "$weights" } }
-        }
-      }
+          _id: "$entries.category",
+          totalWeight: {
+            $sum: {
+              $toDouble: "$entries.weights",
+            },
+          },
+        },
+      },
+      {
+        $project: {
+          _id: 0,
+          category: "$_id",
+          totalWeight: 1,
+        },
+      },
     ]);
 
     res.status(200).json({
       success: true,
       message: "Today's weight by category",
-      data: result
+      data: result,
     });
   } catch (err) {
     res.status(500).json({
       success: false,
-      message: `Error fetching today's category weights: ${err.message}`
+      message: `Error fetching today's category weights: ${err.message}`,
     });
   }
 };

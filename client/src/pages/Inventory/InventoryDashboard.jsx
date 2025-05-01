@@ -123,7 +123,7 @@ const InventoryDashboard = () => {
         const dataObj = {};
 
         res.data.data.forEach(item => {
-          dataObj[item._id] = item.totalWeight;
+          dataObj[item.category] = item.totalWeight;
         });
 
         setCategoryData(dataObj);
