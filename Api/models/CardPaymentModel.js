@@ -1,82 +1,35 @@
-// models/CardPaymentModel.js
-import mongoose from 'mongoose';
+const mongoose = require('mongoose');
+const Schema = mongoose.Schema;
 
-const CardPaymentSchema = new mongoose.Schema({
+const PaymentSchema = new Schema({
   userId: {
     type: String,
     required: true,
-    ref: 'User'
+    index: true
   },
   requestId: {
-    type: String,
-    required: true,
-    ref: 'CollectionRequest'
+    type: mongoose.Schema.Types.ObjectId,
+    ref: 'Request',
+    default: null
   },
-  // Store only last 4 digits of card number for reference
-  lastFourDigits: {
-    type: String,
-    required: true,
-    trim: true,
-    maxlength: 4
+  cardInfo: {
+    cardNumber: {
+      type: String,  // Masked card number for display
+      required: true
+    },
+    cardHolder: {
+      type: String,
+      required: true
+    },
+    expiryDate: {
+      type: String,
+      required: true
+    },
+    last4Digits: {
+      type: String,
+      required: true
+    }
   },
-  // Store card holder name
-  cardHolder: {
-    type: String,
-    required: true,
-    trim: true
-  },
-  // Store card type (Visa, Mastercard, etc.)
-  cardType: {
-    type: String,
-    required: true,
-    enum: ['visa', 'mastercard', 'amex', 'discover', 'other']
-  },
-  // Store expiry month and year separately
-  expiryMonth: {
-    type: Number,
-    required: true,
-    min: 1,
-    max: 12
-  },
-  expiryYear: {
-    type: Number,
-    required: true,
-    min: new Date().getFullYear() % 100, // Current 2-digit year
-    max: (new Date().getFullYear() % 100) + 20 // Current year + 20 years
-  },
-  // Store payment amount
-  amount: {
-    type: Number,
-    required: true,
-    min: 0
-  },
-  // Store payment currency
-  currency: {
-    type: String,
-    required: true,
-    default: 'USD',
-    enum: ['USD', 'EUR', 'GBP', 'CAD', 'AUD', 'INR']
-  },
-  // Payment status
-  status: {
-    type: String,
-    required: true,
-    enum: ['pending', 'processing', 'completed', 'failed', 'refunded'],
-    default: 'pending'
-  },
-  // Transaction ID from payment processor
-  transactionId: {
-    type: String,
-    sparse: true // Allow null/undefined but enforce uniqueness when present
-  },
-  // Payment processor used
-  paymentProcessor: {
-    type: String,
-    required: true,
-    enum: ['stripe', 'paypal', 'square', 'internal', 'other'],
-    default: 'internal'
-  },
-  // Billing address
   billingAddress: {
     street: {
       type: String,
@@ -100,13 +53,49 @@ const CardPaymentSchema = new mongoose.Schema({
       default: 'US'
     }
   },
-  // Additional metadata or notes
-  metadata: {
-    type: Map,
-    of: String,
-    default: {}
+  amount: {
+    type: Number,
+    required: true
   },
-  // Timestamps
+  currency: {
+    type: String,
+    required: true,
+    default: 'USD'
+  },
+  transaction: {
+    transactionId: {
+      type: String,
+      required: true,
+      unique: true
+    },
+    status: {
+      type: String,
+      enum: ['pending', 'completed', 'failed', 'refunded', 'disputed', 'cancelled'],
+      default: 'pending'
+    },
+    timestamp: {
+      type: Date,
+      default: Date.now
+    }
+  },
+  refund: {
+    amount: {
+      type: Number,
+      default: null
+    },
+    reason: {
+      type: String,
+      default: null
+    },
+    timestamp: {
+      type: Date,
+      default: null
+    }
+  },
+  isDeleted: {
+    type: Boolean,
+    default: false
+  },
   createdAt: {
     type: Date,
     default: Date.now
@@ -115,43 +104,14 @@ const CardPaymentSchema = new mongoose.Schema({
     type: Date,
     default: Date.now
   }
+}, {
+  timestamps: true
 });
 
-// Pre-save hook to update the 'updatedAt' timestamp
-CardPaymentSchema.pre('save', function(next) {
-  this.updatedAt = Date.now();
-  next();
-});
+// Create indexes for common queries
+PaymentSchema.index({ 'transaction.transactionId': 1 });
+PaymentSchema.index({ 'transaction.timestamp': -1 });
+PaymentSchema.index({ 'transaction.status': 1 });
+PaymentSchema.index({ createdAt: -1 });
 
-// Create a compound index for userId and requestId for faster lookups
-CardPaymentSchema.index({ userId: 1, requestId: 1 });
-
-// Create an index on transactionId for faster lookups
-CardPaymentSchema.index({ transactionId: 1 }, { sparse: true });
-
-// Method to anonymize payment data for security
-CardPaymentSchema.methods.anonymize = function() {
-  const anonymized = this.toObject();
-  anonymized.lastFourDigits = '****';
-  anonymized.cardHolder = anonymized.cardHolder
-    .split(' ')
-    .map(name => name.charAt(0) + '*****')
-    .join(' ');
-  return anonymized;
-};
-
-// Static method to find payments by user
-CardPaymentSchema.statics.findByUser = function(userId) {
-  return this.find({ userId }).sort({ createdAt: -1 });
-};
-
-// Static method to find payments by request
-CardPaymentSchema.statics.findByRequest = function(requestId) {
-  return this.find({ requestId });
-};
-
-// ⚠️ IMPORTANT: Do NOT store complete card numbers, CVV, or any sensitive data
-// This model only stores references to transactions and PCI-compliant minimal data
-// All actual payment processing should go through a secure payment gateway
-
-export default mongoose.model('CardPayment', CardPaymentSchema);
+module.exports = mongoose.model('Payment', PaymentSchema);

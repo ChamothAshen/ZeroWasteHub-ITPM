@@ -297,13 +297,13 @@ const CollectionRequestsTable = () => {
                       </td>
                       <td className="px-4 py-3">
                         <div className="flex justify-center space-x-2">
-                          <button 
+                          {/* <button 
                             onClick={() => handleViewDetails(request._id)}
                             className="p-1.5 bg-blue-100 text-blue-700 rounded-full hover:bg-blue-200 transition"
                             title="View Details"
                           >
                             <FiEye size={16} />
-                          </button>
+                          </button> */}
                           <button 
                             onClick={() => handleEditRequest(request)}
                             className="p-1.5 bg-yellow-100 text-yellow-700 rounded-full hover:bg-yellow-200 transition"

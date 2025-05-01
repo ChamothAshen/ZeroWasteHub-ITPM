@@ -1,28 +1,30 @@
-// routes/CardPaymentRoutes.js
-import express from 'express';
-import { 
-  processCardPayment, 
-  getPaymentByTransactionId, 
-  getUserPayments, 
-  getRequestPayment,
-  getPaymentReceipt
-} from '../controllers/CardPaymentController.js';
-
+const express = require('express');
 const router = express.Router();
+const paymentController = require('../controllers/PaymentController');
+const authMiddleware = require('../middleware/auth');
 
-// Process a new card payment
-router.post('/', processCardPayment);
+// Middleware to protect routes
+router.use(authMiddleware);
 
-// Get payment details by transaction ID
-router.get('/transaction/:transactionId', getPaymentByTransactionId);
+// Create a new payment
+router.post('/', paymentController.createPayment);
+
+// Get payment by ID
+router.get('/:paymentId', paymentController.getPaymentById);
+
+// Get payment by transaction ID
+router.get('/transaction/:transactionId', paymentController.getPaymentByTransactionId);
+
+// Get payment receipt by transaction ID
+router.get('/receipt/:transactionId', paymentController.getPaymentReceipt);
 
 // Get all payments for a user
-router.get('/user/:userId', getUserPayments);
+router.get('/user/:userId?', paymentController.getUserPayments);
 
-// Get payment for a specific collection request
-router.get('/request/:requestId', getRequestPayment);
+// Update payment status (for refunds, disputes, etc.)
+router.patch('/:paymentId', paymentController.updatePayment);
 
-// Get payment receipt
-router.get('/receipt/:transactionId', getPaymentReceipt);
+// Delete payment (admin only, soft delete)
+router.delete('/:paymentId', paymentController.deletePayment);
 
-export default router;
+module.exports = router;

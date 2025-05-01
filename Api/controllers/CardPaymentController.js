@@ -1,357 +1,442 @@
-// controllers/CardPaymentController.js
-import { v4 as uuidv4 } from 'uuid';
-import CardPayment from '../models/CardPaymentModel.js';
-import CollectionRequest from '../models/CollectRequestModel.js';
+const PaymentModel = require('../models/Payment');
+const RequestModel = require('../models/Request');
+const { v4: uuidv4 } = require('uuid');
 
-/**
- * Process a new card payment
- * Note: In a production environment, you would use a payment processor API
- * and only store the transaction results, not the actual card details
- */
-export const processCardPayment = async (req, res) => {
-  try {
-    const {
-      userId,
-      requestId,
-      cardNumber,
-      cardHolder,
-      expiryDate,
-      cvv,
-      amount,
-      currency = 'USD',
-      billingAddress
-    } = req.body;
+class PaymentController {
+  /**
+   * Create a new payment
+   * @param {Object} req - Express request object
+   * @param {Object} res - Express response object
+   */
+  async createPayment(req, res) {
+    try {
+      const { 
+        userId, 
+        requestId, 
+        cardNumber, 
+        cardHolder, 
+        expiryDate, 
+        amount, 
+        currency, 
+        billingAddress 
+      } = req.body;
 
-    // Validate required fields
-    if (!userId || !requestId || !cardNumber || !cardHolder || !expiryDate || !cvv || !amount || !billingAddress) {
-      return res.status(400).json({
-        success: false,
-        message: 'Please provide all required fields'
-      });
-    }
-
-    // Check if the collection request exists
-    const request = await CollectionRequest.findOne({ requestId });
-    if (!request) {
-      return res.status(404).json({
-        success: false,
-        message: 'Collection request not found'
-      });
-    }
-
-    // In a real implementation, you would process the payment through a secure gateway
-    // and receive a transaction ID. This is a simplified simulation.
-    
-    // Extract card info (in real app, this would be handled by payment processor)
-    const lastFourDigits = cardNumber.slice(-4);
-    const [expiryMonth, expiryYear] = expiryDate.split('/').map(part => parseInt(part.trim(), 10));
-    
-    // Determine card type based on first digit (simplified)
-    let cardType = 'other';
-    if (cardNumber.startsWith('4')) {
-      cardType = 'visa';
-    } else if (cardNumber.startsWith('5')) {
-      cardType = 'mastercard';
-    } else if (cardNumber.startsWith('3')) {
-      cardType = 'amex';
-    } else if (cardNumber.startsWith('6')) {
-      cardType = 'discover';
-    }
-
-    // Generate a mock transaction ID (in real app, this would come from payment processor)
-    const transactionId = `tx_${uuidv4()}`;
-    
-    // Create a new payment record
-    const newPayment = new CardPayment({
-      userId,
-      requestId,
-      lastFourDigits,
-      cardHolder,
-      cardType,
-      expiryMonth,
-      expiryYear,
-      amount,
-      currency,
-      status: 'completed', // In a real app, might start as 'processing'
-      transactionId,
-      paymentProcessor: 'internal', // In a real app, this would be your actual processor
-      billingAddress,
-      metadata: {
-        paymentMethod: 'card',
-        deviceInfo: req.headers['user-agent'] || 'unknown'
+      // Basic validation
+      if (!userId || !requestId || !cardNumber || !cardHolder || !expiryDate || !amount) {
+        return res.status(400).json({ 
+          success: false, 
+          message: 'Missing required payment information' 
+        });
       }
-    });
 
-    // Save payment to database
-    const savedPayment = await newPayment.save();
-
-    // Update the collection request payment status
-    await CollectionRequest.findByIdAndUpdate(
-      request._id,
-      { 
-        paymentStatus: 'completed',
-        paymentId: savedPayment._id.toString()
+      // Check if the request exists (skip for demo mode)
+      if (requestId !== 'demo-request-id') {
+        const request = await RequestModel.findById(requestId);
+        if (!request) {
+          return res.status(404).json({ 
+            success: false, 
+            message: 'Request not found' 
+          });
+        }
+        
+        // Check if this request has already been paid
+        const existingPayment = await PaymentModel.findOne({ requestId });
+        if (existingPayment) {
+          return res.status(400).json({ 
+            success: false, 
+            message: 'This request has already been paid for' 
+          });
+        }
       }
-    );
 
-    res.status(201).json({
-      success: true,
-      data: {
-        transactionId: savedPayment.transactionId,
-        amount: savedPayment.amount,
-        currency: savedPayment.currency,
-        status: savedPayment.status,
-        lastFourDigits: savedPayment.lastFourDigits,
-        paymentDate: savedPayment.createdAt
-      },
-      message: 'Payment processed successfully'
-    });
-  } catch (error) {
-    console.error('Error processing payment:', error);
-    
-    // Handle MongoDB validation errors
-    if (error.name === 'ValidationError') {
-      const messages = Object.values(error.errors).map(val => val.message);
-      return res.status(400).json({
-        success: false,
-        message: messages.join(', ')
-      });
-    }
-    
-    res.status(500).json({
-      success: false,
-      message: 'Server error while processing payment'
-    });
-  }
-};
-
-/**
- * Get payment details by transaction ID
- */
-export const getPaymentByTransactionId = async (req, res) => {
-  try {
-    const { transactionId } = req.params;
-
-    if (!transactionId) {
-      return res.status(400).json({
-        success: false,
-        message: 'Transaction ID is required'
-      });
-    }
-
-    const payment = await CardPayment.findOne({ transactionId });
-
-    if (!payment) {
-      return res.status(404).json({
-        success: false,
-        message: 'Payment not found'
-      });
-    }
-
-    // Return a sanitized version of the payment data
-    const paymentData = {
-      id: payment._id,
-      transactionId: payment.transactionId,
-      amount: payment.amount,
-      currency: payment.currency,
-      status: payment.status,
-      lastFourDigits: payment.lastFourDigits,
-      cardType: payment.cardType,
-      cardHolder: payment.cardHolder,
-      paymentDate: payment.createdAt,
-      billingAddress: {
-        city: payment.billingAddress.city,
-        state: payment.billingAddress.state,
-        country: payment.billingAddress.country
-      }
-    };
-
-    res.status(200).json({
-      success: true,
-      data: paymentData,
-      message: 'Payment details retrieved successfully'
-    });
-  } catch (error) {
-    console.error('Error retrieving payment:', error);
-    
-    res.status(500).json({
-      success: false,
-      message: 'Server error while retrieving payment details'
-    });
-  }
-};
-
-/**
- * Get all payments for a user
- */
-export const getUserPayments = async (req, res) => {
-  try {
-    const { userId } = req.params;
-
-    if (!userId) {
-      return res.status(400).json({
-        success: false,
-        message: 'User ID is required'
-      });
-    }
-
-    const payments = await CardPayment.findByUser(userId);
-
-    // Sanitize the payment data
-    const sanitizedPayments = payments.map(payment => ({
-      id: payment._id,
-      transactionId: payment.transactionId,
-      requestId: payment.requestId,
-      amount: payment.amount,
-      currency: payment.currency,
-      status: payment.status,
-      lastFourDigits: payment.lastFourDigits,
-      cardType: payment.cardType,
-      paymentDate: payment.createdAt
-    }));
-
-    res.status(200).json({
-      success: true,
-      count: sanitizedPayments.length,
-      data: sanitizedPayments,
-      message: 'User payments retrieved successfully'
-    });
-  } catch (error) {
-    console.error('Error retrieving user payments:', error);
-    
-    res.status(500).json({
-      success: false,
-      message: 'Server error while retrieving user payments'
-    });
-  }
-};
-
-/**
- * Get payment for a specific collection request
- */
-export const getRequestPayment = async (req, res) => {
-  try {
-    const { requestId } = req.params;
-
-    if (!requestId) {
-      return res.status(400).json({
-        success: false,
-        message: 'Request ID is required'
-      });
-    }
-
-    const payments = await CardPayment.findByRequest(requestId);
-
-    if (payments.length === 0) {
-      return res.status(404).json({
-        success: false,
-        message: 'No payments found for this request'
-      });
-    }
-
-    // Usually there should be only one payment per request,
-    // but we handle multiple payments just in case
-    const sanitizedPayments = payments.map(payment => ({
-      id: payment._id,
-      transactionId: payment.transactionId,
-      amount: payment.amount,
-      currency: payment.currency,
-      status: payment.status,
-      lastFourDigits: payment.lastFourDigits,
-      cardType: payment.cardType,
-      paymentDate: payment.createdAt
-    }));
-
-    res.status(200).json({
-      success: true,
-      count: sanitizedPayments.length,
-      data: sanitizedPayments,
-      message: 'Request payments retrieved successfully'
-    });
-  } catch (error) {
-    console.error('Error retrieving request payments:', error);
-    
-    res.status(500).json({
-      success: false,
-      message: 'Server error while retrieving request payments'
-    });
-  }
-};
-
-/**
- * Get payment receipt
- */
-export const getPaymentReceipt = async (req, res) => {
-  try {
-    const { transactionId } = req.params;
-
-    if (!transactionId) {
-      return res.status(400).json({
-        success: false,
-        message: 'Transaction ID is required'
-      });
-    }
-
-    const payment = await CardPayment.findOne({ transactionId });
-
-    if (!payment) {
-      return res.status(404).json({
-        success: false,
-        message: 'Payment not found'
-      });
-    }
-
-    // Find the collection request
-    const request = await CollectionRequest.findOne({ requestId: payment.requestId });
-
-    if (!request) {
-      return res.status(404).json({
-        success: false,
-        message: 'Collection request not found'
-      });
-    }
-
-    // Generate receipt data
-    const receiptData = {
-      receiptNumber: `RCP-${Date.now().toString().slice(-6)}`,
-      transactionId: payment.transactionId,
-      paymentDate: payment.createdAt,
-      customerName: payment.cardHolder,
-      paymentMethod: `${payment.cardType.toUpperCase()} **** **** **** ${payment.lastFourDigits}`,
-      billingAddress: payment.billingAddress,
+      // In a real-world app: Process payment through a payment gateway
+      // This would involve validating the card, checking for fraud, etc.
       
-      serviceDetails: {
-        serviceType: "Waste Collection",
-        binType: request.binType,
-        quantity: request.quantity,
-        location: request.location,
-        scheduleDate: request.scheduleDate
-      },
-      
-      amount: payment.amount,
-      currency: payment.currency,
-      status: payment.status,
-      
-      businessDetails: {
-        name: "EcoWaste Management Services",
-        address: "123 Green Street, Eco City, EC 12345",
-        contactEmail: "support@ecowastemanagement.com",
-        contactPhone: "+1 (555) 123-4567",
-        website: "www.ecowastemanagement.com"
-      }
-    };
+      // For demo purposes, we'll just create a transaction record
+      const transaction = {
+        transactionId: uuidv4(),
+        status: 'completed',
+        timestamp: new Date(),
+        amount,
+        currency
+      };
 
-    res.status(200).json({
-      success: true,
-      data: receiptData,
-      message: 'Payment receipt generated successfully'
-    });
-  } catch (error) {
-    console.error('Error generating receipt:', error);
-    
-    res.status(500).json({
-      success: false,
-      message: 'Server error while generating receipt'
-    });
+      // Mask the card number for storage - only keep last 4 digits
+      const last4Digits = cardNumber.slice(-4);
+      const maskedCardNumber = '*'.repeat(12) + last4Digits;
+
+      // Create payment record
+      const newPayment = await PaymentModel.create({
+        userId,
+        requestId,
+        cardInfo: {
+          cardNumber: maskedCardNumber,
+          cardHolder,
+          expiryDate,
+          last4Digits
+        },
+        billingAddress,
+        amount,
+        currency,
+        transaction
+      });
+
+      // If not demo mode, update the request status to paid
+      if (requestId !== 'demo-request-id') {
+        await RequestModel.findByIdAndUpdate(requestId, { 
+          paymentStatus: 'paid',
+          transactionId: transaction.transactionId
+        });
+      }
+
+      return res.status(201).json({
+        success: true,
+        message: 'Payment processed successfully',
+        data: {
+          transactionId: transaction.transactionId,
+          amount,
+          currency,
+          status: transaction.status,
+          timestamp: transaction.timestamp
+        }
+      });
+    } catch (error) {
+      console.error('Payment processing error:', error);
+      return res.status(500).json({
+        success: false,
+        message: 'Failed to process payment',
+        error: error.message
+      });
+    }
   }
-};
+
+  /**
+   * Get payment by ID
+   * @param {Object} req - Express request object
+   * @param {Object} res - Express response object
+   */
+  async getPaymentById(req, res) {
+    try {
+      const { paymentId } = req.params;
+
+      const payment = await PaymentModel.findById(paymentId);
+      
+      if (!payment) {
+        return res.status(404).json({
+          success: false,
+          message: 'Payment not found'
+        });
+      }
+
+      // Check authorization - only allow users to view their own payments
+      // In a real app, you might also want to allow admins to view any payment
+      if (payment.userId !== req.user.id && req.user.role !== 'admin') {
+        return res.status(403).json({
+          success: false,
+          message: 'Unauthorized to view this payment'
+        });
+      }
+
+      return res.status(200).json({
+        success: true,
+        data: payment
+      });
+    } catch (error) {
+      console.error('Error fetching payment:', error);
+      return res.status(500).json({
+        success: false,
+        message: 'Failed to fetch payment',
+        error: error.message
+      });
+    }
+  }
+
+  /**
+   * Get payment by transaction ID
+   * @param {Object} req - Express request object
+   * @param {Object} res - Express response object
+   */
+  async getPaymentByTransactionId(req, res) {
+    try {
+      const { transactionId } = req.params;
+
+      const payment = await PaymentModel.findOne({ 'transaction.transactionId': transactionId });
+      
+      if (!payment) {
+        return res.status(404).json({
+          success: false,
+          message: 'Payment not found'
+        });
+      }
+
+      // Check authorization - only allow users to view their own payments
+      if (payment.userId !== req.user.id && req.user.role !== 'admin') {
+        return res.status(403).json({
+          success: false,
+          message: 'Unauthorized to view this payment'
+        });
+      }
+
+      return res.status(200).json({
+        success: true,
+        data: payment
+      });
+    } catch (error) {
+      console.error('Error fetching payment:', error);
+      return res.status(500).json({
+        success: false,
+        message: 'Failed to fetch payment',
+        error: error.message
+      });
+    }
+  }
+
+  /**
+   * Get all payments for a user
+   * @param {Object} req - Express request object
+   * @param {Object} res - Express response object
+   */
+  async getUserPayments(req, res) {
+    try {
+      const userId = req.params.userId || req.user.id;
+
+      // Check authorization - only allow users to view their own payments
+      if (userId !== req.user.id && req.user.role !== 'admin') {
+        return res.status(403).json({
+          success: false,
+          message: 'Unauthorized to view these payments'
+        });
+      }
+
+      const payments = await PaymentModel.find({ userId })
+        .sort({ 'transaction.timestamp': -1 }); // Sort by most recent first
+      
+      return res.status(200).json({
+        success: true,
+        count: payments.length,
+        data: payments
+      });
+    } catch (error) {
+      console.error('Error fetching user payments:', error);
+      return res.status(500).json({
+        success: false,
+        message: 'Failed to fetch user payments',
+        error: error.message
+      });
+    }
+  }
+
+  /**
+   * Update payment (for refunds, disputes, etc.)
+   * @param {Object} req - Express request object
+   * @param {Object} res - Express response object
+   */
+  async updatePayment(req, res) {
+    try {
+      const { paymentId } = req.params;
+      const { status, refundAmount, refundReason } = req.body;
+
+      // Only admins can update payments
+      if (req.user.role !== 'admin') {
+        return res.status(403).json({
+          success: false,
+          message: 'Unauthorized to update payments'
+        });
+      }
+
+      const payment = await PaymentModel.findById(paymentId);
+      
+      if (!payment) {
+        return res.status(404).json({
+          success: false,
+          message: 'Payment not found'
+        });
+      }
+
+      // Handle different update scenarios
+      if (status === 'refunded') {
+        // In a real app, you would process the refund through your payment gateway
+        
+        // Update the payment record
+        payment.transaction.status = 'refunded';
+        payment.refund = {
+          amount: refundAmount || payment.amount,
+          reason: refundReason || 'Customer request',
+          timestamp: new Date()
+        };
+
+        // If this payment is associated with a request, update it too
+        if (payment.requestId && payment.requestId !== 'demo-request-id') {
+          await RequestModel.findByIdAndUpdate(payment.requestId, { 
+            paymentStatus: 'refunded' 
+          });
+        }
+      } else if (status) {
+        // Update the status
+        payment.transaction.status = status;
+        
+        // If this payment is associated with a request, update it too
+        if (payment.requestId && payment.requestId !== 'demo-request-id') {
+          await RequestModel.findByIdAndUpdate(payment.requestId, { 
+            paymentStatus: status 
+          });
+        }
+      }
+
+      // Save the updates
+      await payment.save();
+
+      return res.status(200).json({
+        success: true,
+        message: 'Payment updated successfully',
+        data: payment
+      });
+    } catch (error) {
+      console.error('Error updating payment:', error);
+      return res.status(500).json({
+        success: false,
+        message: 'Failed to update payment',
+        error: error.message
+      });
+    }
+  }
+
+  /**
+   * Delete payment (admin only)
+   * @param {Object} req - Express request object
+   * @param {Object} res - Express response object
+   */
+  async deletePayment(req, res) {
+    try {
+      const { paymentId } = req.params;
+
+      // Only admins can delete payments
+      if (req.user.role !== 'admin') {
+        return res.status(403).json({
+          success: false,
+          message: 'Unauthorized to delete payments'
+        });
+      }
+
+      const payment = await PaymentModel.findById(paymentId);
+      
+      if (!payment) {
+        return res.status(404).json({
+          success: false,
+          message: 'Payment not found'
+        });
+      }
+
+      // In a real app, you would likely only mark the payment as deleted in the database
+      // rather than actually removing it, for audit and compliance reasons
+      payment.isDeleted = true;
+      await payment.save();
+
+      // Or if you really want to delete it (not recommended for payment records):
+      // await PaymentModel.findByIdAndDelete(paymentId);
+
+      return res.status(200).json({
+        success: true,
+        message: 'Payment deleted successfully'
+      });
+    } catch (error) {
+      console.error('Error deleting payment:', error);
+      return res.status(500).json({
+        success: false,
+        message: 'Failed to delete payment',
+        error: error.message
+      });
+    }
+  }
+
+  /**
+   * Get payment receipt
+   * @param {Object} req - Express request object
+   * @param {Object} res - Express response object
+   */
+  async getPaymentReceipt(req, res) {
+    try {
+      const { transactionId } = req.params;
+
+      const payment = await PaymentModel.findOne({ 'transaction.transactionId': transactionId })
+        .populate('requestId', 'binType quantity scheduleDate address');
+      
+      if (!payment) {
+        return res.status(404).json({
+          success: false,
+          message: 'Payment not found'
+        });
+      }
+
+      // Check authorization - only allow users to view their own receipts
+      if (payment.userId !== req.user.id && req.user.role !== 'admin') {
+        return res.status(403).json({
+          success: false,
+          message: 'Unauthorized to view this receipt'
+        });
+      }
+
+      // Format the receipt data
+      const receiptData = {
+        transactionId: payment.transaction.transactionId,
+        date: payment.transaction.timestamp,
+        status: payment.transaction.status,
+        amount: payment.amount,
+        currency: payment.currency,
+        cardInfo: {
+          cardType: this.getCardType(payment.cardInfo.cardNumber),
+          last4Digits: payment.cardInfo.last4Digits
+        },
+        service: payment.requestId ? {
+          binType: payment.requestId.binType,
+          quantity: payment.requestId.quantity,
+          scheduleDate: payment.requestId.scheduleDate,
+          address: payment.requestId.address
+        } : {
+          type: 'Standard collection service'
+        },
+        billingAddress: payment.billingAddress,
+        customerInfo: {
+          userId: payment.userId
+        }
+      };
+
+      return res.status(200).json({
+        success: true,
+        data: receiptData
+      });
+    } catch (error) {
+      console.error('Error generating receipt:', error);
+      return res.status(500).json({
+        success: false,
+        message: 'Failed to generate receipt',
+        error: error.message
+      });
+    }
+  }
+
+  /**
+   * Helper method to determine card type based on card number
+   * @param {String} cardNumber - The credit card number
+   * @returns {String} - The card type
+   */
+  getCardType(cardNumber) {
+    // Basic card detection logic
+    const firstDigit = cardNumber.charAt(0);
+    const first4Digits = cardNumber.substring(0, 4);
+    
+    if (firstDigit === '4') {
+      return 'Visa';
+    } else if (['51', '52', '53', '54', '55'].includes(first4Digits.substring(0, 2))) {
+      return 'MasterCard';
+    } else if (['34', '37'].includes(first4Digits.substring(0, 2))) {
+      return 'American Express';
+    } else if (['6011'].includes(first4Digits)) {
+      return 'Discover';
+    } else {
+      return 'Unknown';
+    }
+  }
+}
+
+module.exports = new PaymentController();

@@ -19,7 +19,7 @@ import InventoryDashboard from './pages/InventoryDashboard';
 import BinManagement from './pages/BinManagement ';
 import ProfileUI from './components/ProfileUI';
 import UserDetailShow from './pages/ProfileData/UserDetailShow';
-
+import UserSmartBinDetailShow from './pages/ProfileData/UserSmartBinDetailShow';
 import WasteManagementChatBot from './pages/chatbot/WasteManagementChatBot';
 import OnlyAdminPrivateRoute from './components/OnlyAdminPrivateRoute';
 import PrivateRoute from './components/PrivateRoute';
@@ -46,6 +46,7 @@ function App() {
         <Route path='/EmployeeDashboard' element={<EmployeeDashboard />} />
         <Route path='/profileui' element={<ProfileUI />} />
         <Route path='/pages/ProfileData/UserDetailShow' element={<UserDetailShow />} />
+        <Route path='/pages/profileData/UserSmartBinDetailShow' element={<UserSmartBinDetailShow />} />
         <Route path='/profileui' element={<ProfileUI/>} />
         <Route element={<PrivateRoute/>}>
          <Route path='/Dashboard' element={<Dashboard />} />
