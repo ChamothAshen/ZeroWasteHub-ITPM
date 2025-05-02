@@ -8,6 +8,7 @@ import collectRequestRoutes from './routes/CollectRequestRoute.js';
 import createSmartBinRequest from './routes/RequestSmartBinRoute.js';
 import inventoryRoutes from './routes/inventoryRoutes.js'; // Ensure this route is defined
 import EmployeeRoute from './routes/EmployeeRoute.js'; 
+import LogRoute from './routes/LogRoute.js';
 import cors from 'cors';
 
 dotenv.config();
@@ -47,6 +48,8 @@ app.use('/api/collection-requests', collectRequestRoutes);
 app.use('/api/BinRequest', createSmartBinRequest);
 app.use('/api/Inventory', inventoryRoutes); // Ensure this route is defined
 app.use('/api/employee', EmployeeRoute);
+app.use("/api/logs", LogRoute);
+
 
 // Error Handling Middleware
 app.use((err, req, res, next) => {

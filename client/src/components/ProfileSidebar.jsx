@@ -28,6 +28,12 @@ const ProfileSidebar = ({ currentUser }) => {
       icon: <FaBell className="text-lg" />, 
       path: '/pages/ProfileData/UserDetailShow' 
     },
+     // Show "Smart Bin History" only if the currentUser is not an admin
+     {
+      name: 'Smart Bin History',
+      icon: <FaBell className="text-lg" />,
+      path: '/pages/profileData/UserSmartBinDetailShow'
+    },
     // Show "Wastebot" only if the currentUser is an admin
     currentUser?.isAdmin && {
         name: 'Wastebot', 

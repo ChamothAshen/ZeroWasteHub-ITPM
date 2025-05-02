@@ -32,7 +32,7 @@ export default function Sidebar({ sidebarOpen, setSidebarOpen }) {
             </a>
           </li>
           <li>
-            <a href="#" className="flex items-center space-x-2 hover:text-gray-300">
+            <a href="EmpLogs" className="flex items-center space-x-2 hover:text-gray-300">
               <FiFileText /> <span>Logs</span>
             </a>
           </li>
