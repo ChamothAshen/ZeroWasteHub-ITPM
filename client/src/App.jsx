@@ -13,6 +13,7 @@ import CollectRequestForm from './pages/RequestWaste/CollectRequestForm';
 import EmployeeDashboard from './pages/EmpDash';
 import EmpPickups from './pages/EmpPickups';
 import EmpTeams from './pages/EmpTeams';
+import EmpLogs from './pages/EmpLogs';
 import Sidebar from './pages/EmpSidebar';
 import Inventory from './pages/Inventory';
 import InventoryDashboard from './pages/InventoryDashboard';
@@ -57,6 +58,7 @@ function App() {
           <Route path='/EmpPickups' element={<EmpPickups />} />
           <Route path='/EmpTeams' element={<EmpTeams />} />
           <Route path='/EmpSidebar' element={<Sidebar />} />
+          <Route path='/EmpLogs' element={<EmpLogs />} />
        </Route>
       </Routes>
     </BrowserRouter>
