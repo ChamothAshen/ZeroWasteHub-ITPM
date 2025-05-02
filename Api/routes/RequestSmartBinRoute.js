@@ -1,6 +1,6 @@
 
 import express from 'express';
-import  {createSmartBinRequest, getAllSmartBinRequests,getSmartBinRequestById}  from '../controllers/RequestSmartBinController.js';
+import  {createSmartBinRequest, getAllSmartBinRequests,getSmartBinRequestById,updateSmartBinRequest,deleteSmartBinRequest}  from '../controllers/RequestSmartBinController.js';
 
 const router = express.Router();
 
@@ -10,6 +10,9 @@ router.post('/', createSmartBinRequest);
 router.get('/smartbins', getAllSmartBinRequests);
 // Get smart bin request by ID
 router.get('/smartbins/:id', getSmartBinRequestById);
+router.put('/smartbins/:id', updateSmartBinRequest);
+// Delete smart bin request by ID
+router.delete('/smartbins/:id', deleteSmartBinRequest);
 
 
 
