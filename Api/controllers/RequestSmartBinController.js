@@ -106,5 +106,28 @@ export const getSmartBinRequestById = async (req, res) => {
   }
 };
 
+// Update Request
+export const updateSmartBinRequest = async (req, res) => {
+  try {
+    const updatedRequest = await SmartBinRequest.findByIdAndUpdate(req.params.id, req.body, {
+      new: true,
+      runValidators: true
+    });
+    if (!updatedRequest) return res.status(404).json({ success: false, message: 'Request not found' });
+    res.status(200).json({ success: true, data: updatedRequest });
+  } catch (error) {
+    res.status(500).json({ success: false, message: 'Server error while updating request' });
+  }
+};
 
+// Delete Request
+export const deleteSmartBinRequest = async (req, res) => {
+  try {
+    const deletedRequest = await SmartBinRequest.findByIdAndDelete(req.params.id);
+    if (!deletedRequest) return res.status(404).json({ success: false, message: 'Request not found' });
+    res.status(200).json({ success: true, message: 'Smart bin request deleted successfully' });
+  } catch (error) {
+    res.status(500).json({ success: false, message: 'Server error while deleting request' });
+  }
+};
 

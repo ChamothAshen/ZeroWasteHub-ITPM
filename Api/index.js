@@ -46,6 +46,7 @@ app.use('/api/collection-requests', collectRequestRoutes);
 app.use('/api/BinRequest', createSmartBinRequest);
 app.use('/api/employee', EmployeeRoute);
 
+
 // Error Handling Middleware
 app.use((err, req, res, next) => {
   const statusCode = err.statusCode || 500;
