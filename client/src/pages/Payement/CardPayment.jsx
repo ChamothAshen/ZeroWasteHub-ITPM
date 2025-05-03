@@ -6,17 +6,17 @@ const CardPayment = () => {
   const { requestId } = useParams();
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState('');
-  
+
   // In a real app, you'd get the userId from your authentication context
   const userId = localStorage.getItem('userId') || 'bb797925-dfae-4531-aadd-294a87fd73f2';
-  
+
   const [cardInfo, setCardInfo] = useState({
     cardNumber: '',
     cardHolder: '',
     expiryDate: '',
     cvv: '',
   });
-  
+
   const [billingInfo, setBillingInfo] = useState({
     street: '',
     city: '',
@@ -27,10 +27,10 @@ const CardPayment = () => {
 
   // Amount would typically come from the request details
   const [amount, setAmount] = useState(49.99);
-   
+
   const handleCardChange = (e) => {
     const { name, value } = e.target;
-    
+
     // Format card number with spaces
     if (name === 'cardNumber') {
       const formattedValue = value
@@ -41,16 +41,16 @@ const CardPayment = () => {
         ...prevState,
         [name]: formattedValue
       }));
-    } 
+    }
     // Format expiry date with slash
     else if (name === 'expiryDate') {
       const cleaned = value.replace(/\D/g, '');
       let formatted = cleaned;
-      
+
       if (cleaned.length > 2) {
         formatted = cleaned.slice(0, 2) + '/' + cleaned.slice(2, 4);
       }
-      
+
       setCardInfo(prevState => ({
         ...prevState,
         [name]: formatted
@@ -64,7 +64,7 @@ const CardPayment = () => {
       }));
     }
   };
-  
+
   const handleBillingChange = (e) => {
     const { name, value } = e.target;
     setBillingInfo(prevState => ({
@@ -77,7 +77,7 @@ const CardPayment = () => {
     e.preventDefault();
     setIsLoading(true);
     setError('');
-    
+
     try {
       // Prepare the data to send to the backend
       const paymentData = {
@@ -88,25 +88,25 @@ const CardPayment = () => {
         expiryDate: cardInfo.expiryDate,
         cvv: cardInfo.cvv,
         amount,
-        currency: 'USD',
+        currency: 'Rs',
         billingAddress: billingInfo
       };
-      
+
       // Send data to the backend
-      const response = await fetch('http://localhost:3000/api/payments', {
+      const response = await fetch('http://localhost:3000/api/card-payment/processCardPayment', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
         },
         body: JSON.stringify(paymentData),
       });
-      
+
       const result = await response.json();
-      
+
       if (result.success) {
         // Show success message
         alert('Payment processed successfully!');
-        
+
         // Navigate to receipt page
         navigate(`/payments/receipt/${result.data.transactionId}`);
       } else {
@@ -130,7 +130,7 @@ const CardPayment = () => {
           </svg>
           <h3 className="text-xl font-bold text-green-800">Card Payment</h3>
         </div>
-        
+
         {/* Payment Summary */}
         <div className="mb-6 bg-green-50 p-4 rounded-lg">
           <h4 className="text-sm font-semibold text-green-800 mb-2">Payment Summary</h4>
@@ -144,14 +144,14 @@ const CardPayment = () => {
             <span>${amount.toFixed(2)}</span>
           </div>
         </div>
-        
+
         {/* Error Message */}
         {error && (
           <div className="mb-4 p-3 bg-red-100 text-red-700 rounded-md">
             {error}
           </div>
         )}
-        
+
         <form onSubmit={handleSubmit}>
           <h4 className="text-sm font-semibold text-green-800 mb-3">Card Information</h4>
           <div className="mb-4">
@@ -173,7 +173,7 @@ const CardPayment = () => {
               required
             />
           </div>
-          
+
           <div className="mb-4">
             <label htmlFor="cardHolder" className="flex items-center mb-2 text-sm font-medium text-gray-700">
               <svg className="w-4 h-4 mr-2 text-green-600" fill="currentColor" viewBox="0 0 20 20" xmlns="http://www.w3.org/2000/svg">
@@ -192,7 +192,7 @@ const CardPayment = () => {
               required
             />
           </div>
-          
+
           <div className="flex mb-6 space-x-4">
             <div className="w-1/2">
               <label htmlFor="expiryDate" className="flex items-center mb-2 text-sm font-medium text-gray-700">
@@ -233,9 +233,9 @@ const CardPayment = () => {
               />
             </div>
           </div>
-          
+
           <h4 className="text-sm font-semibold text-green-800 mb-3">Billing Address</h4>
-          
+
           <div className="mb-4">
             <label htmlFor="street" className="block mb-2 text-sm font-medium text-gray-700">
               Street Address
@@ -251,7 +251,7 @@ const CardPayment = () => {
               required
             />
           </div>
-          
+
           <div className="grid grid-cols-2 gap-4 mb-4">
             <div>
               <label htmlFor="city" className="block mb-2 text-sm font-medium text-gray-700">
@@ -284,7 +284,7 @@ const CardPayment = () => {
               />
             </div>
           </div>
-          
+
           <div className="grid grid-cols-2 gap-4 mb-6">
             <div>
               <label htmlFor="postalCode" className="block mb-2 text-sm font-medium text-gray-700">
@@ -301,26 +301,9 @@ const CardPayment = () => {
                 required
               />
             </div>
-            <div>
-              <label htmlFor="country" className="block mb-2 text-sm font-medium text-gray-700">
-                Country
-              </label>
-              <select
-                id="country"
-                name="country"
-                value={billingInfo.country}
-                onChange={handleBillingChange}
-                className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-green-500 focus:border-transparent"
-                required
-              >
-                <option value="US">United States</option>
-                <option value="CA">Canada</option>
-                <option value="UK">United Kingdom</option>
-                <option value="AU">Australia</option>
-              </select>
-            </div>
+
           </div>
-          
+
           <button
             type="submit"
             className={`w-full bg-green-600 text-white py-3 px-4 rounded-md hover:bg-green-700 transition duration-300 ease-in-out focus:outline-none focus:ring-2 focus:ring-green-500 focus:ring-opacity-50 flex items-center justify-center ${isLoading ? 'opacity-70 cursor-not-allowed' : ''}`}
@@ -344,7 +327,7 @@ const CardPayment = () => {
             )}
           </button>
         </form>
-        
+
         <div className="mt-6 flex justify-center space-x-4">
           <svg className="w-8 h-8 text-gray-400" viewBox="0 0 24 24" fill="currentColor" xmlns="http://www.w3.org/2000/svg">
             <path d="M16 2v2H8V2H6v2H5c-1.11 0-1.99.89-1.99 2L3 19a2 2 0 002 2h14c1.1 0 2-.9 2-2V6c0-1.11-.9-2-2-2h-1V2h-2zm3 17H5V9h14v10z"></path>
@@ -356,7 +339,7 @@ const CardPayment = () => {
             <path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm1.41 16.09V20h-2.67v-1.93c-1.71-.36-3.16-1.46-3.27-3.4h1.96c.1 1.05.82 1.87 2.65 1.87 1.96 0 2.4-.98 2.4-1.59 0-.83-.44-1.61-2.67-2.14-2.48-.6-4.18-1.62-4.18-3.67 0-1.72 1.39-2.84 3.11-3.21V4h2.67v1.95c1.86.45 2.79 1.86 2.85 3.39H14.3c-.05-1.11-.64-1.87-2.22-1.87-1.5 0-2.4.68-2.4 1.64 0 .84.65 1.39 2.67 1.91s4.18 1.39 4.18 3.91c-.01 1.83-1.38 2.83-3.12 3.16z"></path>
           </svg>
         </div>
-        
+
         <div className="mt-4 text-xs text-center text-gray-500">
           Your payment information is securely processed. We never store your full credit card details.
         </div>
