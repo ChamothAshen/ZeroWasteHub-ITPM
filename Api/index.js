@@ -22,8 +22,8 @@ mongoose.connect(process.env.MONGOUrl, {
   useNewUrlParser: true,
   useUnifiedTopology: true
 })
-.then(() => console.log( 'Connected to MongoDB'))
-.catch((err) => console.error(' MongoDB connection error:', err));
+  .then(() => console.log('Connected to MongoDB'))
+  .catch((err) => console.error(' MongoDB connection error:', err));
 
 // ✅ Middleware
 app.use(cors({
@@ -57,5 +57,5 @@ app.use((err, req, res, next) => {
 
 // ✅ Start server
 app.listen(port, () => {
-  console.log(`🚀 Server running on http://localhost:${port}`);
+  console.log(` Server running on http://localhost:${port}`);
 });
