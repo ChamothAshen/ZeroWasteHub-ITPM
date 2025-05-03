@@ -1,40 +1,75 @@
 import { v4 as uuidv4 } from 'uuid';
+import fs from 'fs';
+import path from 'path';
+import PDFDocument from 'pdfkit';
 import CardPayment from '../models/CardPaymentModel.js';
 
-// Process card payment
+const generateReceiptPDF = (payment) => {
+  return new Promise((resolve, reject) => {
+    const doc = new PDFDocument();
+    const receiptDir = path.resolve('receipts');
+    const filePath = path.join(receiptDir, `${payment.transactionId}.pdf`);
+
+    if (!fs.existsSync(receiptDir)) {
+      fs.mkdirSync(receiptDir);
+    }
+
+    const stream = fs.createWriteStream(filePath);
+    doc.pipe(stream);
+
+    doc.fontSize(20).text('Payment Receipt', { align: 'center' });
+    doc.moveDown();
+    doc.fontSize(12).text(`Transaction ID: ${payment.transactionId}`);
+    doc.text(`User ID: ${payment.userId}`);
+    doc.text(`Amount: LKR ${payment.amount.toFixed(2)}`);
+    doc.text(`Status: ${payment.status}`);
+    doc.text(`Date: ${new Date().toLocaleString()}`);
+    doc.end();
+
+    stream.on('finish', () => resolve(filePath));
+    stream.on('error', reject);
+  });
+};
+
 export const processCardPayment = async (req, res) => {
   try {
     const { userId, amount } = req.body;
 
     if (!userId || !amount) {
-      return res.status(400).json({
-        success: false,
-        message: 'User ID and amount are required',
-      });
+      return res.status(400).json({ success: false, message: 'User ID and amount are required' });
     }
 
     const transactionId = uuidv4();
-
-    const newPayment = new CardPayment({
-      transactionId,
-      userId,
-      amount,
-      status: 'success',
-    });
-
+    const newPayment = new CardPayment({ transactionId, userId, amount, status: 'success' });
     const savedPayment = await newPayment.save();
+
+    const pdfPath = await generateReceiptPDF(savedPayment);
 
     res.status(201).json({
       success: true,
       data: savedPayment,
-      message: 'Payment processed successfully',
+      receiptUrl: `http://localhost:3000/api/card-payment/receipt/${transactionId}`,
+      message: 'Payment processed and receipt generated successfully',
     });
   } catch (error) {
     console.error('Error processing payment:', error);
-    res.status(500).json({
-      success: false,
-      message: 'Server error while processing payment',
-    });
+    res.status(500).json({ success: false, message: 'Server error while processing payment' });
+  }
+};
+
+export const downloadReceipt = async (req, res) => {
+  try {
+    const { transactionId } = req.params;
+    const filePath = path.resolve('receipts', `${transactionId}.pdf`);
+
+    if (!fs.existsSync(filePath)) {
+      return res.status(404).json({ success: false, message: 'Receipt not found' });
+    }
+
+    res.download(filePath, `${transactionId}_receipt.pdf`);
+  } catch (error) {
+    console.error('Error downloading receipt:', error);
+    res.status(500).json({ success: false, message: 'Server error while downloading receipt' });
   }
 };
 

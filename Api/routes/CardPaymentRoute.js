@@ -4,6 +4,7 @@ import {
   getPaymentDetails,
   getUserPayments,
   processRefund,
+  downloadReceipt,
 } from '../controllers/CardPaymentController.js';
 
 
@@ -20,5 +21,7 @@ router.get('/user/:userId', getUserPayments);
 
 // Refund a payment
 router.post('/refund/:transactionId', processRefund);
+
+router.get('/receipt/:transactionId', downloadReceipt);
 
 export default router;
