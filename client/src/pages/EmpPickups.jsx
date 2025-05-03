@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import Sidebar from "./EmpSidebar";
 import {
   FaCalendarAlt,
@@ -22,6 +22,25 @@ export default function EmpPickups() {
   const [submittedPickups, setSubmittedPickups] = useState([]);
   const [loading, setLoading] = useState(false);
 
+  // ✅ Fetch existing pickups on component mount
+  useEffect(() => {
+    const fetchPickups = async () => {
+      try {
+        const res = await fetch("http://localhost:3000/api/pickups");
+        const data = await res.json();
+        if (res.ok) {
+          setSubmittedPickups(data);
+        } else {
+          console.error("Failed to fetch pickups:", data.message);
+        }
+      } catch (err) {
+        console.error("Error fetching pickups:", err);
+      }
+    };
+
+    fetchPickups();
+  }, []);
+
   const handleChange = (e) => {
     setPickup({ ...pickup, [e.target.name]: e.target.value });
   };
@@ -31,7 +50,7 @@ export default function EmpPickups() {
     setLoading(true);
 
     try {
-      const response = await fetch("http://localhost:5173/api/pickups", {
+      const response = await fetch("http://localhost:3000/api/pickups", {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
@@ -43,7 +62,7 @@ export default function EmpPickups() {
 
       if (response.ok) {
         alert("Pickup scheduled successfully!");
-        setSubmittedPickups((prev) => [...prev, pickup]);
+        setSubmittedPickups((prev) => [...prev, data]); // use the response
         setPickup({
           dateTime: "",
           location: "",
@@ -159,7 +178,7 @@ export default function EmpPickups() {
           </div>
         </div>
 
-        {/* Submitted Cards */}
+        {/* Scheduled Pickups */}
         <div>
           <h2 className="text-2xl font-bold mb-4">Scheduled Pickups</h2>
           {submittedPickups.length === 0 ? (
