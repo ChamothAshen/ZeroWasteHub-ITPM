@@ -1,5 +1,5 @@
 import { useState, useEffect } from "react";
-import { FiEdit, FiTrash, FiPlus, FiDownload } from "react-icons/fi";
+import { FiEdit, FiTrash, FiPlus, FiDownload, FiSearch } from "react-icons/fi";
 import DatePicker from "react-datepicker";
 import "react-datepicker/dist/react-datepicker.css";
 import Sidebar from "./EmpSidebar";
@@ -11,6 +11,8 @@ export default function EmpLogs() {
   const [newLog, setNewLog] = useState(null);
   const [editingLog, setEditingLog] = useState(null);
   const [loading, setLoading] = useState(false);
+  const [filterDate, setFilterDate] = useState(null);
+  const [filterLocation, setFilterLocation] = useState("");
 
   const currentUser = { name: "Jane Doe", role: "user" };
   const isAdmin = () => currentUser.role === "admin";
@@ -87,7 +89,6 @@ export default function EmpLogs() {
 
   const generatePDF = (log) => {
     const doc = new jsPDF();
-
     doc.setFontSize(16);
     doc.text("Waste Log Ticket", 14, 20);
     doc.setFontSize(12);
@@ -111,10 +112,22 @@ export default function EmpLogs() {
     doc.save(`waste-log-${log._id}.pdf`);
   };
 
+  const filteredLogs = logs.filter((log) => {
+    const dateMatch = filterDate
+      ? new Date(log.date).toLocaleDateString() ===
+        filterDate.toLocaleDateString()
+      : true;
+
+    const locationMatch = log.location
+      .toLowerCase()
+      .includes(filterLocation.toLowerCase());
+
+    return dateMatch && locationMatch;
+  });
+
   return (
     <div className="min-h-screen bg-green-50 text-gray-800 flex">
       <Sidebar currentUser={currentUser} />
-
       <main className="flex-1 p-6">
         <header className="flex justify-between items-center mb-6">
           <h2 className="text-2xl font-semibold">Waste Logs</h2>
@@ -126,6 +139,33 @@ export default function EmpLogs() {
           </button>
         </header>
 
+        {/* Filters */}
+        <div className="flex gap-4 mb-4 items-center">
+          <div className="flex items-center gap-2">
+            <span className="text-sm">Filter by Date:</span>
+            <DatePicker
+              selected={filterDate}
+              onChange={(date) => setFilterDate(date)}
+              placeholderText="Select date"
+              className="border p-1"
+              isClearable
+            />
+          </div>
+
+          <div className="flex items-center gap-2">
+            <span className="text-sm">Filter by Location:</span>
+            <input
+              type="text"
+              value={filterLocation}
+              onChange={(e) => setFilterLocation(e.target.value)}
+              placeholder="Enter location"
+              className="border p-1"
+            />
+            <FiSearch />
+          </div>
+        </div>
+
+        {/* Table */}
         <div className="bg-white p-6 rounded shadow-md overflow-x-auto">
           {loading ? (
             <p>Loading logs...</p>
@@ -146,7 +186,7 @@ export default function EmpLogs() {
                 </tr>
               </thead>
               <tbody>
-                {logs.map((log, idx) => (
+                {filteredLogs.map((log, idx) => (
                   <tr key={log._id}>
                     <td className="border p-2 text-center">{idx + 1}</td>
                     <td className="border p-2">

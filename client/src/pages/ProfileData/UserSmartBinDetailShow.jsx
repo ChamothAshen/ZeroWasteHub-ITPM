@@ -5,13 +5,14 @@ const SmartBinTable = () => {
   const [smartBins, setSmartBins] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
-  
+
   // State for update form
   const [showUpdateForm, setShowUpdateForm] = useState(false);
   const [selectedBin, setSelectedBin] = useState(null);
   const [updateFormData, setUpdateFormData] = useState({
     status: '',
     paymentStatus: '',
+    price: '', // Added price field
     addressLine1: '',
     city: '',
     contactNo: '',
@@ -19,6 +20,19 @@ const SmartBinTable = () => {
     scheduleDate: '',
     binType: ''
   });
+  
+  // Pricing table for different bin types
+  const binPrices = {
+    general: 1500,
+    recycling: 2000,
+    compost: 2500,
+    paper: 1800,
+    glass: 2200,
+    plastic: 2000,
+    metal: 2300,
+    electronics: 3000,
+    hazardous: 4000
+  };
 
   useEffect(() => {
     const fetchSmartBins = async () => {
@@ -48,23 +62,26 @@ const SmartBinTable = () => {
     fetchSmartBins();
   }, []);
 
-//   const handleView = (id) => {
-//     console.log('View bin with ID:', id);
-//     // Navigate to details page or open modal
-//   };
-
-  // FIXED: Removed the duplicate handleEdit function and only kept this one
   const handleEdit = (id) => {
     const binToUpdate = smartBins.find(bin => bin._id === id);
     if (!binToUpdate) return;
 
     // Prepare form data from the selected bin
     setSelectedBin(binToUpdate);
+
+    // Get bin type for price calculation
+    const binType = binToUpdate.binRequest && binToUpdate.binRequest.length > 0 
+      ? binToUpdate.binRequest[0].binType 
+      : '';
     
+    // Get current price or calculate based on bin type
+    const currentPrice = binToUpdate.payment?.price || (binType ? binPrices[binType.toLowerCase()] || 0 : 0);
+
     // Initialize form with current values
     setUpdateFormData({
       status: binToUpdate.status || '',
       paymentStatus: binToUpdate.payment?.paymentStatus || '',
+      price: currentPrice.toString(), // Convert to string for form input
       addressLine1: binToUpdate.address?.addressLine1 || '',
       city: binToUpdate.address?.city || '',
       contactNo: binToUpdate.personalInfo?.contactNo || '',
@@ -72,11 +89,9 @@ const SmartBinTable = () => {
       scheduleDate: binToUpdate.schedule?.scheduleDate 
         ? new Date(binToUpdate.schedule.scheduleDate).toISOString().slice(0, 16) 
         : '',
-      binType: binToUpdate.binRequest && binToUpdate.binRequest.length > 0 
-        ? binToUpdate.binRequest[0].binType 
-        : ''
+      binType: binType
     });
-    
+
     // Show the update form
     setShowUpdateForm(true);
     console.log('Edit form opened for bin with ID:', id);
@@ -84,17 +99,29 @@ const SmartBinTable = () => {
 
   const handleUpdateFormChange = (e) => {
     const { name, value } = e.target;
-    setUpdateFormData({
-      ...updateFormData,
-      [name]: value
-    });
+    
+    // If bin type is changing, update the price based on the selected bin type
+    if (name === 'binType' && value) {
+      const newPrice = binPrices[value.toLowerCase()] || 0;
+      
+      setUpdateFormData({
+        ...updateFormData,
+        [name]: value,
+        price: newPrice.toString()
+      });
+    } else {
+      setUpdateFormData({
+        ...updateFormData,
+        [name]: value
+      });
+    }
   };
 
   const handleUpdateFormSubmit = async (e) => {
     e.preventDefault();
-    
+
     if (!selectedBin) return;
-    
+
     try {
       // Prepare the updated bin data
       const updatedBin = {
@@ -112,7 +139,8 @@ const SmartBinTable = () => {
         },
         payment: {
           ...selectedBin.payment,
-          paymentStatus: updateFormData.paymentStatus
+          paymentStatus: updateFormData.paymentStatus,
+          price: parseFloat(updateFormData.price) || 0 // Add price to payment object
         },
         schedule: {
           ...selectedBin.schedule,
@@ -175,12 +203,12 @@ const SmartBinTable = () => {
         const response = await fetch(`/api/BinRequest/smartbins/${id}`, {
           method: 'DELETE',
         });
-  
+
         if (!response.ok) {
           const errorData = await response.json();
           throw new Error(errorData.message || 'Failed to delete smart bin request');
         }
-  
+
         // Remove from state
         setSmartBins(smartBins.filter(bin => bin._id !== id));
         alert('Smart bin request deleted successfully');
@@ -219,7 +247,7 @@ const SmartBinTable = () => {
 
   const formatDate = (dateString) => {
     if (!dateString) return '—';
-    
+
     try {
       const date = new Date(dateString);
       return (
@@ -237,14 +265,14 @@ const SmartBinTable = () => {
 
   const formatAddress = (bin) => {
     if (!bin.address) return '—';
-    
+
     const { addressLine1, city } = bin.address;
     return addressLine1 && city ? `${addressLine1}, ${city}` : addressLine1 || city || '—';
   };
 
   const getStatusBadge = (status) => {
     if (!status) return null;
-    
+
     const statusColors = {
       pending: 'bg-yellow-100 text-yellow-800',
       approved: 'bg-green-100 text-green-800',
@@ -253,7 +281,7 @@ const SmartBinTable = () => {
       cancelled: 'bg-red-100 text-red-800',
       rejected: 'bg-red-100 text-red-800'
     };
-    
+
     return (
       <span className={`px-2 py-1 inline-flex text-xs leading-5 font-semibold rounded-full ${statusColors[status] || 'bg-gray-100 text-gray-800'}`}>
         {status}
@@ -263,7 +291,7 @@ const SmartBinTable = () => {
 
   const getPaymentStatusBadge = (bin) => {
     if (!bin.payment || !bin.payment.paymentStatus) return null;
-    
+
     const paymentStatus = bin.payment.paymentStatus;
     const paymentColors = {
       pending: 'bg-yellow-100 text-yellow-800',
@@ -272,7 +300,7 @@ const SmartBinTable = () => {
       failed: 'bg-red-100 text-red-800',
       refunded: 'bg-purple-100 text-purple-800'
     };
-    
+
     return (
       <span className={`px-2 py-1 inline-flex text-xs leading-5 font-semibold rounded-full ${paymentColors[paymentStatus] || 'bg-gray-100 text-gray-800'}`}>
         {paymentStatus}
@@ -292,7 +320,7 @@ const SmartBinTable = () => {
 
   const getBinType = (bin) => {
     if (!bin.binRequest || !bin.binRequest.length) return '—';
-    
+
     // Get the first bin type for display, more complex logic could be added
     const firstBin = bin.binRequest[0];
     return (
@@ -301,6 +329,21 @@ const SmartBinTable = () => {
         <span>{firstBin.binType}</span>
       </div>
     );
+  };
+
+  // Format the price for display
+  const formatPrice = (bin) => {
+    if (!bin.payment || bin.payment.price === undefined) {
+      // If no price in payment, calculate based on bin type
+      if (bin.binRequest && bin.binRequest.length > 0) {
+        const binType = bin.binRequest[0].binType?.toLowerCase();
+        if (binType && binPrices[binType]) {
+          return `Rs. ${binPrices[binType].toLocaleString()}`;
+        }
+      }
+      return '—';
+    }
+    return `Rs. ${bin.payment.price.toLocaleString()}`;
   };
 
   if (loading) {
@@ -318,8 +361,8 @@ const SmartBinTable = () => {
         <div className="bg-red-50 text-red-700 p-4 rounded-md border border-red-200">
           <h3 className="text-lg font-medium">Error loading smart bins</h3>
           <p>{error}</p>
-          <button 
-            onClick={() => window.location.reload()} 
+          <button
+            onClick={() => window.location.reload()}
             className="mt-2 bg-red-100 text-red-800 px-3 py-1 rounded-md hover:bg-red-200"
           >
             Retry
@@ -335,181 +378,224 @@ const SmartBinTable = () => {
         <h1 className="text-2xl font-bold text-gray-800">Smart Bin Requests</h1>
       </div>
 
-      {/* Update Form Modal */}
+      {/* Enhanced Update Form Modal */}
       {showUpdateForm && selectedBin && (
         <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
           <div className="bg-white rounded-lg p-6 max-w-2xl w-full max-h-screen overflow-y-auto">
-            <div className="flex justify-between items-center mb-4">
-              <h2 className="text-xl font-bold">Update Smart Bin Request</h2>
+            <div className="flex justify-between items-center mb-6 border-b pb-4">
+              <h2 className="text-xl font-bold text-green-700">Update Smart Bin Request</h2>
               <button 
                 onClick={() => setShowUpdateForm(false)}
-                className="p-1 rounded-full hover:bg-gray-100"
+                className="p-1 rounded-full hover:bg-gray-100 transition-colors"
               >
-                <X size={24} />
+                <X size={24} className="text-gray-500 hover:text-gray-700" />
               </button>
             </div>
             
-            <form onSubmit={handleUpdateFormSubmit} className="space-y-4">
-              {/* Request ID - readonly */}
-              <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1">
-                  Request ID
-                </label>
-                <input
-                  type="text"
-                  value={selectedBin.requestId || ""}
-                  className="block w-full px-3 py-2 border border-gray-300 rounded-md bg-gray-100"
-                  readOnly
-                />
+            <form onSubmit={handleUpdateFormSubmit} className="space-y-6">
+              {/* Request ID section - Made read-only and styled differently */}
+              <div className="bg-gray-50 p-4 rounded-md border border-gray-200">
+                <h3 className="text-sm font-semibold text-gray-700 mb-2">Request Information</h3>
+                <div className="flex items-center">
+                  <div className="flex-1">
+                    <label className="block text-xs font-medium text-gray-500 mb-1">
+                      Request ID (Non-editable)
+                    </label>
+                    <input
+                      type="text"
+                      value={selectedBin.requestId || `ID-${selectedBin._id?.slice(0, 8)}`}
+                      className="block w-full px-3 py-2 border border-gray-300 rounded-md bg-gray-100 text-gray-600 cursor-not-allowed"
+                      disabled
+                    />
+                  </div>
+                </div>
               </div>
               
-              {/* Status */}
-              <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1">
-                  Status
-                </label>
-                <select
-                  name="status"
-                  value={updateFormData.status}
-                  onChange={handleUpdateFormChange}
-                  className="block w-full px-3 py-2 border border-gray-300 rounded-md"
-                >
-                  <option value="">Select Status</option>
-                  <option value="pending">Pending</option>
-                  <option value="approved">Approved</option>
-                  <option value="in_progress">In Progress</option>
-                  <option value="completed">Completed</option>
-                  <option value="cancelled">Cancelled</option>
-                  <option value="rejected">Rejected</option>
-                </select>
-              </div>
-              
-              {/* Payment Status */}
-              <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1">
-                  Payment Status
-                </label>
-                <select
-                  name="paymentStatus"
-                  value={updateFormData.paymentStatus}
-                  onChange={handleUpdateFormChange}
-                  className="block w-full px-3 py-2 border border-gray-300 rounded-md"
-                >
-                  <option value="">Select Payment Status</option>
-                  <option value="pending">Pending</option>
-                  <option value="processing">Processing</option>
-                  <option value="completed">Completed</option>
-                  <option value="failed">Failed</option>
-                  <option value="refunded">Refunded</option>
-                </select>
+              {/* Main form content divided into sections */}
+              <div className="bg-white p-4 rounded-md border border-gray-200">
+                <h3 className="text-sm font-semibold text-gray-700 mb-4">Request Status</h3>
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                  {/* Status */}
+                  <div>
+                    <label className="block text-sm font-medium text-gray-700 mb-1">
+                      Status
+                    </label>
+                    <select
+                      name="status"
+                      value={updateFormData.status}
+                      onChange={handleUpdateFormChange}
+                      className="block w-full px-3 py-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-green-500 focus:border-transparent"
+                    >
+                      <option value="">Select Status</option>
+                      <option value="pending">Pending</option>
+                      <option value="approved">Approved</option>
+                      <option value="in_progress">In Progress</option>
+                      <option value="completed">Completed</option>
+                      <option value="cancelled">Cancelled</option>
+                      <option value="rejected">Rejected</option>
+                    </select>
+                  </div>
+                  
+                  {/* Payment Status */}
+                  <div>
+                    <label className="block text-sm font-medium text-gray-700 mb-1">
+                      Payment Status
+                    </label>
+                    <select
+                      name="paymentStatus"
+                      value={updateFormData.paymentStatus}
+                      onChange={handleUpdateFormChange}
+                      className="block w-full px-3 py-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-green-500 focus:border-transparent"
+                    >
+                      <option value="">Select Payment Status</option>
+                      <option value="pending">Pending</option>
+                      <option value="processing">Processing</option>
+                      <option value="completed">Completed</option>
+                      <option value="failed">Failed</option>
+                      <option value="refunded">Refunded</option>
+                    </select>
+                  </div>
+                </div>
               </div>
 
-              {/* Bin Type */}
-              <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1">
-                  Bin Type
-                </label>
-                <select
-                  name="binType"
-                  value={updateFormData.binType}
-                  onChange={handleUpdateFormChange}
-                  className="block w-full px-3 py-2 border border-gray-300 rounded-md"
-                >
-                  <option value="">Select Bin Type</option>
-                  <option value="general">General</option>
-                  <option value="recycling">Recycling</option>
-                  <option value="compost">Compost</option>
-                  <option value="paper">Paper</option>
-                  <option value="glass">Glass</option>
-                  <option value="plastic">Plastic</option>
-                  <option value="metal">Metal</option>
-                  <option value="electronics">Electronics</option>
-                  <option value="hazardous">Hazardous</option>
-                </select>
-              </div>
-              
-              {/* Address */}
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-1">
-                    Address Line
-                  </label>
-                  <input
-                    type="text"
-                    name="addressLine1"
-                    value={updateFormData.addressLine1}
-                    onChange={handleUpdateFormChange}
-                    className="block w-full px-3 py-2 border border-gray-300 rounded-md"
-                  />
-                </div>
-                <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-1">
-                    City
-                  </label>
-                  <input
-                    type="text"
-                    name="city"
-                    value={updateFormData.city}
-                    onChange={handleUpdateFormChange}
-                    className="block w-full px-3 py-2 border border-gray-300 rounded-md"
-                  />
+              {/* Bin Information */}
+              <div className="bg-white p-4 rounded-md border border-gray-200">
+                <h3 className="text-sm font-semibold text-gray-700 mb-4">Bin Information</h3>
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                  <div>
+                    <label className="block text-sm font-medium text-gray-700 mb-1">
+                      Bin Type
+                    </label>
+                    <select
+                      name="binType"
+                      value={updateFormData.binType}
+                      onChange={handleUpdateFormChange}
+                      className="block w-full px-3 py-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-green-500 focus:border-transparent"
+                    >
+                      <option value="">Select Bin Type</option>
+                      <option value="general">General</option>
+                      <option value="recycling">Recycling</option>
+                      <option value="compost">Compost</option>
+                      <option value="paper">Paper</option>
+                      <option value="glass">Glass</option>
+                      <option value="plastic">Plastic</option>
+                      <option value="metal">Metal</option>
+                      <option value="electronics">Electronics</option>
+                      <option value="hazardous">Hazardous</option>
+                    </select>
+                  </div>
+                  
+                  {/* Added Price Field */}
+                  <div>
+                    <label className="block text-sm font-medium text-gray-700 mb-1">
+                      Price (Rs.)
+                    </label>
+                    <input
+                      type="number"
+                      name="price"
+                      value={updateFormData.price}
+                      onChange={handleUpdateFormChange}
+                      className="block w-full px-3 py-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-green-500 focus:border-transparent"
+                      min="0"
+                    />
+                    <p className="text-xs text-gray-500 mt-1">
+                      Default price based on bin type will be automatically calculated
+                    </p>
+                  </div>
                 </div>
               </div>
               
-              {/* Contact Info */}
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-1">
-                    Contact Number
-                  </label>
-                  <input
-                    type="text"
-                    name="contactNo"
-                    value={updateFormData.contactNo}
-                    onChange={handleUpdateFormChange}
-                    className="block w-full px-3 py-2 border border-gray-300 rounded-md"
-                  />
-                </div>
-                <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-1">
-                    Email
-                  </label>
-                  <input
-                    type="email"
-                    name="email"
-                    value={updateFormData.email}
-                    onChange={handleUpdateFormChange}
-                    className="block w-full px-3 py-2 border border-gray-300 rounded-md"
-                  />
+              {/* Location Information */}
+              <div className="bg-white p-4 rounded-md border border-gray-200">
+                <h3 className="text-sm font-semibold text-gray-700 mb-4">Location Information</h3>
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                  <div>
+                    <label className="block text-sm font-medium text-gray-700 mb-1">
+                      Address Line
+                    </label>
+                    <input
+                      type="text"
+                      name="addressLine1"
+                      value={updateFormData.addressLine1}
+                      onChange={handleUpdateFormChange}
+                      className="block w-full px-3 py-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-green-500 focus:border-transparent"
+                    />
+                  </div>
+                  <div>
+                    <label className="block text-sm font-medium text-gray-700 mb-1">
+                      City
+                    </label>
+                    <input
+                      type="text"
+                      name="city"
+                      value={updateFormData.city}
+                      onChange={handleUpdateFormChange}
+                      className="block w-full px-3 py-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-green-500 focus:border-transparent"
+                    />
+                  </div>
                 </div>
               </div>
               
-              {/* Schedule Date */}
-              <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1">
-                  Schedule Date & Time
-                </label>
-                <input
-                  type="datetime-local"
-                  name="scheduleDate"
-                  value={updateFormData.scheduleDate}
-                  onChange={handleUpdateFormChange}
-                  className="block w-full px-3 py-2 border border-gray-300 rounded-md"
-                />
+              {/* Contact Information */}
+              <div className="bg-white p-4 rounded-md border border-gray-200">
+                <h3 className="text-sm font-semibold text-gray-700 mb-4">Contact Information</h3>
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                  <div>
+                    <label className="block text-sm font-medium text-gray-700 mb-1">
+                      Contact Number
+                    </label>
+                    <input
+                      type="text"
+                      name="contactNo"
+                      value={updateFormData.contactNo}
+                      onChange={handleUpdateFormChange}
+                      className="block w-full px-3 py-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-green-500 focus:border-transparent"
+                    />
+                  </div>
+                  <div>
+                    <label className="block text-sm font-medium text-gray-700 mb-1">
+                      Email
+                    </label>
+                    <input
+                      type="email"
+                      name="email"
+                      value={updateFormData.email}
+                      onChange={handleUpdateFormChange}
+                      className="block w-full px-3 py-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-green-500 focus:border-transparent"
+                    />
+                  </div>
+                </div>
+              </div>
+              
+              {/* Schedule Information */}
+              <div className="bg-white p-4 rounded-md border border-gray-200">
+                <h3 className="text-sm font-semibold text-gray-700 mb-4">Schedule Information</h3>
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-1">
+                    Schedule Date & Time
+                  </label>
+                  <input
+                    type="datetime-local"
+                    name="scheduleDate"
+                    value={updateFormData.scheduleDate}
+                    onChange={handleUpdateFormChange}
+                    className="block w-full px-3 py-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-green-500 focus:border-transparent"
+                  />
+                </div>
               </div>
               
               {/* Action Buttons */}
-              <div className="flex justify-end gap-2 pt-2">
+              <div className="flex justify-end gap-3 pt-4 border-t">
                 <button
                   type="button"
                   onClick={() => setShowUpdateForm(false)}
-                  className="px-4 py-2 border border-gray-300 rounded-md text-gray-700 bg-white hover:bg-gray-50"
+                  className="px-4 py-2 border border-gray-300 rounded-md text-gray-700 bg-white hover:bg-gray-50 transition-colors focus:outline-none focus:ring-2 focus:ring-gray-500"
                 >
                   Cancel
                 </button>
                 <button
                   type="submit"
-                  className="px-4 py-2 bg-green-600 text-white rounded-md hover:bg-green-700"
+                  className="px-6 py-2 bg-green-600 text-white rounded-md hover:bg-green-700 transition-colors focus:outline-none focus:ring-2 focus:ring-green-500"
                 >
                   Update Request
                 </button>
@@ -545,6 +631,10 @@ const SmartBinTable = () => {
                 <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-green-800 uppercase tracking-wider">
                   Payment
                 </th>
+                {/* Added Price Column */}
+                <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-green-800 uppercase tracking-wider">
+                  Price
+                </th>
                 <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-green-800 uppercase tracking-wider">
                   Actions
                 </th>
@@ -553,7 +643,7 @@ const SmartBinTable = () => {
             <tbody className="bg-white divide-y divide-gray-200">
               {smartBins.length === 0 ? (
                 <tr>
-                  <td colSpan="8" className="px-6 py-4 text-center text-gray-500">
+                  <td colSpan="9" className="px-6 py-4 text-center text-gray-500">
                     No smart bin requests found
                   </td>
                 </tr>
@@ -581,24 +671,21 @@ const SmartBinTable = () => {
                     <td className="px-6 py-4 whitespace-nowrap">
                       {getPaymentStatusBadge(bin)}
                     </td>
+                    {/* Added Price Cell */}
+                    <td className="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900">
+                      {formatPrice(bin)}
+                    </td>
                     <td className="px-6 py-4 whitespace-nowrap text-sm font-medium space-x-2 flex">
-                      {/* <button 
-                        onClick={() => handleView(bin._id)} 
-                        className="text-blue-600 hover:text-blue-900 p-1 rounded-full hover:bg-blue-100"
-                        title="View details"
-                      >
-                        <Eye size={18} />
-                      </button> */}
                       <button 
                         onClick={() => handleEdit(bin._id)} 
-                        className="text-green-600 hover:text-green-900 p-1 rounded-full hover:bg-green-100"
+                        className="text-green-600 hover:text-green-900 p-1 rounded-full hover:bg-green-100 transition-colors"
                         title="Edit request"
                       >
                         <Edit size={18} />
                       </button>
                       <button 
                         onClick={() => handleDelete(bin._id)} 
-                        className="text-red-600 hover:text-red-900 p-1 rounded-full hover:bg-red-100"
+                        className="text-red-600 hover:text-red-900 p-1 rounded-full hover:bg-red-100 transition-colors"
                         title="Delete request"
                       >
                         <Trash2 size={18} />
@@ -621,10 +708,88 @@ const SmartBinTable = () => {
           <div className="bg-white rounded-lg shadow overflow-hidden">
             <table className="min-w-full divide-y divide-gray-200">
               <thead className="bg-green-50">
-                {/* Table headers... */}
+                <tr>
+                  <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-green-800 uppercase tracking-wider">
+                    Request ID
+                  </th>
+                  <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-green-800 uppercase tracking-wider">
+                    Waste Type
+                  </th>
+                  <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-green-800 uppercase tracking-wider">
+                    Location
+                  </th>
+                  <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-green-800 uppercase tracking-wider">
+                    Price
+                  </th>
+                  <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-green-800 uppercase tracking-wider">
+                    Status
+                  </th>
+                  <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-green-800 uppercase tracking-wider">
+                    Actions
+                  </th>
+                </tr>
               </thead>
               <tbody className="bg-white divide-y divide-gray-200">
-                {/* Sample rows... */}
+                <tr>
+                  <td className="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900">
+                    BIN-001
+                  </td>
+                  <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
+                    <div className="flex items-center">
+                      <span className="mr-2">♻️</span>
+                      <span>Recycling</span>
+                    </div>
+                  </td>
+                  <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
+                    123 Green St, Colombo
+                  </td>
+                  <td className="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900">
+                    Rs. 2,000
+                  </td>
+                  <td className="px-6 py-4 whitespace-nowrap">
+                    <span className="px-2 py-1 inline-flex text-xs leading-5 font-semibold rounded-full bg-yellow-100 text-yellow-800">
+                      pending
+                    </span>
+                  </td>
+                  <td className="px-6 py-4 whitespace-nowrap text-sm font-medium space-x-2 flex">
+                    <button className="text-green-600 hover:text-green-900 p-1 rounded-full hover:bg-green-100">
+                      <Edit size={18} />
+                    </button>
+                    <button className="text-red-600 hover:text-red-900 p-1 rounded-full hover:bg-red-100">
+                      <Trash2 size={18} />
+                    </button>
+                  </td>
+                </tr>
+                <tr className="bg-gray-50">
+                  <td className="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900">
+                    BIN-002
+                  </td>
+                  <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
+                    <div className="flex items-center">
+                      <span className="mr-2">🥫</span>
+                      <span>Metal</span>
+                    </div>
+                  </td>
+                  <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
+                    456 Clean Ave, Negombo
+                  </td>
+                  <td className="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900">
+                    Rs. 2,300
+                  </td>
+                  <td className="px-6 py-4 whitespace-nowrap">
+                    <span className="px-2 py-1 inline-flex text-xs leading-5 font-semibold rounded-full bg-green-100 text-green-800">
+                      completed
+                    </span>
+                  </td>
+                  <td className="px-6 py-4 whitespace-nowrap text-sm font-medium space-x-2 flex">
+                    <button className="text-green-600 hover:text-green-900 p-1 rounded-full hover:bg-green-100">
+                      <Edit size={18} />
+                    </button>
+                    <button className="text-red-600 hover:text-red-900 p-1 rounded-full hover:bg-red-100">
+                      <Trash2 size={18} />
+                    </button>
+                  </td>
+                </tr>
               </tbody>
             </table>
           </div>
