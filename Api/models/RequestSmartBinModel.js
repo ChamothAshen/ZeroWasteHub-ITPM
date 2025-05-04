@@ -73,7 +73,7 @@ const SmartBinRequestSchema = new mongoose.Schema({
   },
   
   // Bin Request Details
-  binRequest: {
+  binRequest: [{
     binType: {
       type: String,
       required: true,
@@ -87,7 +87,7 @@ const SmartBinRequestSchema = new mongoose.Schema({
       type: String,
       required: true,
       enum: ['small', 'medium', 'large', 'xlarge', 'commercial'],
-      default: 'medium'
+      required: true
     },
     quantity: {
       type: Number,
@@ -96,8 +96,8 @@ const SmartBinRequestSchema = new mongoose.Schema({
       max: 5,
       default: 1
     }
-  },
-  
+  }],
+
   // Schedule Information
   schedule: {
     scheduleDate: {

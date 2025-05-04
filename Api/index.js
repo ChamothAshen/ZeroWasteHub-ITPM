@@ -6,6 +6,10 @@ import authRoutes from './routes/auth.route.js';
 import cookieParser from 'cookie-parser';
 import collectRequestRoutes from './routes/CollectRequestRoute.js';
 import createSmartBinRequest from './routes/RequestSmartBinRoute.js';
+import inventoryRoutes from './routes/inventoryRoutes.js'; // Ensure this route is defined
+import EmployeeRoute from './routes/EmployeeRoute.js'; 
+import LogRoute from './routes/LogRoute.js';
+import pickupRoutes from "./routes/PickupRouter.js";
 import cors from 'cors';
 
 dotenv.config();
@@ -43,6 +47,11 @@ app.use('/api/user', userRoutes);
 app.use('/api/auth', authRoutes);
 app.use('/api/collection-requests', collectRequestRoutes);
 app.use('/api/BinRequest', createSmartBinRequest);
+app.use('/api/Inventory', inventoryRoutes); // Ensure this route is defined
+app.use('/api/employee', EmployeeRoute);
+app.use("/api/logs", LogRoute);
+app.use("/api/pickups", pickupRoutes);
+
 
 // Error Handling Middleware
 app.use((err, req, res, next) => {
