@@ -12,7 +12,6 @@ import ClientBill from './pages/Payement/ClientBill';
 import CollectRequestForm from './pages/RequestWaste/CollectRequestForm';
 import EmployeeDashboard from './pages/EmpDash';
 import EmpPickups from './pages/EmpPickups';
-import EmpTeams from './pages/EmpTeams';
 import EmpLogs from './pages/EmpLogs';
 import Sidebar from './pages/EmpSidebar';
 import Inventory from './pages/Inventory';
@@ -56,7 +55,6 @@ function App() {
           <Route path='/wastebot' element={<WasteManagementChatBot/>} />
           <Route path='/EmployeeDashboard' element={<EmployeeDashboard />} />
           <Route path='/EmpPickups' element={<EmpPickups />} />
-          <Route path='/EmpTeams' element={<EmpTeams />} />
           <Route path='/EmpSidebar' element={<Sidebar />} />
           <Route path='/EmpLogs' element={<EmpLogs />} />
        </Route>
