@@ -12,10 +12,13 @@
   "dependencies": {
     "@material-tailwind/react": "^2.1.10",
     "@reduxjs/toolkit": "^2.6.1",
+    "axios": "^1.8.4",
     "chart.js": "^4.4.8",
     "firebase": "^11.4.0",
     "flowbite-react": "^0.10.2",
     "framer-motion": "^12.5.0",
+    "jspdf": "^3.0.1",
+    "jspdf-autotable": "^5.0.2",
     "lucide-react": "^0.483.0",
     "react": "^19.0.0",
     "react-chartjs-2": "^5.3.0",

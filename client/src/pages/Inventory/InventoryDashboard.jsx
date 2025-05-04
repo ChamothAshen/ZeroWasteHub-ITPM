@@ -1,8 +1,10 @@
 import React from "react";
 import { FaRecycle, FaTrash, FaUtensils, FaBox, FaLeaf } from "react-icons/fa";
 import { FiMenu } from "react-icons/fi";
-import Sidebar from "../components/Sidebar"; // Import the Sidebar component
+import Sidebar from "../../components/Sidebar"; // Import the Sidebar component
 import { Bar } from "react-chartjs-2";
+import { useEffect, useState } from "react";
+import axios from "axios"; // Import axios for API calls
 import {
   Chart as ChartJS,
   CategoryScale,
@@ -112,6 +114,27 @@ const InventoryDashboard = () => {
       },
     },
   };
+  const [categoryData, setCategoryData] = useState({});
+
+  useEffect(() => {
+    const fetchTodayData = async () => {
+      try {
+        const res = await axios.get("http://localhost:3000/api/inventory/getTodayWeight");
+        const dataObj = {};
+
+        res.data.data.forEach(item => {
+          dataObj[item.category] = item.totalWeight;
+        });
+
+        setCategoryData(dataObj);
+      } catch (error) {
+        console.error("Failed to fetch today's data:", error);
+      }
+    };
+
+    fetchTodayData();
+  }, []);
+
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-blue-50 to-purple-50 flex">
@@ -141,21 +164,21 @@ const InventoryDashboard = () => {
           <div className="w-full h-32 bg-white rounded-lg shadow-lg flex flex-col items-center justify-center p-4 transform hover:scale-105 transition-transform border border-blue-200">
             <FaBox className="text-4xl text-blue-600 mb-2" />
             <h2 className="text-lg font-semibold text-gray-700">Plastic</h2>
-            <p className="text-2xl font-bold text-gray-900">120 kg</p>
+            <p className="text-2xl font-bold text-gray-900">{categoryData["Plastic"] || 0} kg</p>
           </div>
 
           {/* Box 2: Paper */}
           <div className="w-full h-32 bg-white rounded-lg shadow-lg flex flex-col items-center justify-center p-4 transform hover:scale-105 transition-transform border border-green-200">
             <FaLeaf className="text-4xl text-green-600 mb-2" />
             <h2 className="text-lg font-semibold text-gray-700">Paper</h2>
-            <p className="text-2xl font-bold text-gray-900">80 kg</p>
+            <p className="text-2xl font-bold text-gray-900">{categoryData["Paper"] || 0} kg</p>
           </div>
 
           {/* Box 3: Food */}
           <div className="w-full h-32 bg-white rounded-lg shadow-lg flex flex-col items-center justify-center p-4 transform hover:scale-105 transition-transform border border-orange-200">
             <FaUtensils className="text-4xl text-orange-600 mb-2" />
             <h2 className="text-lg font-semibold text-gray-700">Food</h2>
-            <p className="text-2xl font-bold text-gray-900">50 kg</p>
+            <p className="text-2xl font-bold text-gray-900">{categoryData["Food"] || 0} kg</p>
           </div>
 
           {/* Box 4: General Waste */}
@@ -164,14 +187,14 @@ const InventoryDashboard = () => {
             <h2 className="text-lg font-semibold text-gray-700">
               General Waste
             </h2>
-            <p className="text-2xl font-bold text-gray-900">200 kg</p>
+            <p className="text-2xl font-bold text-gray-900">{categoryData["General Waste"] || 0} kg</p>
           </div>
 
           {/* Box 5: Recycling */}
           <div className="w-full h-32 bg-white rounded-lg shadow-lg flex flex-col items-center justify-center p-4 transform hover:scale-105 transition-transform border border-purple-200">
             <FaRecycle className="text-4xl text-purple-600 mb-2" />
             <h2 className="text-lg font-semibold text-gray-700">Recycling</h2>
-            <p className="text-2xl font-bold text-gray-900">150 kg</p>
+            <p className="text-2xl font-bold text-gray-900">{categoryData["Recycling"] || 0} kg</p>
           </div>
         </div>
 

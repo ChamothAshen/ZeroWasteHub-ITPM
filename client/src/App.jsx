@@ -15,15 +15,17 @@ import EmpPickups from './pages/EmpPickups';
 import EmpTeams from './pages/EmpTeams';
 import EmpLogs from './pages/EmpLogs';
 import Sidebar from './pages/EmpSidebar';
-import Inventory from './pages/Inventory';
-import InventoryDashboard from './pages/InventoryDashboard';
-import BinManagement from './pages/BinManagement ';
+import Inventory from './pages/Inventory/Inventory';
+import InventoryDashboard from './pages/Inventory/InventoryDashboard';
+import BinManagement from './pages/Inventory/BinManagement ';
 import ProfileUI from './components/ProfileUI';
 import UserDetailShow from './pages/ProfileData/UserDetailShow';
 import UserSmartBinDetailShow from './pages/ProfileData/UserSmartBinDetailShow';
 import WasteManagementChatBot from './pages/chatbot/WasteManagementChatBot';
 import OnlyAdminPrivateRoute from './components/OnlyAdminPrivateRoute';
 import PrivateRoute from './components/PrivateRoute';
+import SmartBinRequestsTable from './pages/Inventory/SmartBinRequestsTable';
+import UpdateInventoryForm from './pages/Inventory/UpdateInventoryForm';
 function App() {
   return (
     <BrowserRouter>
@@ -51,6 +53,9 @@ function App() {
         <Route path='/profileui' element={<ProfileUI/>} />
         <Route element={<PrivateRoute/>}>
          <Route path='/Dashboard' element={<Dashboard />} />
+         <Route path='/test' element={<SmartBinRequestsTable />} />
+         <Route path="/inventory/update/:id" element={<UpdateInventoryForm />} />
+
           
         </Route>
         <Route element={<OnlyAdminPrivateRoute />}>
