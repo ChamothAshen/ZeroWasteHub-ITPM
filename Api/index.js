@@ -13,8 +13,6 @@ import inventoryRoutes from './routes/inventoryRoutes.js'; // Ensure this route 
 import EmployeeRoute from './routes/EmployeeRoute.js'; 
 import LogRoute from './routes/LogRoute.js';
 import pickupRoutes from "./routes/PickupRouter.js";
-import cors from 'cors';
-import EmployeeRoute from './routes/EmployeeRoute.js';
 import cardPaymentRoutes from './routes/CardPaymentRoute.js';
 
 dotenv.config();

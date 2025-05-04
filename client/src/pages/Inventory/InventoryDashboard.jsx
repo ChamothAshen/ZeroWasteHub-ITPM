@@ -193,9 +193,10 @@ const InventoryDashboard = () => {
           {/* Box 5: Recycling */}
           <div className="w-full h-32 bg-white rounded-lg shadow-lg flex flex-col items-center justify-center p-4 transform hover:scale-105 transition-transform border border-purple-200">
             <FaRecycle className="text-4xl text-purple-600 mb-2" />
-            <h2 className="text-lg font-semibold text-gray-700">Recycling</h2>
+            <h2 className="text-lg font-semibold text-gray-700">Glass</h2>
             <p className="text-2xl font-bold text-gray-900">{categoryData["Recycling"] || 0} kg</p>
           </div>
+          
         </div>
 
         {/* Large Box for Chart or Data Visualization */}

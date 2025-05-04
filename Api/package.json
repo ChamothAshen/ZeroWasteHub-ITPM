@@ -21,6 +21,7 @@
     "express": "^4.21.2",
     "jsonwebtoken": "^9.0.2",
     "mongoose": "^8.12.1",
+    "pdfkit": "^0.17.1",
     "react-chartjs-2": "^5.3.0",
     "uuid": "^11.1.0"
   },
