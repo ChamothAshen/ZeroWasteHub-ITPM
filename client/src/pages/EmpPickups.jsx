@@ -26,7 +26,7 @@ export default function EmpPickups() {
   useEffect(() => {
     const fetchPickups = async () => {
       try {
-        const res = await fetch("http://localhost:3000/api/pickups");
+        const res = await fetch("http://localhost:5173/api/pickups"); // Corrected URL
         const data = await res.json();
         if (res.ok) {
           setSubmittedPickups(data);
@@ -50,7 +50,7 @@ export default function EmpPickups() {
     setLoading(true);
 
     try {
-      const response = await fetch("http://localhost:3000/api/pickups", {
+      const response = await fetch("http://localhost:5173/api/pickups", { // Corrected URL
         method: "POST",
         headers: {
           "Content-Type": "application/json",
@@ -80,6 +80,7 @@ export default function EmpPickups() {
 
     setLoading(false);
   };
+
 
   return (
     <div className="min-h-screen bg-green-50 text-gray-800 flex">
