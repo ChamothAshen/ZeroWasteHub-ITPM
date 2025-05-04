@@ -5,6 +5,8 @@ import "react-datepicker/dist/react-datepicker.css";
 import Sidebar from "./EmpSidebar";
 import jsPDF from "jspdf";
 import autoTable from "jspdf-autotable";
+import { useSelector } from "react-redux";
+import ConfirmationModal from "../components/ConfirmationModal";
 
 export default function EmpLogs() {
   const [logs, setLogs] = useState([]);
@@ -13,9 +15,14 @@ export default function EmpLogs() {
   const [loading, setLoading] = useState(false);
   const [filterDate, setFilterDate] = useState(null);
   const [filterLocation, setFilterLocation] = useState("");
+  const [confirmation, setConfirmation] = useState({
+    isOpen: false,
+    message: "",
+    onConfirm: null,
+  });
 
-  const currentUser = { name: "Jane Doe", role: "user" };
-  const isAdmin = () => currentUser.role === "admin";
+  const { currentUser } = useSelector((state) => state.user);
+  const isAdmin = () => currentUser?.role === "admin";
 
   useEffect(() => {
     fetchLogs();
@@ -58,9 +65,6 @@ export default function EmpLogs() {
     }
   };
 
-  const handleEditLog = (log) => {
-    setEditingLog({ ...log });
-  };
 
   const handleUpdateLog = async () => {
     try {
@@ -85,6 +89,54 @@ export default function EmpLogs() {
     } catch (error) {
       console.error("Failed to delete log:", error);
     }
+  };
+
+  const openConfirmation = (message, onConfirm) => {
+    setConfirmation({ isOpen: true, message, onConfirm });
+  };
+
+  const closeConfirmation = () => {
+    setConfirmation({ isOpen: false, message: "", onConfirm: null });
+  };
+
+  const handleApproveLog = async (id) => {
+    const log = logs.find((log) => log._id === id);
+    openConfirmation(
+      `Are you sure you want to approve the log for location "${log.location}" on ${new Date(
+        log.date
+      ).toLocaleDateString()}?`,
+      async () => {
+        try {
+          const res = await fetch(`/api/logs/${id}/approve`, { method: "PUT" });
+          const updatedLog = await res.json();
+          setLogs(logs.map((log) => (log._id === updatedLog._id ? updatedLog : log)));
+        } catch (error) {
+          console.error("Failed to approve log:", error);
+        } finally {
+          closeConfirmation();
+        }
+      }
+    );
+  };
+
+  const handleRejectLog = async (id) => {
+    const log = logs.find((log) => log._id === id);
+    openConfirmation(
+      `Are you sure you want to reject the log for location "${log.location}" on ${new Date(
+        log.date
+      ).toLocaleDateString()}?`,
+      async () => {
+        try {
+          const res = await fetch(`/api/logs/${id}/reject`, { method: "PUT" });
+          const updatedLog = await res.json();
+          setLogs(logs.map((log) => (log._id === updatedLog._id ? updatedLog : log)));
+        } catch (error) {
+          console.error("Failed to reject log:", error);
+        } finally {
+          closeConfirmation();
+        }
+      }
+    );
   };
 
   const generatePDF = (log) => {
@@ -183,6 +235,7 @@ export default function EmpLogs() {
                   <th className="border p-2">Recyclable</th>
                   <th className="border p-2">Status</th>
                   <th className="border p-2">Actions</th>
+                  {isAdmin() && <th className="border p-2">Admin Actions</th>}
                 </tr>
               </thead>
               <tbody>
@@ -201,11 +254,20 @@ export default function EmpLogs() {
                     <td className="border p-2 capitalize">{log.status}</td>
                     <td className="border p-2 flex gap-2 justify-center">
                       <button
-                        onClick={() => handleEditLog(log)}
-                        className="text-blue-500"
-                        title="Edit"
+                        onClick={() => handleApproveLog(log._id)}
+                        className="bg-green-600 text-white px-3 py-1 rounded disabled:opacity-50"
+                        title="Approve"
+                        disabled={log.status !== "pending"}
                       >
-                        <FiEdit />
+                        Approve
+                      </button>
+                      <button
+                        onClick={() => handleRejectLog(log._id)}
+                        className="bg-red-600 text-white px-3 py-1 rounded disabled:opacity-50"
+                        title="Reject"
+                        disabled={log.status !== "pending"}
+                      >
+                        Reject
                       </button>
                       <button
                         onClick={() => generatePDF(log)}
@@ -224,6 +286,24 @@ export default function EmpLogs() {
                         </button>
                       )}
                     </td>
+                    {isAdmin() && (
+                      <td className="border p-2 flex gap-2 justify-center">
+                        <button
+                          onClick={() => handleApproveLog(log._id)}
+                          className="text-green-500"
+                          title="Approve"
+                        >
+                          Approve
+                        </button>
+                        <button
+                          onClick={() => handleRejectLog(log._id)}
+                          className="text-red-500"
+                          title="Reject"
+                        >
+                          Reject
+                        </button>
+                      </td>
+                    )}
                   </tr>
                 ))}
 
@@ -346,6 +426,12 @@ export default function EmpLogs() {
           )}
         </div>
       </main>
+      <ConfirmationModal
+        isOpen={confirmation.isOpen}
+        message={confirmation.message}
+        onConfirm={confirmation.onConfirm}
+        onCancel={closeConfirmation}
+      />
     </div>
   );
 }

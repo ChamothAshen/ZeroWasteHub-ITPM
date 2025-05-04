@@ -95,7 +95,12 @@ const SmartBinRequestSchema = new mongoose.Schema({
       min: 1,
       max: 5,
       default: 1
-    }
+    },
+    status: {
+      type: String,
+      enum: ['pending', 'approved','cancelled'],
+      default: 'pending'
+    },
   }],
 
   // Schedule Information
@@ -163,7 +168,7 @@ const SmartBinRequestSchema = new mongoose.Schema({
   // Request Status
   status: {
     type: String,
-    enum: ['pending', 'approved', 'processing', 'delivered', 'active', 'cancelled', 'completed'],
+    enum: ['pending', 'approved','cancelled'],
     default: 'pending'
   },
   

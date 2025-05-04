@@ -26,24 +26,25 @@ const SmartBinRequestsTable = () => {
     fetchRequests();
   }, []);
 
-  const handleStatusChange = (requestId, binId, status) => {
-    // Update status for the specific bin in a specific request
-    const updatedRequests = requests.map((request) => {
-      if (request._id === requestId) {
-        const updatedBinRequest = request.binRequest.map((bin) => {
-          if (bin._id === binId) {
-            return { ...bin, status }; // Update the status of the specific bin
-          }
-          return bin;
-        });
-
-        return { ...request, binRequest: updatedBinRequest }; // Update the request with the new bin request
-      }
-      return request;
+  const handleStatusChange = async (requestId, binId, newStatus) => {
+    try {
+      const response = await axios.patch(
+        `/api/BinRequest/update-bin-status/${requestId}/${binId}`,{
+        status: newStatus 
     });
-
-    setRequests(updatedRequests); // Update the state with the modified requests
+  
+      const updatedRequest = response.data.updatedRequest;
+  
+      const updated = requests.map((req) => {
+        return req._id === updatedRequest._id ? updatedRequest : req;
+      });
+  
+      setRequests(updated);
+    } catch (err) {
+      console.error('Failed to update status:', err.message);
+    }
   };
+  
 
   if (loading) {
     return (
@@ -70,6 +71,7 @@ const SmartBinRequestsTable = () => {
             <th className="text-left py-3 px-4 uppercase font-semibold text-sm">
               First Name
             </th>
+
             <th className="text-left py-3 px-4 uppercase font-semibold text-sm">
               Waste Type
             </th>
@@ -101,45 +103,46 @@ const SmartBinRequestsTable = () => {
                 <td className="py-3 px-4">{bin.quantity || "-"}</td>
                 <td className="py-3 px-4">{bin.binSize || "-"}</td>
                 <td className="py-3 px-4">
-                  {/* Buttons for changing status for each bin */}
-                  <div className="flex space-x-2">
-                  <button
-                    className={`px-4 py-2 rounded-full font-semibold text-white transition-colors duration-300 ease-in-out ${
-                      bin.status === "pending"
-                        ? "text-white bg-gradient-to-r from-blue-500 via-blue-600 to-blue-700 hover:bg-gradient-to-br focus:ring-4 focus:outline-none focus:ring-blue-300 dark:focus:ring-blue-800 shadow-lg shadow-blue-500/50 dark:shadow-lg dark:shadow-blue-800/80 font-medium rounded-lg text-sm px-5 py-2.5 text-center me-2 mb-2 "
-                        : "bg-gray-300 hover:bg-gray-400"
-                    }`}
-                    onClick={() =>
-                      handleStatusChange(request._id, bin._id, "pending")
-                    }
-                  >
-                    Pending
-                  </button>
-                  <button
-                    className={`px-4 py-2 rounded-full font-semibold text-white transition-colors duration-300 ease-in-out ${
-                      bin.status === "cancel"
-                        ? "text-white bg-gradient-to-r from-red-400 via-red-500 to-red-600 hover:bg-gradient-to-br focus:ring-4 focus:outline-none focus:ring-red-300 dark:focus:ring-red-800 shadow-lg shadow-red-500/50 dark:shadow-lg dark:shadow-red-800/80 font-medium rounded-lg text-sm px-5 py-2.5 text-center me-2 mb-2"
-                        : "bg-gray-300 hover:bg-gray-400"
-                    }`}
-                    onClick={() =>
-                      handleStatusChange(request._id, bin._id, "cancel")
-                    }
-                  >
-                    Cancel
-                  </button>
-                  <button
-                    className={`px-4 py-2 rounded-full font-semibold text-white transition-colors duration-300 ease-in-out ${
-                      bin.status === "ok"
-                        ? "text-white bg-gradient-to-r from-green-400 via-green-500 to-green-600 hover:bg-gradient-to-br focus:ring-4 focus:outline-none focus:ring-green-300 dark:focus:ring-green-800 shadow-lg shadow-green-500/50 dark:shadow-lg dark:shadow-green-800/80 font-medium rounded-lg text-sm px-5 py-2.5 text-center me-2 mb-2"
-                        : "bg-gray-300 hover:bg-gray-400"
-                    }`}
-                    onClick={() =>
-                      handleStatusChange(request._id, bin._id, "ok")
-                    }
-                  >
-                    OK
-                  </button>
-                 </div>
+                  <div className="flex gap-2">
+                    <button
+                      className={`px-3 py-1 rounded-full font-semibold text-white ${
+                        bin.status === "pending"
+                          ? "text-white bg-gradient-to-r from-blue-500 via-blue-600 to-blue-700 hover:bg-gradient-to-br focus:ring-4 focus:outline-none focus:ring-blue-300 dark:focus:ring-blue-800 shadow-lg shadow-blue-500/50 dark:shadow-lg dark:shadow-blue-800/80 font-medium rounded-lg text-sm px-5 py-2.5 text-center me-2 mb-2"
+                          : "bg-gray-300 hover:bg-yellow-400"
+                      }`}
+                      onClick={() =>
+                        handleStatusChange(request._id, bin._id, "pending")
+                      }
+                    >
+                      Pending
+                    </button>
+
+                    <button
+                      className={`px-3 py-1 rounded-full font-semibold text-white ${
+                        bin.status === "cancel"
+                          ? "text-white bg-gradient-to-r from-red-400 via-red-500 to-red-600 hover:bg-gradient-to-br focus:ring-4 focus:outline-none focus:ring-red-300 dark:focus:ring-red-800 shadow-lg shadow-red-500/50 dark:shadow-lg dark:shadow-red-800/80 font-medium rounded-lg text-sm px-5 py-2.5 text-center me-2 mb-2"
+                          : "bg-gray-300 hover:bg-red-400"
+                      }`}
+                      onClick={() =>
+                        handleStatusChange(request._id, bin._id, "cancelled")
+                      }
+                    >
+                      Cancel
+                    </button>
+
+                    <button
+                      className={`px-3 py-1 rounded-full font-semibold text-white ${
+                        bin.status === "approved"
+                          ? "text-white bg-gradient-to-r from-green-400 via-green-500 to-green-600 hover:bg-gradient-to-br focus:ring-4 focus:outline-none focus:ring-green-300 dark:focus:ring-green-800 shadow-lg shadow-green-500/50 dark:shadow-lg dark:shadow-green-800/80 font-medium rounded-lg text-sm px-5 py-2.5 text-center me-2 mb-2"
+                          : "bg-gray-300 hover:bg-green-400"
+                      }`}
+                      onClick={() =>
+                        handleStatusChange(request._id, bin._id, "approved")
+                      }
+                    >
+                      Approved
+                    </button>
+                  </div>
                 </td>
               </tr>
             ))

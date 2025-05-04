@@ -60,7 +60,7 @@ function Header() {
               <span className="block text-sm text-green-700">@{currentUser.username}</span>
               <span className="block text-sm font-medium text-gray-500 truncate">{currentUser.email}</span>
             </Dropdown.Header>
-            <Link to="/profileui">
+            <Link to="/Dashboard">
               <Dropdown.Item className="text-green-700 hover:bg-green-100">Dashbord</Dropdown.Item>
             </Link>
             <Dropdown.Divider />

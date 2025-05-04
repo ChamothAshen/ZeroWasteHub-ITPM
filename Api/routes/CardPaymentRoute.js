@@ -1,28 +1,27 @@
-// routes/CardPaymentRoutes.js
 import express from 'express';
-import { 
-  processCardPayment, 
-  getPaymentByTransactionId, 
-  getUserPayments, 
-  getRequestPayment,
-  getPaymentReceipt
+import {
+  processCardPayment,
+  getPaymentDetails,
+  getUserPayments,
+  processRefund,
+  downloadReceipt,
 } from '../controllers/CardPaymentController.js';
+
 
 const router = express.Router();
 
-// Process a new card payment
-router.post('/', processCardPayment);
+// Process payment
+router.post('/processCardPayment',  processCardPayment);
 
-// Get payment details by transaction ID
-router.get('/transaction/:transactionId', getPaymentByTransactionId);
+// Get payment details
+router.get('/transaction/:transactionId', getPaymentDetails);
 
-// Get all payments for a user
+// Get payments by user
 router.get('/user/:userId', getUserPayments);
 
-// Get payment for a specific collection request
-router.get('/request/:requestId', getRequestPayment);
+// Refund a payment
+router.post('/refund/:transactionId', processRefund);
 
-// Get payment receipt
-router.get('/receipt/:transactionId', getPaymentReceipt);
+router.get('/receipt/:transactionId', downloadReceipt);
 
 export default router;
