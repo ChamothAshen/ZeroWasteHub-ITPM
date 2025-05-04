@@ -1,14 +1,58 @@
 import React, { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 
+// Pricing configuration for different bin types and sizes
+const binPricing = {
+  general: {
+    small: 2500,
+    medium: 3500,
+    large: 4500,
+    xlarge: 6500
+  },
+  recycling: {
+    small: 2000,
+    medium: 3000,
+    large: 4000,
+    xlarge: 6000
+  },
+  compost: {
+    small: 2000,
+    medium: 3000,
+    large: 4000,
+    xlarge: 6000
+  },
+  paper: {
+    small: 2000,
+    medium: 3000,
+    large: 4000,
+    xlarge: 6000
+  },
+  plastic: {
+    small: 2000,
+    medium: 3000,
+    large: 4000,
+    xlarge: 6000
+  }
+};
+
 // Component for requesting individual bins
 const BinRequestForm = ({ handleBinRequestChange }) => {
   const [binData, setBinData] = useState({
     binType: "general",
     binSize: "medium",
     quantity: "1",
-    description: ""
+    description: "",
+    price: binPricing.general.medium // Initialize with default price
   });
+
+  // Update price when bin type or size changes
+  useEffect(() => {
+    const newPrice = binPricing[binData.binType][binData.binSize];
+    setBinData(prev => ({
+      ...prev,
+      price: newPrice
+    }));
+  }, [binData.binType, binData.binSize]);
 
   const handleChange = (e) => {
     const { name, value } = e.target;
@@ -27,14 +71,22 @@ const BinRequestForm = ({ handleBinRequestChange }) => {
       return;
     }
     
-    handleBinRequestChange([binData]);
+    // Calculate total price for this bin request
+    const totalPrice = binData.price * qty;
+    
+    // Add bin with price to the request
+    handleBinRequestChange([{
+      ...binData,
+      totalPrice
+    }]);
     
     // Reset form for next entry
     setBinData({
       binType: "general",
       binSize: "medium",
       quantity: "1",
-      description: ""
+      description: "",
+      price: binPricing.general.medium
     });
   };
 
@@ -53,14 +105,10 @@ const BinRequestForm = ({ handleBinRequestChange }) => {
             className="w-full rounded-md border-gray-300 shadow-sm focus:border-green-500 focus:ring-green-500"
           >
             <option value="general">General Waste</option>
-            <option value="recycling">Recycling</option>
+            <option value="recycling">Glass</option>
             <option value="compost">Compost</option>
             <option value="paper">Paper</option>
-            <option value="glass">Glass</option>
             <option value="plastic">Plastic</option>
-            <option value="metal">Metal</option>
-            <option value="electronics">Electronics</option>
-            <option value="hazardous">Hazardous Materials</option>
           </select>
         </div>
         <div>
@@ -74,10 +122,10 @@ const BinRequestForm = ({ handleBinRequestChange }) => {
             onChange={handleChange}
             className="w-full rounded-md border-gray-300 shadow-sm focus:border-green-500 focus:ring-green-500"
           >
-            <option value="small">Small (120L)</option>
-            <option value="medium">Medium (240L)</option>
-            <option value="large">Large (360L)</option>
-            <option value="xlarge">X-Large (660L)</option>
+            <option value="small">Small (120L) - Rs. {binPricing[binData.binType].small}</option>
+            <option value="medium">Medium (240L) - Rs. {binPricing[binData.binType].medium}</option>
+            <option value="large">Large (360L) - Rs. {binPricing[binData.binType].large}</option>
+            <option value="xlarge">X-Large (660L) - Rs. {binPricing[binData.binType].xlarge}</option>
           </select>
         </div>
       </div>
@@ -113,7 +161,10 @@ const BinRequestForm = ({ handleBinRequestChange }) => {
         </div>
       </div>
       
-      <div className="flex justify-end">
+      <div className="flex justify-between items-center">
+        <div className="text-sm font-medium text-gray-700">
+          Price per bin: Rs. {binData.price} × {binData.quantity} = Rs. {binData.price * parseInt(binData.quantity || 0)}
+        </div>
         <button
           type="button"
           onClick={handleAddBin}
@@ -133,6 +184,7 @@ const RequestSmartBinForm = () => {
   const [submitError, setSubmitError] = useState("");
   const [currentStep, setCurrentStep] = useState(1);
   const totalSteps = 4;
+  const [totalPrice, setTotalPrice] = useState(0);
 
   const [formData, setFormData] = useState({
     userId: "",
@@ -156,6 +208,14 @@ const RequestSmartBinForm = () => {
     termsAccepted: false,
     paymentMethod: "creditCard",
   });
+
+  // Calculate total price whenever bin requests change
+  useEffect(() => {
+    const newTotalPrice = formData.binRequest.reduce((sum, bin) => {
+      return sum + (bin.totalPrice || 0);
+    }, 0);
+    setTotalPrice(newTotalPrice);
+  }, [formData.binRequest]);
 
   useEffect(() => {
     // Set a default user ID
@@ -248,6 +308,8 @@ const RequestSmartBinForm = () => {
         },
         payment: {
           paymentMethod: formData.paymentMethod,
+          currency: "LKR",
+          totalAmount: totalPrice
         },
         termsAccepted: formData.termsAccepted,
       };
@@ -279,6 +341,8 @@ const RequestSmartBinForm = () => {
           requestData: submissionData,
           requestId: result.data.requestId,
           responseData: result.data,
+          currency: "LKR",
+          totalAmount: totalPrice
         },
       });
     } catch (error) {
@@ -531,6 +595,9 @@ const RequestSmartBinForm = () => {
                           Qty
                         </th>
                         <th scope="col" className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                          Price
+                        </th>
+                        <th scope="col" className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
                           Description
                         </th>
                         <th scope="col" className="px-4 py-3 text-right text-xs font-medium text-gray-500 uppercase tracking-wider">
@@ -550,6 +617,9 @@ const RequestSmartBinForm = () => {
                           <td className="px-4 py-3 whitespace-nowrap text-sm text-gray-900">
                             {bin.quantity}
                           </td>
+                          <td className="px-4 py-3 whitespace-nowrap text-sm text-gray-900">
+                            Rs. {bin.totalPrice}
+                          </td>
                           <td className="px-4 py-3 whitespace-nowrap text-sm text-gray-500">
                             {bin.description || "—"}
                           </td>
@@ -564,6 +634,15 @@ const RequestSmartBinForm = () => {
                           </td>
                         </tr>
                       ))}
+                      <tr className="bg-gray-100">
+                        <td colSpan="3" className="px-4 py-3 text-right font-medium text-gray-700">
+                          Total Price:
+                        </td>
+                        <td className="px-4 py-3 font-medium text-gray-900">
+                          Rs. {totalPrice}
+                        </td>
+                        <td colSpan="2"></td>
+                      </tr>
                     </tbody>
                   </table>
                 </div>
@@ -706,6 +785,12 @@ const RequestSmartBinForm = () => {
                   <label htmlFor="creditCard" className="ml-2 block text-sm text-gray-700">
                     Credit/Debit Card
                   </label>
+                </div>
+              </div>
+              <div className="mt-4 p-3 bg-green-50 border border-green-100 rounded-md">
+                <div className="flex justify-between items-center">
+                  <span className="font-medium text-green-800">Order Total:</span>
+                  <span className="font-bold text-green-800 text-lg">Rs. {totalPrice}</span>
                 </div>
               </div>
             </div>
@@ -893,6 +978,13 @@ const RequestSmartBinForm = () => {
                   </p>
                 </div>
               )}
+              
+              <div className="mt-4 pt-3 border-t border-gray-200">
+                <div className="flex justify-between">
+                  <h3 className="text-sm font-medium text-gray-500">Total Amount</h3>
+                  <p className="text-sm font-semibold text-gray-900">Rs. {totalPrice}</p>
+                </div>
+              </div>
             </div>
           </div>
         )}

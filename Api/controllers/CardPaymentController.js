@@ -10,9 +10,7 @@ const generateReceiptPDF = (payment) => {
     const receiptDir = path.resolve('receipts');
     const filePath = path.join(receiptDir, `${payment.transactionId}.pdf`);
 
-    if (!fs.existsSync(receiptDir)) {
-      fs.mkdirSync(receiptDir);
-    }
+    if (!fs.existsSync(receiptDir)) fs.mkdirSync(receiptDir);
 
     const stream = fs.createWriteStream(filePath);
     doc.pipe(stream);
@@ -43,7 +41,7 @@ export const processCardPayment = async (req, res) => {
     const newPayment = new CardPayment({ transactionId, userId, amount, status: 'success' });
     const savedPayment = await newPayment.save();
 
-    const pdfPath = await generateReceiptPDF(savedPayment);
+    await generateReceiptPDF(savedPayment);
 
     res.status(201).json({
       success: true,
@@ -53,7 +51,7 @@ export const processCardPayment = async (req, res) => {
     });
   } catch (error) {
     console.error('Error processing payment:', error);
-    res.status(500).json({ success: false, message: 'Server error while processing payment' });
+    res.status(500).json({ success: false, message: 'Server error' });
   }
 };
 
@@ -68,10 +66,10 @@ export const downloadReceipt = async (req, res) => {
 
     res.download(filePath, `${transactionId}_receipt.pdf`);
   } catch (error) {
-    console.error('Error downloading receipt:', error);
-    res.status(500).json({ success: false, message: 'Server error while downloading receipt' });
+    res.status(500).json({ success: false, message: 'Error downloading receipt' });
   }
 };
+
 
 // Get a payment by transaction ID
 export const getPaymentDetails = async (req, res) => {
