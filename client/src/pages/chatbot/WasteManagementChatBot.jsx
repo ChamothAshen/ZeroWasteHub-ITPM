@@ -4,6 +4,8 @@ import ImageUploader from './catogary/ImageUploader'
 import ResultDisplay from './catogary/ResultDisplay'
 import Chat from './catogary/Chat'
 import useWasteAnalyzer from './catogary/WasteAnalyzer'
+import jsPDF from 'jspdf'
+import autoTable from 'jspdf-autotable'
 
 const WasteManagementChatBot = () => {
   const [analysisResult, setAnalysisResult] = useState(null)
@@ -31,6 +33,65 @@ const WasteManagementChatBot = () => {
     setImagePreview(null)
     setActiveTab('results')
   }
+
+  // Generate comprehensive report that includes both analysis and chat
+  const generateCompleteReport = () => {
+    if (!analysisResult) return;
+    
+    const doc = new jsPDF();
+    const currentDate = new Date().toLocaleDateString();
+    
+    // Add title and header
+    doc.setFontSize(22);
+    doc.setTextColor(76, 175, 80);
+    doc.text("Waste Management Complete Report", 105, 20, { align: "center" });
+    
+    doc.setFontSize(10);
+    doc.setTextColor(100);
+    doc.text(`Generated on: ${currentDate}`, 105, 27, { align: "center" });
+    
+    // Add image if available
+    if (imagePreview) {
+      try {
+        doc.addImage(imagePreview, 'JPEG', 70, 35, 70, 70);
+      } catch (error) {
+        console.error("Error adding image to PDF:", error);
+      }
+    }
+    
+    // Add waste identification
+    doc.setFontSize(16);
+    doc.setTextColor(0);
+    doc.text("Waste Identification", 14, 120);
+    
+    const wasteType = analysisResult.labels[0] || 'Unknown waste';
+    const isRecyclable = analysisResult.isRecyclable;
+    const confidencePercent = Math.round(analysisResult.confidence * 100);
+    
+    autoTable(doc, {
+      startY: 125,
+      head: [['Property', 'Value']],
+      body: [
+        ['Item Type', wasteType.charAt(0).toUpperCase() + wasteType.slice(1)],
+        ['Recyclable', isRecyclable ? 'Yes' : 'No'],
+        ['Confidence', `${confidencePercent}%`],
+        ['Also detected', analysisResult.labels.slice(1).join(', ')]
+      ],
+      theme: 'grid',
+      headStyles: { 
+        fillColor: isRecyclable ? [76, 175, 80] : [244, 67, 54],
+        textColor: [255, 255, 255]
+      }
+    });
+    
+    // Add footer
+    doc.setFontSize(10);
+    doc.setTextColor(100);
+    doc.text("ZeroWasteHub - Helping you dispose waste responsibly", 105, 280, { align: "center" });
+    
+    // Save the PDF
+    doc.save(`complete-waste-report-${currentDate.replace(/\//g, '-')}.pdf`);
+  };
 
   return (
     <Layout>
@@ -123,15 +184,26 @@ const WasteManagementChatBot = () => {
           <>
             <div className="flex items-center justify-between mb-6">
               <h1 className="text-2xl font-bold text-stone-800 dark:text-stone-100">Waste Analysis Results</h1>
-              <button
-                onClick={resetAnalysis}
-                className="flex items-center px-4 py-2 text-sm font-medium rounded-lg bg-amber-100 hover:bg-amber-200 dark:bg-amber-900/50 dark:hover:bg-amber-900/70 text-amber-800 dark:text-amber-300 transition-colors"
-              >
-                <svg xmlns="http://www.w3.org/2000/svg" className="h-4 w-4 mr-1.5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15" />
-                </svg>
-                Analyze New Item
-              </button>
+              <div className="flex space-x-2">
+                <button
+                  onClick={generateCompleteReport}
+                  className="flex items-center px-3 py-2 text-sm font-medium rounded-lg bg-green-100 hover:bg-green-200 dark:bg-green-900/30 dark:hover:bg-green-900/50 text-green-700 dark:text-green-400 transition-colors mr-2"
+                >
+                  <svg xmlns="http://www.w3.org/2000/svg" className="h-4 w-4 mr-1.5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 17v-2m3 2v-4m3 4v-6m2 10H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
+                  </svg>
+                  Complete Report
+                </button>
+                <button
+                  onClick={resetAnalysis}
+                  className="flex items-center px-4 py-2 text-sm font-medium rounded-lg bg-amber-100 hover:bg-amber-200 dark:bg-amber-900/50 dark:hover:bg-amber-900/70 text-amber-800 dark:text-amber-300 transition-colors"
+                >
+                  <svg xmlns="http://www.w3.org/2000/svg" className="h-4 w-4 mr-1.5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15" />
+                  </svg>
+                  Analyze New Item
+                </button>
+              </div>
             </div>
             
             <div className="grid md:grid-cols-2 gap-6">

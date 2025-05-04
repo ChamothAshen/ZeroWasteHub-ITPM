@@ -1,8 +1,11 @@
 import React, { useState, useEffect } from "react";
-import { FiRefreshCw, FiEye, FiTrash2, FiEdit, FiX, FiCalendar, FiMapPin, FiPackage, FiHash, FiPhone, FiFileText, FiAlertCircle, FiLock, FiDollarSign } from "react-icons/fi";
+import { FiRefreshCw, FiEye, FiTrash2, FiEdit, FiX, FiCalendar, FiMapPin, 
+  FiPackage, FiHash, FiPhone, FiFileText, FiAlertCircle, FiLock, FiDollarSign, 
+  FiFilter, FiSearch, FiChevronDown } from "react-icons/fi";
 
 const CollectionRequestsTable = () => {
   const [collectionRequests, setCollectionRequests] = useState([]);
+  const [filteredRequests, setFilteredRequests] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
   const [showUpdateModal, setShowUpdateModal] = useState(false);
@@ -17,8 +20,13 @@ const CollectionRequestsTable = () => {
     specialInstructions: "",
     status: "",
     paymentStatus: "",
-    price: "" // Price field added here
+    price: ""
   });
+  
+  // Search and Filter States
+  const [searchTerm, setSearchTerm] = useState("");
+  const [selectedWasteType, setSelectedWasteType] = useState("");
+  const [showFilterDropdown, setShowFilterDropdown] = useState(false);
   
   // You can use this ID or get it from localStorage/context in a real app
   const userId = 'bb797925-dfae-4531-aadd-294a87fd73f2';
@@ -60,6 +68,7 @@ const CollectionRequestsTable = () => {
         });
         
         setCollectionRequests(requestsWithPrice);
+        setFilteredRequests(requestsWithPrice);
         console.log("Fetched collection requests:", requestsWithPrice);
       } else {
         setError(result.message || "Failed to fetch collection requests");
@@ -70,6 +79,53 @@ const CollectionRequestsTable = () => {
     } finally {
       setLoading(false);
     }
+  };
+
+  // Apply filters whenever searchTerm or selectedWasteType changes
+  useEffect(() => {
+    filterRequests();
+  }, [searchTerm, selectedWasteType, collectionRequests]);
+
+  // Filter requests based on search term and waste type
+  const filterRequests = () => {
+    let filtered = [...collectionRequests];
+    
+    // Filter by waste type if selected
+    if (selectedWasteType) {
+      filtered = filtered.filter(request => 
+        request.binType === selectedWasteType
+      );
+    }
+    
+    // Filter by search term if present
+    if (searchTerm.trim() !== "") {
+      const term = searchTerm.toLowerCase().trim();
+      filtered = filtered.filter(request => 
+        (request.location && request.location.toLowerCase().includes(term)) ||
+        (request.description && request.description.toLowerCase().includes(term)) ||
+        (request.contactNo && request.contactNo.includes(term)) ||
+        (request.requestId && request.requestId.toLowerCase().includes(term))
+      );
+    }
+    
+    setFilteredRequests(filtered);
+  };
+
+  // Handle search input change
+  const handleSearchChange = (e) => {
+    setSearchTerm(e.target.value);
+  };
+
+  // Handle waste type filter change
+  const handleWasteTypeChange = (type) => {
+    setSelectedWasteType(type);
+    setShowFilterDropdown(false);
+  };
+
+  // Clear all filters
+  const clearFilters = () => {
+    setSearchTerm("");
+    setSelectedWasteType("");
   };
 
   // Fetch data on component mount
@@ -199,7 +255,17 @@ const CollectionRequestsTable = () => {
         
         if (result.success) {
           // Remove from state to update UI immediately
-          setCollectionRequests(collectionRequests.filter(req => req._id !== requestId));
+          const updatedRequests = collectionRequests.filter(req => req._id !== requestId);
+          setCollectionRequests(updatedRequests);
+          setFilteredRequests(updatedRequests.filter(req => 
+            (!selectedWasteType || req.binType === selectedWasteType) &&
+            (!searchTerm || 
+              req.location.toLowerCase().includes(searchTerm.toLowerCase()) ||
+              req.description.toLowerCase().includes(searchTerm.toLowerCase()) ||
+              req.contactNo.includes(searchTerm) ||
+              req.requestId.toLowerCase().includes(searchTerm.toLowerCase())
+            )
+          ));
           alert("Request deleted successfully");
         } else {
           alert(result.message || "Failed to delete request");
@@ -288,9 +354,12 @@ const CollectionRequestsTable = () => {
       
       if (result.success) {
         // Update the state to reflect changes
-        setCollectionRequests(collectionRequests.map(req => 
+        const updatedRequests = collectionRequests.map(req => 
           req._id === currentRequest._id ? result.data : req
-        ));
+        );
+        setCollectionRequests(updatedRequests);
+        // Re-apply filters
+        filterRequests();
         setShowUpdateModal(false);
         alert("Request updated successfully");
       } else {
@@ -316,6 +385,106 @@ const CollectionRequestsTable = () => {
             <span>Refresh</span>
           </button>
         </div>
+        
+        {/* Filter and Search Bar */}
+        <div className="p-4 bg-gray-50 border-b border-gray-200">
+          <div className="flex flex-col md:flex-row gap-4">
+            {/* Search Box */}
+            <div className="relative flex-grow">
+              <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
+                <FiSearch className="text-gray-400" />
+              </div>
+              <input
+                type="text"
+                placeholder="Search by location, description, contact or ID..."
+                value={searchTerm}
+                onChange={handleSearchChange}
+                className="w-full pl-10 pr-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-green-500 focus:border-green-500"
+              />
+            </div>
+            
+            {/* Waste Type Filter Dropdown */}
+            <div className="relative">
+              <div className="flex">
+                <button
+                  type="button"
+                  onClick={() => setShowFilterDropdown(!showFilterDropdown)}
+                  className="flex items-center gap-2 px-4 py-2 bg-white border border-gray-300 rounded-lg hover:bg-gray-50 focus:ring-2 focus:ring-green-500 focus:border-green-500"
+                >
+                  <FiFilter className="text-gray-600" />
+                  <span>
+                    {selectedWasteType 
+                      ? `${wasteTypeIcons[selectedWasteType]} ${getStatusDisplayName(selectedWasteType)}` 
+                      : "Filter by Waste Type"}
+                  </span>
+                  <FiChevronDown className="text-gray-500" />
+                </button>
+                
+                {selectedWasteType && (
+                  <button
+                    onClick={clearFilters}
+                    className="ml-2 px-3 py-2 bg-gray-200 hover:bg-gray-300 text-gray-700 rounded-lg transition-colors"
+                    title="Clear filters"
+                  >
+                    <FiX />
+                  </button>
+                )}
+              </div>
+              
+              {/* Dropdown Menu */}
+              {showFilterDropdown && (
+                <div className="absolute z-10 mt-1 w-64 bg-white border border-gray-200 rounded-lg shadow-lg">
+                  <ul className="py-1 max-h-60 overflow-auto">
+                    <li>
+                      <button
+                        type="button"
+                        onClick={() => handleWasteTypeChange("")}
+                        className={`w-full text-left px-4 py-2 hover:bg-green-50 flex items-center ${!selectedWasteType ? 'bg-green-50 text-green-700 font-medium' : ''}`}
+                      >
+                        All Waste Types
+                      </button>
+                    </li>
+                    {wasteTypes.map(type => (
+                      <li key={type}>
+                        <button
+                          type="button"
+                          onClick={() => handleWasteTypeChange(type)}
+                          className={`w-full text-left px-4 py-2 hover:bg-green-50 flex items-center gap-2 ${selectedWasteType === type ? 'bg-green-50 text-green-700 font-medium' : ''}`}
+                        >
+                          <span>{wasteTypeIcons[type]}</span>
+                          <span>{getStatusDisplayName(type)}</span>
+                        </button>
+                      </li>
+                    ))}
+                  </ul>
+                </div>
+              )}
+            </div>
+          </div>
+          
+          {/* Filter Summary */}
+          {(searchTerm || selectedWasteType) && (
+            <div className="mt-3 flex items-center text-sm text-gray-600">
+              <span className="mr-2">Showing results for:</span>
+              {selectedWasteType && (
+                <span className="bg-green-100 text-green-800 px-2 py-1 rounded-full text-xs font-medium mr-2 flex items-center gap-1">
+                  {wasteTypeIcons[selectedWasteType]} {getStatusDisplayName(selectedWasteType)}
+                </span>
+              )}
+              {searchTerm && (
+                <span className="bg-blue-100 text-blue-800 px-2 py-1 rounded-full text-xs font-medium flex items-center gap-1">
+                  <FiSearch size={12} /> "{searchTerm}"
+                </span>
+              )}
+              <button
+                onClick={clearFilters}
+                className="ml-auto text-green-600 hover:text-green-800 text-sm underline flex items-center gap-1"
+              >
+                <FiX size={14} /> Clear filters
+              </button>
+            </div>
+          )}
+        </div>
 
         <div className="p-4">
           {loading ? (
@@ -326,9 +495,11 @@ const CollectionRequestsTable = () => {
             <div className="bg-red-100 text-red-700 p-4 rounded-lg">
               {error}
             </div>
-          ) : collectionRequests.length === 0 ? (
+          ) : filteredRequests.length === 0 ? (
             <div className="bg-blue-100 text-blue-700 p-4 rounded-lg">
-              No collection requests found.
+              {collectionRequests.length === 0 
+                ? "No collection requests found."
+                : "No requests match your search criteria. Try adjusting your filters."}
             </div>
           ) : (
             <div className="overflow-x-auto">
@@ -340,14 +511,13 @@ const CollectionRequestsTable = () => {
                     <th className="px-4 py-3 text-left text-green-800">Location</th>
                     <th className="px-4 py-3 text-left text-green-800">Schedule Date</th>
                     <th className="px-4 py-3 text-left text-green-800">Contact</th>
-                    {/* Price Column */}
                     <th className="px-4 py-3 text-left text-green-800">Price</th>
                     <th className="px-4 py-3 text-left text-green-800">Payment</th>
                     <th className="px-4 py-3 text-center text-green-800">Actions</th>
                   </tr>
                 </thead>
                 <tbody>
-                  {collectionRequests.map((request) => (
+                  {filteredRequests.map((request) => (
                     <tr key={request._id} className="border-b border-gray-200 hover:bg-green-50 transition-colors">
                       <td className="px-4 py-3 font-mono text-sm">
                         {request.requestId ? request.requestId.substring(0, 8) + '...' : 'N/A'}
@@ -365,7 +535,6 @@ const CollectionRequestsTable = () => {
                         <div className="text-xs text-gray-500">{formatTime(request.scheduleDate)}</div>
                       </td>
                       <td className="px-4 py-3">{request.contactNo}</td>
-                      {/* Price Display Column */}
                       <td className="px-4 py-3 font-medium">
                         {formatPrice(request.price || calculatePrice(request.binType, request.quantity))}
                       </td>
@@ -396,6 +565,13 @@ const CollectionRequestsTable = () => {
                   ))}
                 </tbody>
               </table>
+            </div>
+          )}
+          
+          {/* Results Count */}
+          {!loading && !error && filteredRequests.length > 0 && (
+            <div className="mt-4 text-sm text-gray-600">
+              Showing {filteredRequests.length} of {collectionRequests.length} collection requests
             </div>
           )}
         </div>

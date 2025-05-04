@@ -343,7 +343,7 @@ const CollectRequestForm = () => {
 
             <div>
               <label htmlFor="specialInstructions" className="block text-sm font-medium text-gray-700 mb-1">
-                Special Instructions (Optional)
+                Special Instructions 
               </label>
               <textarea
                 id="specialInstructions"
