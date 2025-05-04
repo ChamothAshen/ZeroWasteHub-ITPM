@@ -14,6 +14,8 @@ import EmployeeRoute from './routes/EmployeeRoute.js';
 import LogRoute from './routes/LogRoute.js';
 import pickupRoutes from "./routes/PickupRouter.js";
 import cardPaymentRoutes from './routes/CardPaymentRoute.js';
+import binRequestRoutes from './routes/binRequest.js'; // Ensure this route is defined
+
 
 dotenv.config();
 
@@ -46,6 +48,10 @@ app.use('/api/collection-requests', collectRequestRoutes);
 app.use('/api/BinRequest', createSmartBinRequest);
 app.use('/api/Inventory', inventoryRoutes);
 app.use('/api/employee', EmployeeRoute);
+app.use("/api/logs", LogRoute);
+app.use("/api/pickups", pickupRoutes);
+app.use('/api/Request', binRequestRoutes);
+
 app.use('/api/logs', LogRoute);
 app.use('/api/pickups', pickupRoutes);
 app.use('/api/card-payment', cardPaymentRoutes);
