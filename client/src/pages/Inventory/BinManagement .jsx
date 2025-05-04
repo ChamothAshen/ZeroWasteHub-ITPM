@@ -3,6 +3,7 @@ import { FaRecycle, FaTrash, FaUtensils, FaBox, FaLeaf } from "react-icons/fa";
 import { FiMenu } from "react-icons/fi";
 import Sidebar from "../../components/Sidebar"; // Import the Sidebar component
 import SmartBinRequestsTable from "../Inventory/SmartBinRequestsTable.jsx"; // Import the SmartBinRequestsTable component
+import WasteBinCounts from "./WasteBinCounts.jsx";
 
 const BinManagement = () => {
   const [sidebarOpen, setSidebarOpen] = React.useState(false);
@@ -108,144 +109,8 @@ const BinManagement = () => {
         </header>
 
         {/* Top Boxes */}
-        <div className="grid grid-cols-1 sm:grid-cols-2 gap-6 mb-8">
-          {/* Box 1: Plastic */}
-          <div className="w-full h-35 bg-white rounded-lg shadow-lg flex items-center p-4 transform hover:scale-105 transition-transform border border-blue-200">
-            {/* Icon aligned to the left */}
-            <div className="flex-shrink-0">
-              <FaTrash className="text-4xl text-blue-600 mb-2" />
-            </div>
 
-            {/* Content aligned to the right of the icon */}
-            <div className="ml-4 flex-1">
-              <h2 className="text-lg font-semibold text-gray-700 mt-0">
-                Plastic
-              </h2>
-              <div className="flex gap-4 mt-2">
-                {/* Available Count */}
-                <div className="flex-1 text-center bg-blue-50 p-2 rounded-lg">
-                  <p className="text-sm text-gray-500">Available</p>
-                  <p className="text-xl font-bold text-blue-600">80</p>
-                </div>
-
-                {/* Dispatched Count */}
-                <div className="flex-1 text-center bg-green-50 p-2 rounded-lg">
-                  <p className="text-sm text-gray-500">Dispatched</p>
-                  <p className="text-xl font-bold text-green-600">40</p>
-                </div>
-              </div>
-            </div>
-          </div>
-
-          {/* Box 2: Paper */}
-          <div className="w-full h-35 bg-white rounded-lg shadow-lg flex items-center p-4 transform hover:scale-105 transition-transform border border-blue-200">
-            {/* Icon aligned to the left */}
-            <div className="flex-shrink-0">
-              <FaTrash className="text-4xl text-green-600 mb-2" />
-            </div>
-
-            {/* Content aligned to the right of the icon */}
-            <div className="ml-4 flex-1">
-              <h2 className="text-lg font-semibold text-gray-700 mt-0">
-                Paper
-              </h2>
-              <div className="flex gap-4 mt-2">
-                {/* Available Count */}
-                <div className="flex-1 text-center bg-blue-50 p-2 rounded-lg">
-                  <p className="text-sm text-gray-500">Available</p>
-                  <p className="text-xl font-bold text-blue-600">80</p>
-                </div>
-
-                {/* Dispatched Count */}
-                <div className="flex-1 text-center bg-green-50 p-2 rounded-lg">
-                  <p className="text-sm text-gray-500">Dispatched</p>
-                  <p className="text-xl font-bold text-green-600">40</p>
-                </div>
-              </div>
-            </div>
-          </div>
-
-          {/* Box 3: Food */}
-          <div className="w-full h-35 bg-white rounded-lg shadow-lg flex items-center p-4 transform hover:scale-105 transition-transform border border-blue-200">
-            {/* Icon aligned to the left */}
-            <div className="flex-shrink-0">
-              <FaTrash className="text-4xl text-orange-600 mb-2" />
-            </div>
-
-            {/* Content aligned to the right of the icon */}
-            <div className="ml-4 flex-1">
-              <h2 className="text-lg font-semibold text-gray-700 mt-0">Food</h2>
-              <div className="flex gap-4 mt-2">
-                {/* Available Count */}
-                <div className="flex-1 text-center bg-blue-50 p-2 rounded-lg">
-                  <p className="text-sm text-gray-500">Available</p>
-                  <p className="text-xl font-bold text-blue-600">80</p>
-                </div>
-
-                {/* Dispatched Count */}
-                <div className="flex-1 text-center bg-green-50 p-2 rounded-lg">
-                  <p className="text-sm text-gray-500">Dispatched</p>
-                  <p className="text-xl font-bold text-green-600">40</p>
-                </div>
-              </div>
-            </div>
-          </div>
-
-          {/* Box 4: General Waste */}
-          <div className="w-full h-35 bg-white rounded-lg shadow-lg flex items-center p-4 transform hover:scale-105 transition-transform border border-blue-200">
-            {/* Icon aligned to the left */}
-            <div className="flex-shrink-0">
-              <FaTrash className="text-4xl text-red-600 mb-2" />
-            </div>
-
-            {/* Content aligned to the right of the icon */}
-            <div className="ml-4 flex-1">
-              <h2 className="text-lg font-semibold text-gray-700 mt-0">
-                General Waste
-              </h2>
-              <div className="flex gap-4 mt-2">
-                {/* Available Count */}
-                <div className="flex-1 text-center bg-blue-50 p-2 rounded-lg">
-                  <p className="text-sm text-gray-500">Available</p>
-                  <p className="text-xl font-bold text-blue-600">80</p>
-                </div>
-
-                {/* Dispatched Count */}
-                <div className="flex-1 text-center bg-green-50 p-2 rounded-lg">
-                  <p className="text-sm text-gray-500">Dispatched</p>
-                  <p className="text-xl font-bold text-green-600">40</p>
-                </div>
-              </div>
-            </div>
-          </div>
-          {/* Box 5: Glass */}
-          <div className="w-full h-35 bg-white rounded-lg shadow-lg flex items-center p-4 transform hover:scale-105 transition-transform border border-blue-200">
-            {/* Icon aligned to the left */}
-            <div className="flex-shrink-0">
-              <FaTrash className="text-4xl text-red-600 mb-2" />
-            </div>
-
-            {/* Content aligned to the right of the icon */}
-            <div className="ml-4 flex-1">
-              <h2 className="text-lg font-semibold text-gray-700 mt-0">
-                Glass
-              </h2>
-              <div className="flex gap-4 mt-2">
-                {/* Available Count */}
-                <div className="flex-1 text-center bg-blue-50 p-2 rounded-lg">
-                  <p className="text-sm text-gray-500">Available</p>
-                  <p className="text-xl font-bold text-blue-600">80</p>
-                </div>
-
-                {/* Dispatched Count */}
-                <div className="flex-1 text-center bg-green-50 p-2 rounded-lg">
-                  <p className="text-sm text-gray-500">Dispatched</p>
-                  <p className="text-xl font-bold text-green-600">40</p>
-                </div>
-              </div>
-            </div>
-          </div>
-        </div>
+        <WasteBinCounts />
 
         {/* Large Box for Chart or Data Visualization */}
 

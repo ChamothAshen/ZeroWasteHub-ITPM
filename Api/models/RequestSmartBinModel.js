@@ -77,16 +77,10 @@ const SmartBinRequestSchema = new mongoose.Schema({
     binType: {
       type: String,
       required: true,
-      enum: [
-        'general', 'recycling', 'compost', 'paper', 'glass', 
-        'plastic', 'metal', 'electronics', 'hazardous', 
-        'construction', 'medical'
-      ]
     },
     binSize: {
       type: String,
       required: true,
-      enum: ['small', 'medium', 'large', 'xlarge', 'commercial'],
       required: true
     },
     quantity: {
