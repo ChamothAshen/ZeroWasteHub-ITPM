@@ -1,4 +1,6 @@
 import React from 'react';
+import jsPDF from 'jspdf';
+import autoTable from 'jspdf-autotable';
 
 const ResultDisplay = ({ result, imagePreview }) => {
   if (!result) return null;
@@ -35,6 +37,76 @@ const ResultDisplay = ({ result, imagePreview }) => {
       tips.push('Contact your waste management facility when in doubt');
     }
     return tips;
+  };
+
+  // Generate PDF report function
+  const generateReport = () => {
+    const doc = new jsPDF();
+    const currentDate = new Date().toLocaleDateString();
+    
+    // Add title
+    doc.setFontSize(20);
+    doc.setTextColor(76, 175, 80); // Green color
+    doc.text("Waste Analysis Report", 105, 15, { align: "center" });
+    
+    // Add date
+    doc.setFontSize(10);
+    doc.setTextColor(100);
+    doc.text(`Generated on: ${currentDate}`, 105, 22, { align: "center" });
+    
+    // Add image if available
+    if (imagePreview) {
+      try {
+        doc.addImage(imagePreview, 'JPEG', 70, 30, 70, 70);
+      } catch (error) {
+        console.error("Error adding image to PDF:", error);
+      }
+    }
+    
+    // Add waste identification
+    doc.setFontSize(16);
+    doc.setTextColor(0);
+    doc.text("Waste Identification", 14, 115);
+    
+    autoTable(doc, {
+      startY: 120,
+      head: [['Property', 'Value']],
+      body: [
+        ['Item Type', wasteType.charAt(0).toUpperCase() + wasteType.slice(1)],
+        ['Recyclable', isRecyclable ? 'Yes' : 'No'],
+        ['Confidence', `${confidencePercent}%`],
+        ['Also detected', labels.slice(1).join(', ')]
+      ],
+      theme: 'grid',
+      headStyles: { 
+        fillColor: isRecyclable ? [76, 175, 80] : [244, 67, 54],
+        textColor: [255, 255, 255]
+      }
+    });
+    
+    // Add disposal instructions
+    doc.setFontSize(16);
+    doc.setTextColor(0);
+    doc.text("Disposal Instructions", 14, doc.lastAutoTable.finalY + 15);
+    
+    const disposalTips = getTips();
+    
+    autoTable(doc, {
+      startY: doc.lastAutoTable.finalY + 20,
+      body: disposalTips.map(tip => [tip]),
+      theme: 'plain',
+      styles: {
+        cellPadding: 4
+      }
+    });
+    
+    // Add footer
+    doc.setFontSize(10);
+    doc.setTextColor(100);
+    doc.text("ZeroWasteHub - Helping you dispose waste responsibly", 105, 280, { align: "center" });
+    
+    // Save the PDF
+    doc.save(`waste-analysis-${wasteType}-${currentDate.replace(/\//g, '-')}.pdf`);
   };
 
   return (
@@ -214,17 +286,29 @@ const ResultDisplay = ({ result, imagePreview }) => {
       </div>
       
       <div className="px-6 py-4 bg-stone-50 dark:bg-stone-800/60 border-t border-stone-200 dark:border-stone-700">
-        <div className="flex items-center">
-          <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5 text-amber-500" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 15l-2 5L9 9l11 4-5 2zm0 0l5 5M7.188 2.239l.777 2.897M5.136 7.965l-2.898-.777M13.95 4.05l-2.122 2.122m-5.657 5.656l-2.12 2.122" />
-          </svg>
-          <span className="ml-2 text-sm text-stone-600 dark:text-stone-400">
-            Continue to the chat assistant for more detailed guidance
-          </span>
+        <div className="flex items-center justify-between">
+          <div className="flex items-center">
+            <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5 text-amber-500" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 15l-2 5L9 9l11 4-5 2zm0 0l5 5M7.188 2.239l.777 2.897M5.136 7.965l-2.898-.777M13.95 4.05l-2.122 2.122m-5.657 5.656l-2.12 2.122" />
+            </svg>
+            <span className="ml-2 text-sm text-stone-600 dark:text-stone-400">
+              Continue to the chat assistant for more detailed guidance
+            </span>
+          </div>
+          
+          <button
+            onClick={generateReport}
+            className="flex items-center px-4 py-2 text-sm font-medium rounded-lg bg-green-100 hover:bg-green-200 dark:bg-green-900/30 dark:hover:bg-green-900/50 text-green-700 dark:text-green-400 transition-colors"
+          >
+            <svg xmlns="http://www.w3.org/2000/svg" className="h-4 w-4 mr-1.5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4" />
+            </svg>
+            Generate Report
+          </button>
         </div>
       </div>
     </div>
   );
 };
 
-export default ResultDisplay; 
+export default ResultDisplay;

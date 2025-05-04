@@ -1,5 +1,7 @@
 import { useState, useRef, useEffect } from 'react';
 import axios from 'axios';
+import jsPDF from 'jspdf';
+import autoTable from 'jspdf-autotable';
 
 // Get API key from environment variable
 const GEMINI_API_KEY = import.meta.env.VITE_GEMINI_API_KEY;
@@ -199,6 +201,77 @@ const Chat = ({ analysisResult }) => {
     return `${fallbackPrefix}waste management:\n\nI'm operating without connection to the Gemini AI. For accurate information about recycling and waste disposal, please check your local waste management guidelines or try again when API access is restored.`;
   };
 
+  const generateChatReport = () => {
+    const doc = new jsPDF();
+    const currentDate = new Date().toLocaleDateString();
+    
+    // Add title
+    doc.setFontSize(20);
+    doc.setTextColor(255, 152, 0); // Amber color
+    doc.text("Waste Management Chat Report", 105, 15, { align: "center" });
+    
+    // Add date
+    doc.setFontSize(10);
+    doc.setTextColor(100);
+    doc.text(`Generated on: ${currentDate}`, 105, 22, { align: "center" });
+    
+    // Add waste context if available
+    if (wasteContext.current) {
+      const wasteType = wasteContext.current.type;
+      const recyclability = wasteContext.current.recyclable ? 'Recyclable' : 'Not Recyclable';
+      
+      doc.setFontSize(16);
+      doc.setTextColor(0);
+      doc.text("Waste Analysis", 14, 30);
+      
+      autoTable(doc, {
+        startY: 35,
+        body: [
+          ['Item Type', wasteType.charAt(0).toUpperCase() + wasteType.slice(1)],
+          ['Recyclability', recyclability],
+          ['Tags', wasteContext.current.labels.join(', ')]
+        ],
+        theme: 'grid',
+        headStyles: { 
+          fillColor: [255, 152, 0],
+          textColor: [255, 255, 255]
+        }
+      });
+    }
+    
+    // Add conversation
+    doc.setFontSize(16);
+    doc.setTextColor(0);
+    doc.text("Conversation", 14, wasteContext.current ? doc.lastAutoTable.finalY + 15 : 30);
+    
+    const conversationData = messages.map(msg => {
+      return [
+        msg.role === 'user' ? 'You' : 'Assistant',
+        msg.content
+      ];
+    });
+    
+    autoTable(doc, {
+      startY: wasteContext.current ? doc.lastAutoTable.finalY + 20 : 35,
+      head: [['Speaker', 'Message']],
+      body: conversationData,
+      theme: 'striped',
+      styles: { overflow: 'linebreak', cellWidth: 'wrap' },
+      columnStyles: {
+        0: { cellWidth: 30 },
+        1: { cellWidth: 'auto' }
+      }
+    });
+    
+    // Add footer
+    doc.setFontSize(10);
+    doc.setTextColor(100);
+    doc.text("ZeroWasteHub - Helping you dispose waste responsibly", 105, 280, { align: "center" });
+    
+    // Save the PDF
+    doc.save(`waste-chat-report-${currentDate.replace(/\//g, '-')}.pdf`);
+  };
+
   return (
     <div className="bg-white dark:bg-stone-800 rounded-lg overflow-hidden border border-stone-200 dark:border-stone-700 flex flex-col h-[500px]">
       <div className="px-6 py-5 border-b border-stone-200 dark:border-stone-700 flex items-center justify-between">
@@ -208,9 +281,20 @@ const Chat = ({ analysisResult }) => {
           </svg>
           Waste Management Chat
         </h2>
-        <span className="text-xs px-2 py-1 bg-amber-100 dark:bg-amber-900 text-amber-700 dark:text-amber-300 rounded-full">
-          Step 3
-        </span>
+        <div className="flex items-center space-x-2">
+          <button
+            onClick={generateChatReport}
+            className="flex items-center px-2 py-1 text-xs rounded-lg bg-amber-100 hover:bg-amber-200 dark:bg-amber-900/30 dark:hover:bg-amber-900/50 text-amber-700 dark:text-amber-300 transition-colors"
+          >
+            <svg xmlns="http://www.w3.org/2000/svg" className="h-3 w-3 mr-1" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4" />
+            </svg>
+            Report
+          </button>
+          <span className="text-xs px-2 py-1 bg-amber-100 dark:bg-amber-900 text-amber-700 dark:text-amber-300 rounded-full">
+            Step 3
+          </span>
+        </div>
       </div>
       
       <div className="flex-1 overflow-y-auto p-4 bg-stone-50 dark:bg-stone-700/20">
@@ -303,4 +387,4 @@ const Chat = ({ analysisResult }) => {
   );
 };
 
-export default Chat; 
+export default Chat;
