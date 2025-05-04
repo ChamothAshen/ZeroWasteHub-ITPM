@@ -2,6 +2,7 @@
 // controllers/SmartBinRequestController.js
 import { v4 as uuidv4 } from 'uuid';
 import SmartBinRequest from '../models/RequestSmartBinModel.js';
+import BinStatusCount from '../models/BinStatusCount.js'; // Assuming this is the model for bin status counts
 
 export const createSmartBinRequest = async (req, res) => {
   try {
@@ -141,6 +142,7 @@ export const updateBinStatus = async (req, res) => {
   const { status } = req.body;
 
   try {
+    // Step 1: Update the bin status in the request
     const updatedRequest = await SmartBinRequest.findOneAndUpdate(
       { _id: requestId, 'binRequest._id': binId },
       { $set: { 'binRequest.$.status': status } },
@@ -151,9 +153,43 @@ export const updateBinStatus = async (req, res) => {
       return res.status(404).json({ message: 'Request or bin not found' });
     }
 
+    // Step 2: If the status is "approved", count the bins per binType and binSize
+    if (status === 'approved') {
+      // Loop through each binRequest to count bins based on binType and binSize
+      const binCounts = updatedRequest.binRequest.reduce((counts, bin) => {
+        if (bin.status === 'approved') {
+          const key = `${bin.binType}-${bin.binSize}`;
+          counts[key] = (counts[key] || 0) + bin.quantity;
+        }
+        return counts;
+      }, {});
+
+      // Step 3: Store the counts in the BinStatusCount collection
+      for (const [binKey, count] of Object.entries(binCounts)) {
+        const [binType, binSize] = binKey.split('-');
+
+        // Find if a record already exists for this binType and binSize
+        const existingBinStatus = await BinStatusCount.findOne({ binType, binSize });
+
+        if (existingBinStatus) {
+          // If it exists, update the count
+          existingBinStatus.approvedCount += count;
+          await existingBinStatus.save();
+        } else {
+          // If it doesn't exist, create a new record
+          const newBinStatus = new BinStatusCount({
+            binType,
+            binSize,
+            approvedCount: count,
+          });
+          await newBinStatus.save();
+        }
+      }
+    }
+
     res.status(200).json({
       message: 'Bin status updated successfully',
-      updatedRequest
+      updatedRequest,
     });
   } catch (error) {
     console.error('Error updating bin status:', error.message);
