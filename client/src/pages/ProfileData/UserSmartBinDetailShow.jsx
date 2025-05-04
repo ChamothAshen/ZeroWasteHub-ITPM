@@ -11,7 +11,6 @@ const SmartBinTable = () => {
   const [selectedBin, setSelectedBin] = useState(null);
   const [updateFormData, setUpdateFormData] = useState({
     status: '',
-    paymentStatus: '',
     price: '', // Added price field
     addressLine1: '',
     city: '',
@@ -80,7 +79,6 @@ const SmartBinTable = () => {
     // Initialize form with current values
     setUpdateFormData({
       status: binToUpdate.status || '',
-      paymentStatus: binToUpdate.payment?.paymentStatus || '',
       price: currentPrice.toString(), // Convert to string for form input
       addressLine1: binToUpdate.address?.addressLine1 || '',
       city: binToUpdate.address?.city || '',
@@ -139,7 +137,6 @@ const SmartBinTable = () => {
         },
         payment: {
           ...selectedBin.payment,
-          paymentStatus: updateFormData.paymentStatus,
           price: parseFloat(updateFormData.price) || 0 // Add price to payment object
         },
         schedule: {
@@ -289,25 +286,6 @@ const SmartBinTable = () => {
     );
   };
 
-  const getPaymentStatusBadge = (bin) => {
-    if (!bin.payment || !bin.payment.paymentStatus) return null;
-
-    const paymentStatus = bin.payment.paymentStatus;
-    const paymentColors = {
-      pending: 'bg-yellow-100 text-yellow-800',
-      processing: 'bg-blue-100 text-blue-800',
-      completed: 'bg-green-100 text-green-800',
-      failed: 'bg-red-100 text-red-800',
-      refunded: 'bg-purple-100 text-purple-800'
-    };
-
-    return (
-      <span className={`px-2 py-1 inline-flex text-xs leading-5 font-semibold rounded-full ${paymentColors[paymentStatus] || 'bg-gray-100 text-gray-800'}`}>
-        {paymentStatus}
-      </span>
-    );
-  };
-
   const getContactInfo = (bin) => {
     if (!bin.personalInfo) return '—';
     return bin.personalInfo.contactNo || bin.personalInfo.email || '—';
@@ -399,7 +377,7 @@ const SmartBinTable = () => {
                 <div className="flex items-center">
                   <div className="flex-1">
                     <label className="block text-xs font-medium text-gray-500 mb-1">
-                      Request ID (Non-editable)
+                      Request ID 
                     </label>
                     <input
                       type="text"
@@ -436,25 +414,7 @@ const SmartBinTable = () => {
                     </select>
                   </div>
                   
-                  {/* Payment Status */}
-                  <div>
-                    <label className="block text-sm font-medium text-gray-700 mb-1">
-                      Payment Status
-                    </label>
-                    <select
-                      name="paymentStatus"
-                      value={updateFormData.paymentStatus}
-                      onChange={handleUpdateFormChange}
-                      className="block w-full px-3 py-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-green-500 focus:border-transparent"
-                    >
-                      <option value="">Select Payment Status</option>
-                      <option value="pending">Pending</option>
-                      <option value="processing">Processing</option>
-                      <option value="completed">Completed</option>
-                      <option value="failed">Failed</option>
-                      <option value="refunded">Refunded</option>
-                    </select>
-                  </div>
+                  
                 </div>
               </div>
 
@@ -628,9 +588,6 @@ const SmartBinTable = () => {
                 <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-green-800 uppercase tracking-wider">
                   Status
                 </th>
-                <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-green-800 uppercase tracking-wider">
-                  Payment
-                </th>
                 {/* Added Price Column */}
                 <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-green-800 uppercase tracking-wider">
                   Price
@@ -643,7 +600,7 @@ const SmartBinTable = () => {
             <tbody className="bg-white divide-y divide-gray-200">
               {smartBins.length === 0 ? (
                 <tr>
-                  <td colSpan="9" className="px-6 py-4 text-center text-gray-500">
+                  <td colSpan="8" className="px-6 py-4 text-center text-gray-500">
                     No smart bin requests found
                   </td>
                 </tr>
@@ -667,9 +624,6 @@ const SmartBinTable = () => {
                     </td>
                     <td className="px-6 py-4 whitespace-nowrap">
                       {getStatusBadge(bin.status)}
-                    </td>
-                    <td className="px-6 py-4 whitespace-nowrap">
-                      {getPaymentStatusBadge(bin)}
                     </td>
                     {/* Added Price Cell */}
                     <td className="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900">

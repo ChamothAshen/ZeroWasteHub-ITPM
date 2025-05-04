@@ -9,12 +9,10 @@ import userRoutes from './routes/user.route.js';
 import authRoutes from './routes/auth.route.js';
 import collectRequestRoutes from './routes/CollectRequestRoute.js';
 import createSmartBinRequest from './routes/RequestSmartBinRoute.js';
-import inventoryRoutes from './routes/inventoryRoutes.js'; // Ensure this route is defined
-import EmployeeRoute from './routes/EmployeeRoute.js'; 
+import inventoryRoutes from './routes/inventoryRoutes.js';
+import EmployeeRoute from './routes/EmployeeRoute.js';
 import LogRoute from './routes/LogRoute.js';
 import pickupRoutes from "./routes/PickupRouter.js";
-import cors from 'cors';
-import EmployeeRoute from './routes/EmployeeRoute.js';
 import cardPaymentRoutes from './routes/CardPaymentRoute.js';
 
 dotenv.config();
@@ -22,15 +20,15 @@ dotenv.config();
 const app = express();
 const port = process.env.PORT || 3000;
 
-//  Connect to MongoDB
+// MongoDB connection
 mongoose.connect(process.env.MONGOUrl, {
   useNewUrlParser: true,
   useUnifiedTopology: true
 })
-  .then(() => console.log('Connected to MongoDB'))
-  .catch((err) => console.error(' MongoDB connection error:', err));
+.then(() => console.log('Connected to MongoDB'))
+.catch((err) => console.error('MongoDB connection error:', err));
 
-//  Middleware
+// Middleware
 app.use(cors({
   origin: 'http://localhost:5173',
   credentials: true,
@@ -41,19 +39,18 @@ app.use(cors({
 app.use(express.json());
 app.use(cookieParser());
 
-//  Routes
+// Routes
 app.use('/api/user', userRoutes);
 app.use('/api/auth', authRoutes);
 app.use('/api/collection-requests', collectRequestRoutes);
 app.use('/api/BinRequest', createSmartBinRequest);
-app.use('/api/Inventory', inventoryRoutes); // Ensure this route is defined
+app.use('/api/Inventory', inventoryRoutes);
 app.use('/api/employee', EmployeeRoute);
-app.use("/api/logs", LogRoute);
-app.use("/api/pickups", pickupRoutes);
-
+app.use('/api/logs', LogRoute);
+app.use('/api/pickups', pickupRoutes);
 app.use('/api/card-payment', cardPaymentRoutes);
 
-//  Error Handling Middleware
+// Error handler
 app.use((err, req, res, next) => {
   const statusCode = err.statusCode || 500;
   const message = err.message || 'Internal Server Error';
@@ -64,7 +61,7 @@ app.use((err, req, res, next) => {
   });
 });
 
-//  Start server
+// Start server
 app.listen(port, () => {
-  console.log(` Server running on http://localhost:${port}`);
+  console.log(`Server running on http://localhost:${port}`);
 });
