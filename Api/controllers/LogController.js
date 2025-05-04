@@ -39,3 +39,29 @@ export const deleteLog = async (req, res) => {
     res.status(500).json({ message: err.message });
   }
 };
+
+export const approveLog = async (req, res) => {
+  try {
+    const log = await Log.findByIdAndUpdate(
+      req.params.id,
+      { status: "approved" },
+      { new: true }
+    );
+    res.json(log);
+  } catch (err) {
+    res.status(400).json({ message: err.message });
+  }
+};
+
+export const rejectLog = async (req, res) => {
+  try {
+    const log = await Log.findByIdAndUpdate(
+      req.params.id,
+      { status: "rejected" },
+      { new: true }
+    );
+    res.json(log);
+  } catch (err) {
+    res.status(400).json({ message: err.message });
+  }
+};

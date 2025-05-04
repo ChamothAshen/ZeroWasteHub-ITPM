@@ -13,6 +13,7 @@ export default function EmployeeDashboard() {
     age: "",
     phone: "",
   });
+  const [searchTerm, setSearchTerm] = useState("");
 
   useEffect(() => {
     fetchEmployees();
@@ -126,6 +127,10 @@ export default function EmployeeDashboard() {
     }
   };
 
+  const filteredEmployees = employees.filter((employee) =>
+    employee.name.toLowerCase().includes(searchTerm.toLowerCase())
+  );
+
   return (
     <div className="min-h-screen bg-green-50 text-gray-800 flex">
       <Sidebar sidebarOpen={sidebarOpen} setSidebarOpen={setSidebarOpen} />
@@ -136,6 +141,13 @@ export default function EmployeeDashboard() {
             <FiMenu />
           </button>
           <h2 className="text-3xl font-semibold">Employees</h2>
+          <input
+            type="text"
+            placeholder="Search by name"
+            value={searchTerm}
+            onChange={(e) => setSearchTerm(e.target.value)}
+            className="border p-2 rounded w-1/3"
+          />
           <button
             onClick={handleAddNewEmployee}
             className="bg-green-500 text-white px-4 py-2 rounded flex items-center gap-2"
@@ -159,7 +171,7 @@ export default function EmployeeDashboard() {
                 </tr>
               </thead>
               <tbody>
-                {employees.map((employee, index) => (
+                {filteredEmployees.map((employee, index) => (
                   <tr key={employee._id} className="border">
                     <td className="border p-2 text-center">{index + 1}</td>
 
