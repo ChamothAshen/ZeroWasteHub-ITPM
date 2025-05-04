@@ -147,7 +147,7 @@ const BinRequestForm = ({ handleBinRequestChange }) => {
         </div>
         <div>
           <label htmlFor="description" className="block text-sm font-medium text-gray-700 mb-1">
-            Bin Description (Optional)
+            Bin Description 
           </label>
           <input
             type="text"
@@ -493,7 +493,7 @@ const RequestSmartBinForm = () => {
               </div>
               <div>
                 <label htmlFor="addressLine2" className="block text-sm font-medium text-gray-700 mb-1">
-                  Address Line 2 (Optional)
+                  Address Line 2 
                 </label>
                 <input
                   type="text"
@@ -554,7 +554,7 @@ const RequestSmartBinForm = () => {
               </div>
               <div>
                 <label htmlFor="accessCode" className="block text-sm font-medium text-gray-700 mb-1">
-                  Access Code (Optional)
+                  Access Code 
                 </label>
                 <input
                   type="text"
@@ -668,7 +668,7 @@ const RequestSmartBinForm = () => {
                   className="h-4 w-4 text-green-600 focus:ring-green-500 border-gray-300 rounded"
                 />
                 <label htmlFor="immediate" className="ml-2 block text-sm text-gray-700">
-                  I need immediate service (within 24-48 hours)
+                  I need immediate service 
                 </label>
               </div>
 
