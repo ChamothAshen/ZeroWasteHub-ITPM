@@ -218,6 +218,33 @@ const BinManagement = () => {
               </div>
             </div>
           </div>
+          {/* Box 5: Glass */}
+          <div className="w-full h-35 bg-white rounded-lg shadow-lg flex items-center p-4 transform hover:scale-105 transition-transform border border-blue-200">
+            {/* Icon aligned to the left */}
+            <div className="flex-shrink-0">
+              <FaTrash className="text-4xl text-red-600 mb-2" />
+            </div>
+
+            {/* Content aligned to the right of the icon */}
+            <div className="ml-4 flex-1">
+              <h2 className="text-lg font-semibold text-gray-700 mt-0">
+                Glass
+              </h2>
+              <div className="flex gap-4 mt-2">
+                {/* Available Count */}
+                <div className="flex-1 text-center bg-blue-50 p-2 rounded-lg">
+                  <p className="text-sm text-gray-500">Available</p>
+                  <p className="text-xl font-bold text-blue-600">80</p>
+                </div>
+
+                {/* Dispatched Count */}
+                <div className="flex-1 text-center bg-green-50 p-2 rounded-lg">
+                  <p className="text-sm text-gray-500">Dispatched</p>
+                  <p className="text-xl font-bold text-green-600">40</p>
+                </div>
+              </div>
+            </div>
+          </div>
         </div>
 
         {/* Large Box for Chart or Data Visualization */}

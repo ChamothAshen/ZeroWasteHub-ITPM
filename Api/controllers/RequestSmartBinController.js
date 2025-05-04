@@ -131,3 +131,33 @@ export const deleteSmartBinRequest = async (req, res) => {
   }
 };
 
+
+//dishan changes to stotre pending status of bin request
+// Controller: updateBinStatus
+
+
+export const updateBinStatus = async (req, res) => {
+  const { requestId, binId } = req.params;
+  const { status } = req.body;
+
+  try {
+    const updatedRequest = await SmartBinRequest.findOneAndUpdate(
+      { _id: requestId, 'binRequest._id': binId },
+      { $set: { 'binRequest.$.status': status } },
+      { new: true }
+    );
+
+    if (!updatedRequest) {
+      return res.status(404).json({ message: 'Request or bin not found' });
+    }
+
+    res.status(200).json({
+      message: 'Bin status updated successfully',
+      updatedRequest
+    });
+  } catch (error) {
+    console.error('Error updating bin status:', error.message);
+    res.status(500).json({ message: 'Internal server error' });
+  }
+};
+
