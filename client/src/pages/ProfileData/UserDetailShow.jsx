@@ -1,10 +1,23 @@
 import React, { useState, useEffect } from "react";
-import { FiRefreshCw, FiEye, FiTrash2 } from "react-icons/fi";
+import { FiRefreshCw, FiEye, FiTrash2, FiEdit } from "react-icons/fi";
 
 const CollectionRequestsTable = () => {
   const [collectionRequests, setCollectionRequests] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
+  const [showUpdateModal, setShowUpdateModal] = useState(false);
+  const [currentRequest, setCurrentRequest] = useState(null);
+  const [updateFormData, setUpdateFormData] = useState({
+    scheduleDate: "",
+    location: "",
+    binType: "",
+    quantity: 1,
+    description: "",
+    contactNo: "",
+    specialInstructions: "",
+    status: "",
+    paymentStatus: ""
+  });
   
   // You can use this ID or get it from localStorage/context in a real app
   const userId = 'bb797925-dfae-4531-aadd-294a87fd73f2';
@@ -59,6 +72,13 @@ const CollectionRequestsTable = () => {
     });
   };
 
+  // Format date for input field
+  const formatDateForInput = (dateString) => {
+    if (!dateString) return "";
+    const date = new Date(dateString);
+    return date.toISOString().split('T')[0];
+  };
+
   // Waste type icons
   const wasteTypeIcons = {
     general: "🗑️",
@@ -68,6 +88,33 @@ const CollectionRequestsTable = () => {
     electronics: "💻",
     hazardous: "⚠️"
   };
+
+  // Available waste types for dropdown
+  const wasteTypes = [
+    "general",
+    "recycling",
+    "compost",
+    "paper",
+    "electronics", 
+    "hazardous"
+  ];
+
+  // Status options
+  const statusOptions = [
+    "pending",
+    "scheduled",
+    "in-progress",
+    "completed",
+    "cancelled"
+  ];
+
+  // Payment status options
+  const paymentStatusOptions = [
+    "pending",
+    "completed",
+    "failed",
+    "refunded"
+  ];
 
   // Handle view details
   const handleViewDetails = (requestId) => {
@@ -101,6 +148,67 @@ const CollectionRequestsTable = () => {
         console.error("Error deleting request:", error);
         alert(`Error deleting request: ${error.message}`);
       }
+    }
+  };
+
+  // Handle edit request
+  const handleEditRequest = (request) => {
+    setCurrentRequest(request);
+    setUpdateFormData({
+      scheduleDate: formatDateForInput(request.scheduleDate),
+      location: request.location || "",
+      binType: request.binType || "",
+      quantity: request.quantity || 1,
+      description: request.description || "",
+      contactNo: request.contactNo || "",
+      specialInstructions: request.specialInstructions || "",
+      status: request.status || "pending",
+      paymentStatus: request.paymentStatus || "pending"
+    });
+    setShowUpdateModal(true);
+  };
+
+  // Handle form input changes
+  const handleInputChange = (e) => {
+    const { name, value } = e.target;
+    setUpdateFormData({
+      ...updateFormData,
+      [name]: value
+    });
+  };
+
+  // Handle update submission
+  const handleUpdateSubmit = async (e) => {
+    e.preventDefault();
+    
+    try {
+      const response = await fetch(`http://localhost:3000/api/collection-requests/${currentRequest._id}`, {
+        method: 'PUT',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify(updateFormData),
+      });
+      
+      if (!response.ok) {
+        throw new Error(`Server responded with status: ${response.status}`);
+      }
+      
+      const result = await response.json();
+      
+      if (result.success) {
+        // Update the state to reflect changes
+        setCollectionRequests(collectionRequests.map(req => 
+          req._id === currentRequest._id ? result.data : req
+        ));
+        setShowUpdateModal(false);
+        alert("Request updated successfully");
+      } else {
+        alert(result.message || "Failed to update request");
+      }
+    } catch (error) {
+      console.error("Error updating request:", error);
+      alert(`Error updating request: ${error.message}`);
     }
   };
 
@@ -197,6 +305,13 @@ const CollectionRequestsTable = () => {
                             <FiEye size={16} />
                           </button>
                           <button 
+                            onClick={() => handleEditRequest(request)}
+                            className="p-1.5 bg-yellow-100 text-yellow-700 rounded-full hover:bg-yellow-200 transition"
+                            title="Edit Request"
+                          >
+                            <FiEdit size={16} />
+                          </button>
+                          <button 
                             onClick={() => handleDeleteRequest(request._id)}
                             className="p-1.5 bg-red-100 text-red-700 rounded-full hover:bg-red-200 transition"
                             title="Delete Request"
@@ -213,6 +328,183 @@ const CollectionRequestsTable = () => {
           )}
         </div>
       </div>
+
+      {/* Update Modal */}
+      {showUpdateModal && currentRequest && (
+        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
+          <div className="bg-white rounded-lg p-6 max-w-2xl w-full max-h-[90vh] overflow-y-auto">
+            <h2 className="text-xl font-bold mb-4 text-green-700">Update Collection Request</h2>
+            
+            <form onSubmit={handleUpdateSubmit}>
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                {/* Schedule Date */}
+                <div className="mb-4">
+                  <label className="block text-gray-700 font-medium mb-2">
+                    Schedule Date <span className="text-red-500">*</span>
+                  </label>
+                  <input
+                    type="date"
+                    name="scheduleDate"
+                    value={updateFormData.scheduleDate}
+                    onChange={handleInputChange}
+                    className="w-full border-gray-300 rounded-md shadow-sm focus:border-green-500 focus:ring-green-500"
+                    required
+                  />
+                </div>
+                
+                {/* Location */}
+                <div className="mb-4">
+                  <label className="block text-gray-700 font-medium mb-2">
+                    Location <span className="text-red-500">*</span>
+                  </label>
+                  <input
+                    type="text"
+                    name="location"
+                    value={updateFormData.location}
+                    onChange={handleInputChange}
+                    className="w-full border-gray-300 rounded-md shadow-sm focus:border-green-500 focus:ring-green-500"
+                    required
+                  />
+                </div>
+                
+                {/* Bin Type */}
+                <div className="mb-4">
+                  <label className="block text-gray-700 font-medium mb-2">
+                    Waste Type <span className="text-red-500">*</span>
+                  </label>
+                  <select
+                    name="binType"
+                    value={updateFormData.binType}
+                    onChange={handleInputChange}
+                    className="w-full border-gray-300 rounded-md shadow-sm focus:border-green-500 focus:ring-green-500"
+                    required
+                  >
+                    <option value="">Select Waste Type</option>
+                    {wasteTypes.map(type => (
+                      <option key={type} value={type}>
+                        {wasteTypeIcons[type] || '🗑️'} {type.charAt(0).toUpperCase() + type.slice(1)}
+                      </option>
+                    ))}
+                  </select>
+                </div>
+                
+                {/* Quantity */}
+                <div className="mb-4">
+                  <label className="block text-gray-700 font-medium mb-2">
+                    Quantity
+                  </label>
+                  <input
+                    type="number"
+                    name="quantity"
+                    value={updateFormData.quantity}
+                    onChange={handleInputChange}
+                    className="w-full border-gray-300 rounded-md shadow-sm focus:border-green-500 focus:ring-green-500"
+                    min="1"
+                  />
+                </div>
+                
+                {/* Contact Number */}
+                <div className="mb-4">
+                  <label className="block text-gray-700 font-medium mb-2">
+                    Contact Number <span className="text-red-500">*</span>
+                  </label>
+                  <input
+                    type="text"
+                    name="contactNo"
+                    value={updateFormData.contactNo}
+                    onChange={handleInputChange}
+                    className="w-full border-gray-300 rounded-md shadow-sm focus:border-green-500 focus:ring-green-500"
+                    required
+                  />
+                </div>
+                
+                {/* Status */}
+                <div className="mb-4">
+                  <label className="block text-gray-700 font-medium mb-2">
+                    Status
+                  </label>
+                  <select
+                    name="status"
+                    value={updateFormData.status}
+                    onChange={handleInputChange}
+                    className="w-full border-gray-300 rounded-md shadow-sm focus:border-green-500 focus:ring-green-500"
+                  >
+                    {statusOptions.map(status => (
+                      <option key={status} value={status}>
+                        {status.charAt(0).toUpperCase() + status.slice(1)}
+                      </option>
+                    ))}
+                  </select>
+                </div>
+                
+                {/* Payment Status */}
+                <div className="mb-4">
+                  <label className="block text-gray-700 font-medium mb-2">
+                    Payment Status
+                  </label>
+                  <select
+                    name="paymentStatus"
+                    value={updateFormData.paymentStatus}
+                    onChange={handleInputChange}
+                    className="w-full border-gray-300 rounded-md shadow-sm focus:border-green-500 focus:ring-green-500"
+                  >
+                    {paymentStatusOptions.map(status => (
+                      <option key={status} value={status}>
+                        {status.charAt(0).toUpperCase() + status.slice(1)}
+                      </option>
+                    ))}
+                  </select>
+                </div>
+              </div>
+              
+              {/* Description */}
+              <div className="mb-4">
+                <label className="block text-gray-700 font-medium mb-2">
+                  Description <span className="text-red-500">*</span>
+                </label>
+                <textarea
+                  name="description"
+                  value={updateFormData.description}
+                  onChange={handleInputChange}
+                  className="w-full border-gray-300 rounded-md shadow-sm focus:border-green-500 focus:ring-green-500"
+                  rows="2"
+                  required
+                ></textarea>
+              </div>
+              
+              {/* Special Instructions */}
+              <div className="mb-4">
+                <label className="block text-gray-700 font-medium mb-2">
+                  Special Instructions
+                </label>
+                <textarea
+                  name="specialInstructions"
+                  value={updateFormData.specialInstructions}
+                  onChange={handleInputChange}
+                  className="w-full border-gray-300 rounded-md shadow-sm focus:border-green-500 focus:ring-green-500"
+                  rows="2"
+                ></textarea>
+              </div>
+              
+              <div className="flex justify-end space-x-3 mt-6">
+                <button
+                  type="button"
+                  onClick={() => setShowUpdateModal(false)}
+                  className="px-4 py-2 border border-gray-300 rounded-md shadow-sm text-gray-700 bg-white hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-green-500"
+                >
+                  Cancel
+                </button>
+                <button
+                  type="submit"
+                  className="px-4 py-2 border border-transparent rounded-md shadow-sm text-white bg-green-600 hover:bg-green-700 focus:outline-none focus:ring-2 focus:ring-green-500"
+                >
+                  Update Request
+                </button>
+              </div>
+            </form>
+          </div>
+        </div>
+      )}
     </div>
   );
 };

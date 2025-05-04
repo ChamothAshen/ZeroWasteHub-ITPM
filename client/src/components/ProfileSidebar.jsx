@@ -24,9 +24,15 @@ const ProfileSidebar = ({ currentUser }) => {
         path: '/pages/CollectRequestForm' 
       },
       !currentUser?.isAdmin &&  {
-      name: 'Notifications', 
+      name: 'History', 
       icon: <FaBell className="text-lg" />, 
-      path: '/dashboard/notifications' 
+      path: '/pages/ProfileData/UserDetailShow' 
+    },
+     // Show "Smart Bin History" only if the currentUser is not an admin
+     {
+      name: 'Smart Bin History',
+      icon: <FaBell className="text-lg" />,
+      path: '/pages/profileData/UserSmartBinDetailShow'
     },
     // Show "Wastebot" only if the currentUser is an admin
     currentUser?.isAdmin && {
