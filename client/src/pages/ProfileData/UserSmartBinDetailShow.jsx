@@ -434,14 +434,10 @@ const SmartBinTable = () => {
                     >
                       <option value="">Select Bin Type</option>
                       <option value="general">General</option>
-                      <option value="recycling">Recycling</option>
                       <option value="compost">Compost</option>
                       <option value="paper">Paper</option>
-                      <option value="glass">Glass</option>
                       <option value="plastic">Plastic</option>
-                      <option value="metal">Metal</option>
-                      <option value="electronics">Electronics</option>
-                      <option value="hazardous">Hazardous</option>
+                      <option value="hazardous">Glass</option>
                     </select>
                   </div>
                   
