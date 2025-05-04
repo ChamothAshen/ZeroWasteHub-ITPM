@@ -1,51 +1,86 @@
-import {
-  FiUsers,
-  FiTruck,
-  FiFileText,
-  FiX,
-} from "react-icons/fi";
+import { FiUsers, FiTruck, FiFileText, FiX, FiSettings } from "react-icons/fi";
+import { NavLink, useLocation } from "react-router-dom";
 
 export default function Sidebar({ sidebarOpen, setSidebarOpen }) {
+  const location = useLocation();
+
   return (
     <aside
-      className={`fixed md:relative md:w-64 bg-green-700 text-white p-6 min-h-screen transition-transform duration-300 ease-in-out z-50 ${
-        sidebarOpen ? "translate-x-0" : "-translate-x-full"
+      className={`fixed md:relative w-64 bg-gradient-to-b from-green-700 to-green-800 text-white p-4 min-h-screen transition-all duration-300 ease-in-out z-50 ${
+        sidebarOpen ? "translate-x-0 shadow-xl" : "-translate-x-full"
       } md:translate-x-0`}
     >
-      {/* Header */}
-      <div className="flex justify-between items-center mb-8">
-        <h1 className="text-2xl font-semibold tracking-wide">Employee Dashboard</h1>
-        <button
-          aria-label="Close sidebar"
-          className="md:hidden text-white text-2xl hover:text-gray-300"
+      {/* Header with close button */}
+      <div className="flex justify-between items-center p-4 border-b border-green-600">
+        <h1 className="text-xl font-bold flex items-center gap-2">
+          <span className="bg-white text-green-700 p-1 rounded-md">
+            <FiTruck />
+          </span>
+          <span>Employee Dashboard</span>
+        </h1>
+        <button 
+          className="md:hidden text-white hover:bg-green-600 p-1 rounded-md transition-colors"
           onClick={() => setSidebarOpen(false)}
         >
-          <FiX />
+          <FiX size={20} />
         </button>
       </div>
 
       {/* Navigation */}
-      <nav>
-        <ul className="space-y-5">
-          <NavItem icon={<FiUsers />} label="Employees" href="EmployeeDashboard" />
-          <NavItem icon={<FiTruck />} label="Pickups" href="EmpPickups" />
-          <NavItem icon={<FiFileText />} label="Logs" href="EmpLogs" />
+      <nav className="mt-6">
+        <ul className="space-y-2">
+          <li>
+            <a 
+              href="EmployeeDashboard" 
+              className={`flex items-center space-x-3 p-3 rounded-lg transition-all ${
+                location.pathname.includes('EmployeeDashboard') 
+                  ? "bg-green-600 text-white shadow-md" 
+                  : "hover:bg-green-600/50 text-green-100"
+              }`}
+            >
+              <span className="text-lg"><FiUsers /></span>
+              <span className="font-medium">Employees</span>
+            </a>
+          </li>
+          <li>
+            <a 
+              href="EmpPickups" 
+              className={`flex items-center space-x-3 p-3 rounded-lg transition-all ${
+                location.pathname.includes('EmpPickups') 
+                  ? "bg-green-600 text-white shadow-md" 
+                  : "hover:bg-green-600/50 text-green-100"
+              }`}
+            >
+              <span className="text-lg"><FiTruck /></span>
+              <span className="font-medium">Pickups</span>
+            </a>
+          </li>
+          <li>
+            <a 
+              href="EmpLogs" 
+              className={`flex items-center space-x-3 p-3 rounded-lg transition-all ${
+                location.pathname.includes('EmpLogs') 
+                  ? "bg-green-600 text-white shadow-md" 
+                  : "hover:bg-green-600/50 text-green-100"
+              }`}
+            >
+              <span className="text-lg"><FiFileText /></span>
+              <span className="font-medium">Logs</span>
+            </a>
+          </li>
         </ul>
       </nav>
-    </aside>
-  );
-}
 
-function NavItem({ icon, label, href }) {
-  return (
-    <li>
-      <a
-        href={href}
-        className="flex items-center gap-3 px-3 py-2 rounded-lg transition-colors duration-200 hover:bg-green-600 hover:text-white"
-      >
-        <span className="text-xl">{icon}</span>
-        <span className="text-sm font-medium">{label}</span>
-      </a>
-    </li>
+      {/* Bottom section */}
+      <div className="absolute bottom-0 left-0 right-0 p-4 border-t border-green-600">
+        <a 
+          href="Settings" 
+          className="flex items-center space-x-3 p-3 rounded-lg transition-all hover:bg-green-600/50 text-green-100"
+        >
+          <span className="text-lg"><FiSettings /></span>
+          <span className="font-medium">Settings</span>
+        </a>
+      </div>
+    </aside>
   );
 }
