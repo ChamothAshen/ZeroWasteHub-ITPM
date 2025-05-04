@@ -1,4 +1,5 @@
 import { useState, useEffect } from "react";
+import Swal from "sweetalert2";
 import { FiEdit, FiTrash, FiMenu, FiPlus } from "react-icons/fi";
 import Sidebar from "./EmpSidebar";
 
@@ -13,7 +14,6 @@ export default function EmployeeDashboard() {
     phone: "",
   });
 
-  // Fetch Employees from Backend
   useEffect(() => {
     fetchEmployees();
   }, []);
@@ -28,10 +28,9 @@ export default function EmployeeDashboard() {
     }
   };
 
-  // Validation function
   const validateFields = (employee) => {
     const newErrors = { name: "", age: "", phone: "" };
-    const namePattern = /^[A-Za-z]+ [A-Za-z]+$/; // Ensures "First Last" format
+    const namePattern = /^[A-Za-z]+ [A-Za-z]+$/;
 
     if (!namePattern.test(employee.name)) {
       newErrors.name = "Name should be in 'First Last' format.";
@@ -41,18 +40,15 @@ export default function EmployeeDashboard() {
       newErrors.age = "Age should be between 18 and 60.";
     }
 
-    const phonePattern = /^[0-9]{10}$/; // Validates 10-digit phone number
+    const phonePattern = /^[0-9]{10}$/;
     if (!phonePattern.test(employee.phone)) {
       newErrors.phone = "Phone number should be a valid 10-digit number.";
     }
 
     setErrors(newErrors);
-
-    // If no errors, return true, otherwise false
     return !Object.values(newErrors).some((error) => error);
   };
 
-  // Add New Employee
   const handleAddNewEmployee = () => {
     setNewEmployee({ name: "", age: "", gender: "Male", address: "", phone: "" });
   };
@@ -76,7 +72,6 @@ export default function EmployeeDashboard() {
     }
   };
 
-  // Edit Employee
   const handleEditEmployee = (id) => {
     const employeeToEdit = employees.find((emp) => emp._id === id);
     setEditingEmployee({ ...employeeToEdit });
@@ -101,8 +96,21 @@ export default function EmployeeDashboard() {
     }
   };
 
-  // Delete Employee
   const handleDeleteEmployee = async (id) => {
+    const employee = employees.find((emp) => emp._id === id);
+
+    const result = await Swal.fire({
+      title: `Delete "${employee.name}"?`,
+      text: "This action cannot be undone!",
+      icon: "warning",
+      showCancelButton: true,
+      confirmButtonColor: "#e3342f",
+      cancelButtonColor: "#6c757d",
+      confirmButtonText: "Yes, delete it!",
+    });
+
+    if (!result.isConfirmed) return;
+
     try {
       const response = await fetch(`http://localhost:5173/api/employee/${id}`, {
         method: "DELETE",
@@ -110,9 +118,11 @@ export default function EmployeeDashboard() {
 
       if (response.ok) {
         fetchEmployees();
+        Swal.fire("Deleted!", `"${employee.name}" has been removed.`, "success");
       }
     } catch (error) {
       console.error("Error deleting employee:", error);
+      Swal.fire("Error", "Could not delete employee. Try again.", "error");
     }
   };
 
@@ -126,7 +136,10 @@ export default function EmployeeDashboard() {
             <FiMenu />
           </button>
           <h2 className="text-3xl font-semibold">Employees</h2>
-          <button onClick={handleAddNewEmployee} className="bg-green-500 text-white px-4 py-2 rounded flex items-center gap-2">
+          <button
+            onClick={handleAddNewEmployee}
+            className="bg-green-500 text-white px-4 py-2 rounded flex items-center gap-2"
+          >
             <FiPlus /> Add New Employee
           </button>
         </header>
@@ -156,7 +169,9 @@ export default function EmployeeDashboard() {
                           <input
                             type="text"
                             value={editingEmployee.name}
-                            onChange={(e) => setEditingEmployee({ ...editingEmployee, name: e.target.value })}
+                            onChange={(e) =>
+                              setEditingEmployee({ ...editingEmployee, name: e.target.value })
+                            }
                             className="border p-1 rounded w-full"
                           />
                           {errors.name && <div className="text-red-500 text-sm">{errors.name}</div>}
@@ -165,7 +180,9 @@ export default function EmployeeDashboard() {
                           <input
                             type="number"
                             value={editingEmployee.age}
-                            onChange={(e) => setEditingEmployee({ ...editingEmployee, age: e.target.value })}
+                            onChange={(e) =>
+                              setEditingEmployee({ ...editingEmployee, age: e.target.value })
+                            }
                             className="border p-1 rounded w-full"
                           />
                           {errors.age && <div className="text-red-500 text-sm">{errors.age}</div>}
@@ -173,7 +190,9 @@ export default function EmployeeDashboard() {
                         <td className="border p-2">
                           <select
                             value={editingEmployee.gender}
-                            onChange={(e) => setEditingEmployee({ ...editingEmployee, gender: e.target.value })}
+                            onChange={(e) =>
+                              setEditingEmployee({ ...editingEmployee, gender: e.target.value })
+                            }
                             className="border p-1 rounded w-full"
                           >
                             <option value="Male">Male</option>
@@ -185,7 +204,9 @@ export default function EmployeeDashboard() {
                           <input
                             type="text"
                             value={editingEmployee.address}
-                            onChange={(e) => setEditingEmployee({ ...editingEmployee, address: e.target.value })}
+                            onChange={(e) =>
+                              setEditingEmployee({ ...editingEmployee, address: e.target.value })
+                            }
                             className="border p-1 rounded w-full"
                           />
                         </td>
@@ -193,7 +214,9 @@ export default function EmployeeDashboard() {
                           <input
                             type="text"
                             value={editingEmployee.phone}
-                            onChange={(e) => setEditingEmployee({ ...editingEmployee, phone: e.target.value })}
+                            onChange={(e) =>
+                              setEditingEmployee({ ...editingEmployee, phone: e.target.value })
+                            }
                             className="border p-1 rounded w-full"
                           />
                           {errors.phone && <div className="text-red-500 text-sm">{errors.phone}</div>}
