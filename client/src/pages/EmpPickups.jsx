@@ -7,12 +7,17 @@ import {
   FaUserTag,
   FaClipboard,
   FaPaperPlane,
+  FaClock
 } from "react-icons/fa";
+import { confirmAlert } from "react-confirm-alert";
+import "react-confirm-alert/src/react-confirm-alert.css";
 
 export default function EmpPickups() {
   const [sidebarOpen, setSidebarOpen] = useState(false);
   const [pickup, setPickup] = useState({
     dateTime: "",
+    date: "",
+    time: "",
     location: "",
     team: "",
     teamLeader: "",
@@ -22,11 +27,20 @@ export default function EmpPickups() {
   const [submittedPickups, setSubmittedPickups] = useState([]);
   const [loading, setLoading] = useState(false);
 
+  // Handle date and time combination
+  useEffect(() => {
+    if (pickup.date && pickup.time) {
+      // Combine date and time into a single ISO string
+      const dateTimeString = `${pickup.date}T${pickup.time}:00`;
+      setPickup(prev => ({ ...prev, dateTime: dateTimeString }));
+    }
+  }, [pickup.date, pickup.time]);
+
   // ✅ Fetch existing pickups on component mount
   useEffect(() => {
     const fetchPickups = async () => {
       try {
-        const res = await fetch("http://localhost:5173/api/pickups"); // Corrected URL
+        const res = await fetch("http://localhost:5173/api/pickups");
         const data = await res.json();
         if (res.ok) {
           setSubmittedPickups(data);
@@ -47,40 +61,91 @@ export default function EmpPickups() {
 
   const handleSubmit = async (e) => {
     e.preventDefault();
-    setLoading(true);
 
-    try {
-      const response = await fetch("http://localhost:5173/api/pickups", { // Corrected URL
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-        },
-        body: JSON.stringify(pickup),
+    // Validation for date and time
+    if (!pickup.date || !pickup.time) {
+      confirmAlert({
+        title: "Missing Information",
+        message: "Please select both date and time",
+        buttons: [{ label: "OK" }]
       });
-
-      const data = await response.json();
-
-      if (response.ok) {
-        alert("Pickup scheduled successfully!");
-        setSubmittedPickups((prev) => [...prev, data]); // use the response
-        setPickup({
-          dateTime: "",
-          location: "",
-          team: "",
-          teamLeader: "",
-          instructions: "",
-        });
-      } else {
-        alert("Failed to schedule pickup: " + data.message);
-      }
-    } catch (error) {
-      alert("Error connecting to server.");
-      console.error(error);
+      return;
     }
 
-    setLoading(false);
+    confirmAlert({
+      // ...existing code...
+      title: "Confirm Submission",
+      message: "Are you sure you want to save this pickup?",
+      buttons: [
+        {
+          label: "Yes",
+          onClick: async () => {
+            setLoading(true);
+            try {
+              const response = await fetch("http://localhost:5173/api/pickups", {
+                method: "POST",
+                headers: {
+                  "Content-Type": "application/json",
+                },
+                body: JSON.stringify(pickup),
+              });
+
+              const data = await response.json();
+
+              if (response.ok) {
+                confirmAlert({
+                  title: "Success",
+                  message: "Pickup scheduled successfully!",
+                  buttons: [
+                    {
+                      label: "OK",
+                    },
+                  ],
+                });
+                setSubmittedPickups((prev) => [...prev, data]);
+                setPickup({
+                  dateTime: "",
+                  date: "",
+                  time: "",
+                  location: "",
+                  team: "",
+                  teamLeader: "",
+                  instructions: "",
+                });
+              } else {
+                alert("Failed to schedule pickup: " + data.message);
+              }
+            } catch (error) {
+              alert("Error connecting to server.");
+              console.error(error);
+            }
+            setLoading(false);
+          },
+        },
+        {
+          label: "No",
+        },
+      ],
+    });
   };
 
+  // Format date and time for display
+  const formatDateTime = (dateTimeString) => {
+    if (!dateTimeString) return "Not specified";
+    try {
+      const date = new Date(dateTimeString);
+      return date.toLocaleString('en-US', {
+        year: 'numeric',
+        month: 'short',
+        day: 'numeric',
+        hour: '2-digit',
+        minute: '2-digit',
+        hour12: true
+      });
+    } catch (e) {
+      return dateTimeString;
+    }
+  };
 
   return (
     <div className="min-h-screen bg-green-50 text-gray-800 flex">
@@ -92,18 +157,42 @@ export default function EmpPickups() {
           <h2 className="text-2xl font-bold mb-4">Schedule a Pickup</h2>
           <div className="p-6 bg-white shadow-md rounded-lg">
             <form onSubmit={handleSubmit} className="space-y-4">
-              <div>
-                <label className="block font-medium mb-1">
-                  <FaCalendarAlt className="inline mr-2" /> Date & Time
-                </label>
-                <input
-                  type="datetime-local"
-                  name="dateTime"
-                  value={pickup.dateTime}
-                  onChange={handleChange}
-                  className="w-full border p-2 rounded"
-                  required
-                />
+              {/* Separate date and time inputs for better control */}
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                <div>
+                  <label className="block font-medium mb-1">
+                    <FaCalendarAlt className="inline mr-2" /> Date
+                  </label>
+                  <input
+                    type="date"
+                    name="date"
+                    value={pickup.date}
+                    onChange={handleChange}
+                    className="w-full border p-2 rounded focus:ring-2 focus:ring-green-500 focus:border-green-500"
+                    min={new Date().toISOString().split('T')[0]}
+                    required
+                  />
+                </div>
+                <div>
+                  <label className="block font-medium mb-1">
+                    <FaClock className="inline mr-2" /> Time
+                  </label>
+                  <div className="relative">
+                    <input
+                      type="time"
+                      name="time"
+                      value={pickup.time}
+                      onChange={handleChange}
+                      className="w-full border p-2 rounded appearance-none focus:ring-2 focus:ring-green-500 focus:border-green-500 cursor-pointer"
+                      step="900" // 15-minute intervals
+                      required
+                    />
+                    <div className="absolute inset-y-0 right-0 flex items-center px-2 pointer-events-none">
+                      <FaClock className="h-4 w-4 text-gray-500" aria-hidden="true" />
+                    </div>
+                  </div>
+                  <p className="text-xs text-gray-500 mt-1">Click to open time selector</p>
+                </div>
               </div>
 
               <div>
@@ -121,6 +210,7 @@ export default function EmpPickups() {
                 />
               </div>
 
+              {/* ...existing code... */}
               <div>
                 <label className="block font-medium mb-1">
                   <FaUsers className="inline mr-2" /> Select Team
@@ -189,9 +279,12 @@ export default function EmpPickups() {
               {submittedPickups.map((item, index) => (
                 <div
                   key={index}
-                  className="bg-white p-4 rounded-lg shadow-md border"
+                  className="bg-white p-4 rounded-lg shadow-md border-l-4 border-green-500"
                 >
-                  <p><strong>Date/Time:</strong> {item.dateTime}</p>
+                  <p className="font-medium text-green-700 mb-2">
+                    <FaCalendarAlt className="inline mr-2" /> 
+                    {formatDateTime(item.dateTime)}
+                  </p>
                   <p><strong>Location:</strong> {item.location}</p>
                   <p><strong>Team:</strong> {item.team}</p>
                   <p><strong>Leader:</strong> {item.teamLeader}</p>

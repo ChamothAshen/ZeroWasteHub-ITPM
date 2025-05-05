@@ -3,6 +3,7 @@ import { motion } from "framer-motion";
 import { FaRecycle, FaLeaf, FaLightbulb } from "react-icons/fa";
 import { Link } from "react-router-dom"; // Import Link for navigation
 import homeImage from "../assets/Homepic.png";
+import Footer from "../components/Footer";
 
 const Home = () => {
   return (
@@ -84,6 +85,7 @@ const Home = () => {
           </div>
         </div>
       </div>
+      <Footer />
     </div>
   );
 };
