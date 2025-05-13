@@ -26,7 +26,7 @@ export default function Inventory() {
     const fetchInventory = async () => {
       try {
         const res = await axios.get(
-          "http://localhost:3000/api/Inventory/getInv"
+          "/api/Inventory/getInv"
         );
         setTableData(res.data);
       } catch (error) {
@@ -47,7 +47,7 @@ export default function Inventory() {
   const handleDeleteCompany = async (companyId) => {
     try {
       await axios.delete(
-        `http://localhost:3000/api/Inventory/deleteInv/${companyId}`
+        `/api/Inventory/deleteInv/${companyId}`
       );
       setTableData((prev) => prev.filter((item) => item._id !== companyId));
     } catch (error) {
@@ -58,7 +58,7 @@ export default function Inventory() {
   const handleDeleteEntry = async (companyId, entryId) => {
     try {
       await axios.delete(
-        `http://localhost:3000/api/Inventory/deleteEntry/${companyId}/${entryId}`
+        `/api/Inventory/deleteEntry/${companyId}/${entryId}`
       );
       setTableData((prev) =>
         prev.map((item) =>

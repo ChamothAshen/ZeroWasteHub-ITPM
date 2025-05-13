@@ -36,7 +36,7 @@ const WasteBinCounts = () => {
         for (let wasteType of wasteTypes) {
           for (let binSize of binSizes) {
             const response = await axios.get(
-              `http://localhost:3000/api/Request/bin-status-count/${wasteType}/${binSize}`
+              `/api/Request/bin-status-count/${wasteType}/${binSize}`
             );
 
             const approvedCount = response.data?.[0]?.approvedCount || 0;

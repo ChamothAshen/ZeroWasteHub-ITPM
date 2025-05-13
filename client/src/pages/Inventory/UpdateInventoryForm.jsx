@@ -18,7 +18,7 @@ const UpdateInventoryForm = () => {
     // Fetch the inventory item to update by ID
     const fetchItem = async () => {
       try {
-        const res = await axios.get(`http://localhost:3000/api/Inventory/getInv/${id}`);
+        const res = await axios.get(`/api/Inventory/getInv/${id}`);
         setFormData({
           company: res.data.company,
           date: new Date(res.data.date).toISOString().split('T')[0], // Format date
@@ -47,7 +47,7 @@ const UpdateInventoryForm = () => {
   const handleSubmit = async (e) => {
     e.preventDefault();
     try {
-      await axios.put(`http://localhost:3000/api/Inventory/editInv/${id}`, formData);
+      await axios.put(`/api/Inventory/editInv/${id}`, formData);
       // After updating, navigate back to the inventory page or wherever
       navigate("/inventory");
     } catch (error) {
