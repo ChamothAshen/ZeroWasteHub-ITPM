@@ -14,6 +14,8 @@ import {
   Tooltip,
   Legend,
 } from "chart.js";
+import jsPDF from "jspdf";
+import html2canvas from "html2canvas";
 
 // Register Chart.js components
 ChartJS.register(
@@ -29,49 +31,6 @@ const InventoryDashboard = () => {
   const [sidebarOpen, setSidebarOpen] = React.useState(false);
 
   // Data for the grouped bar chart
-  const chartData = {
-    labels: [
-      "Jan", "Feb", "Mar", "Apr", "May", "Jun",
-      "Jul", "Aug", "Sep", "Oct", "Nov", "Dec",
-    ],
-    datasets: [
-      {
-        label: "Plastic",
-        data: [120, 130, 110, 140, 150, 160, 170, 180, 190, 200, 210, 220],
-        backgroundColor: "rgba(54, 162, 235, 0.7)", // Blue
-        borderColor: "rgba(54, 162, 235, 1)",
-        borderWidth: 1,
-      },
-      {
-        label: "Paper",
-        data: [80, 85, 90, 95, 100, 105, 110, 115, 120, 125, 130, 135],
-        backgroundColor: "rgba(75, 192, 192, 0.7)", // Teal
-        borderColor: "rgba(75, 192, 192, 1)",
-        borderWidth: 1,
-      },
-      {
-        label: "Food",
-        data: [50, 55, 60, 65, 70, 75, 80, 85, 90, 95, 100, 105],
-        backgroundColor: "rgba(255, 159, 64, 0.7)", // Orange
-        borderColor: "rgba(255, 159, 64, 1)",
-        borderWidth: 1,
-      },
-      {
-        label: "General Waste",
-        data: [200, 210, 220, 230, 240, 250, 260, 270, 280, 290, 300, 310],
-        backgroundColor: "rgba(255, 99, 132, 0.7)", // Red
-        borderColor: "rgba(255, 99, 132, 1)",
-        borderWidth: 1,
-      },
-      {
-        label: "Glass", // Renamed for clarity
-        data: [150, 160, 170, 180, 190, 200, 210, 220, 230, 240, 250, 260],
-        backgroundColor: "rgba(102, 166, 54, 0.7)", // Green
-        borderColor: "rgba(102, 166, 54, 1)",
-        borderWidth: 1,
-      },
-    ],
-  };
 
   const chartOptions = {
     responsive: true,
@@ -88,7 +47,7 @@ const InventoryDashboard = () => {
       },
       title: {
         display: true,
-        text: "Monthly Inventory Trends (2023)", // More descriptive title
+        text: "Monthly Inventory Trends", // More descriptive title
         color: "#374151", // Even darker gray
         font: {
           size: 16,
@@ -147,9 +106,11 @@ const InventoryDashboard = () => {
       setLoading(true);
       setError(null);
       try {
-        const res = await axios.get("http://localhost:3000/api/inventory/getTodayWeight");
+        const res = await axios.get(
+          "http://localhost:3000/api/inventory/getTodayWeight"
+        );
         const dataObj = {};
-        res.data.data.forEach(item => {
+        res.data.data.forEach((item) => {
           dataObj[item.category] = item.totalWeight;
         });
         setCategoryData(dataObj);
@@ -163,6 +124,124 @@ const InventoryDashboard = () => {
 
     fetchTodayData();
   }, []);
+
+  // Add state for monthly chart data
+  const [monthlyChartData, setMonthlyChartData] = useState(null);
+  const [monthlyLoading, setMonthlyLoading] = useState(true);
+  const [monthlyError, setMonthlyError] = useState(null);
+
+  useEffect(() => {
+    const fetchMonthlyData = async () => {
+      setMonthlyLoading(true);
+      setMonthlyError(null);
+      try {
+        const response = await axios.get(
+          "http://localhost:3000/api/Inventory/getMonthlyWeight"
+        );
+        const { data } = response.data;
+
+        // Define all months
+        const allMonths = [
+          "January",
+          "February",
+          "March",
+          "April",
+          "May",
+          "June",
+          "July",
+          "August",
+          "September",
+          "October",
+          "November",
+          "December",
+        ];
+
+        // Ensure all months are included in the labels
+        const labels = allMonths;
+
+        // Get unique categories from the data
+        const categories = [
+          ...new Set(
+            data.flatMap((item) => item.categories.map((cat) => cat.category))
+          ),
+        ];
+
+        // Create datasets for each category
+        const datasets = categories.map((category) => ({
+          label: category,
+          data: labels.map((month) => {
+            const monthData = data.find((item) => item.monthName === month);
+            if (monthData) {
+              const categoryData = monthData.categories.find(
+                (cat) => cat.category === category
+              );
+              return categoryData ? categoryData.totalWeight : 0;
+            }
+            return 0; // Default to 0 if the month has no data
+          }),
+          backgroundColor: getCategoryColor(category), // Assign colors dynamically
+          borderColor: getCategoryBorderColor(category),
+          borderWidth: 1,
+        }));
+
+        setMonthlyChartData({ labels, datasets });
+      } catch (error) {
+        console.error("Failed to fetch monthly data:", error);
+        setMonthlyError("Failed to load monthly data.");
+      } finally {
+        setMonthlyLoading(false);
+      }
+    };
+
+    fetchMonthlyData();
+  }, []);
+
+  // Helper functions for dynamic colors
+  const getCategoryColor = (category) => {
+    const colors = {
+      Plastic: "rgba(54, 162, 235, 0.7)", // Blue
+      "E-Waste": "rgba(153, 102, 255, 0.7)", // Purple
+      Paper: "rgba(75, 192, 192, 0.7)", // Teal
+      Food: "rgba(255, 159, 64, 0.7)", // Orange
+      "General Waste": "rgba(255, 99, 132, 0.7)", // Red
+      Recycling: "rgba(102, 166, 54, 0.7)", // Green
+    };
+    return colors[category] || "rgba(201, 203, 207, 0.7)"; // Default color
+  };
+
+  const getCategoryBorderColor = (category) => {
+    const colors = {
+      Plastic: "rgba(54, 162, 235, 1)", // Blue
+      "E-Waste": "rgba(153, 102, 255, 1)", // Purple
+      Paper: "rgba(75, 192, 192, 1)", // Teal
+      Food: "rgba(255, 159, 64, 1)", // Orange
+      "General Waste": "rgba(255, 99, 132, 1)", // Red
+      Recycling: "rgba(102, 166, 54, 1)", // Green
+    };
+    return colors[category] || "rgba(201, 203, 207, 1)"; // Default color
+  };
+
+  const generatePDF = async () => {
+    const chartElement = document.getElementById("monthly-inventory-chart");
+    if (!chartElement) {
+      console.error("Chart element not found!");
+      return;
+    }
+
+    try {
+      const canvas = await html2canvas(chartElement);
+      const imgData = canvas.toDataURL("image/png");
+
+      const pdf = new jsPDF("landscape", "mm", "a4");
+      const pdfWidth = pdf.internal.pageSize.getWidth();
+      const pdfHeight = (canvas.height * pdfWidth) / canvas.width;
+
+      pdf.addImage(imgData, "PNG", 10, 10, pdfWidth - 20, pdfHeight - 20);
+      pdf.save("Monthly_Inventory_Overview.pdf");
+    } catch (error) {
+      console.error("Failed to generate PDF:", error);
+    }
+  };
 
   if (loading) {
     return (
@@ -212,6 +291,24 @@ const InventoryDashboard = () => {
     );
   }
 
+  // Render the monthly chart
+  if (monthlyLoading) {
+    return (
+      <div className="text-center py-12">
+        <p className="text-lg text-gray-600">Loading monthly data...</p>
+      </div>
+    );
+  }
+
+  if (monthlyError) {
+    return (
+      <div className="text-center py-12">
+        <p className="text-red-500">{monthlyError}</p>
+      </div>
+    );
+  }
+
+  // Add the monthly chart to the existing layout
   return (
     <div className="min-h-screen bg-gray-100 flex">
       {/* Sidebar */}
@@ -241,7 +338,9 @@ const InventoryDashboard = () => {
               <FaBox className="text-3xl" />
             </div>
             <h3 className="text-md font-semibold text-gray-700">Plastic</h3>
-            <p className="text-xl font-bold text-gray-800">{categoryData["Plastic"] || 0} kg</p>
+            <p className="text-xl font-bold text-gray-800">
+              {categoryData["Plastic"] || 0} kg
+            </p>
           </div>
 
           <div className="bg-white rounded-lg shadow-sm border border-gray-200 flex flex-col items-center justify-center p-4 hover:shadow-md transition-shadow duration-200">
@@ -249,7 +348,9 @@ const InventoryDashboard = () => {
               <FaLeaf className="text-3xl" />
             </div>
             <h3 className="text-md font-semibold text-gray-700">Paper</h3>
-            <p className="text-xl font-bold text-gray-800">{categoryData["Paper"] || 0} kg</p>
+            <p className="text-xl font-bold text-gray-800">
+              {categoryData["Paper"] || 0} kg
+            </p>
           </div>
 
           <div className="bg-white rounded-lg shadow-sm border border-gray-200 flex flex-col items-center justify-center p-4 hover:shadow-md transition-shadow duration-200">
@@ -257,15 +358,21 @@ const InventoryDashboard = () => {
               <FaUtensils className="text-3xl" />
             </div>
             <h3 className="text-md font-semibold text-gray-700">Food</h3>
-            <p className="text-xl font-bold text-gray-800">{categoryData["Food"] || 0} kg</p>
+            <p className="text-xl font-bold text-gray-800">
+              {categoryData["Food"] || 0} kg
+            </p>
           </div>
 
           <div className="bg-white rounded-lg shadow-sm border border-gray-200 flex flex-col items-center justify-center p-4 hover:shadow-md transition-shadow duration-200">
             <div className="text-red-500 mb-2">
               <FaTrash className="text-3xl" />
             </div>
-            <h3 className="text-md font-semibold text-gray-700">General Waste</h3>
-            <p className="text-xl font-bold text-gray-800">{categoryData["General Waste"] || 0} kg</p>
+            <h3 className="text-md font-semibold text-gray-700">
+              General Waste
+            </h3>
+            <p className="text-xl font-bold text-gray-800">
+              {categoryData["General Waste"] || 0} kg
+            </p>
           </div>
 
           <div className="bg-white rounded-lg shadow-sm border border-gray-200 flex flex-col items-center justify-center p-4 hover:shadow-md transition-shadow duration-200">
@@ -273,17 +380,30 @@ const InventoryDashboard = () => {
               <FaRecycle className="text-3xl" />
             </div>
             <h3 className="text-md font-semibold text-gray-700">Glass</h3>
-            <p className="text-xl font-bold text-gray-800">{categoryData["Recycling"] || 0} kg</p>
+            <p className="text-xl font-bold text-gray-800">
+              {categoryData["Recycling"] || 0} kg
+            </p>
           </div>
         </div>
 
-        {/* Large Box for Chart */}
-        <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-4 md:p-6">
-          <h2 className="text-lg font-semibold text-gray-700 mb-3">
-            Monthly Inventory Overview
-          </h2>
-          <div className="h-[400px] md:h-[500px]">
-            <Bar data={chartData} options={chartOptions} />
+        {/* Monthly Chart Section */}
+        <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-4 md:p-6 mt-6">
+          <div className="flex justify-between items-center mb-3">
+            <h2 className="text-lg font-semibold text-gray-700">
+              Monthly Inventory Overview
+            </h2>
+            <button
+              onClick={generatePDF}
+              className="bg-blue-500 text-white px-4 py-2 
+              bg-gradient-to-r from-green-600 to-teal-500 rounded-lg shadow-lg p-8 text-white mb-8"
+            >
+              Download PDF
+            </button>
+          </div>
+          <div id="monthly-inventory-chart" className="h-[400px] md:h-[500px]">
+            {monthlyChartData && (
+              <Bar data={monthlyChartData} options={chartOptions} />
+            )}
           </div>
         </div>
       </main>
