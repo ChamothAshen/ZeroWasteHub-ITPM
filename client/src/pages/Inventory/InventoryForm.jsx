@@ -33,7 +33,7 @@ const InventoryForm = () => {
     e.preventDefault();
     try {
       const res = await axios.post(
-        "http://localhost:3000/api/Inventory/addInv",
+        "/api/Inventory/addInv",
         formData
       );
       setFormData({

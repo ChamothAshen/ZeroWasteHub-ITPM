@@ -7,6 +7,7 @@ import {
   getInventoryById,
   getTodayWeight,
   deleteEntry,
+getAllMonthsWeight
 } from "../controllers/inventoryController.js";
 
 const router = express.Router();
@@ -18,5 +19,7 @@ router.delete("/deleteInv/:id", deleteInventory);
 router.delete("/deleteEntry/:companyId/:entryId", deleteEntry);
 router.get("/getInv/:id", getInventoryById);
 router.get("/getTodayWeight", getTodayWeight);
+router.get("/getMonthlyWeight", getAllMonthsWeight);
+
 
 export default router;

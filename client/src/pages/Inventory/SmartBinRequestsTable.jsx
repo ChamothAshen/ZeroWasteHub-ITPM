@@ -10,7 +10,7 @@ const SmartBinRequestsTable = () => {
     const fetchRequests = async () => {
       try {
         const response = await axios.get(
-          "http://localhost:3000/api/BinRequest/smartbins"
+          "/api/BinRequest/smartbins"
         );
         const fetchedData = Array.isArray(response.data)
           ? response.data
