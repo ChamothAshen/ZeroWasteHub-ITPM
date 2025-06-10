@@ -64,42 +64,44 @@ const WasteBinCounts = () => {
           <h2 className="text-2xl font-bold text-gray-700">
             {wasteType.charAt(0).toUpperCase() + wasteType.slice(1)} Waste
           </h2>
-          <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-5 gap-4 md:gap-6">
-            {binSizes.map((binSize) => {
-              const key = `${wasteType}_${binSize}`;
-              const counts = binCounts[key] || { availableCount: 0, dispatchedCount: 0 };
+          <div className="overflow-x-auto">
+            <table className="min-w-full bg-white rounded-lg shadow-lg border border-blue-200">
+              <thead>
+                <tr>
+                  <th className="px-4 py-2 text-left">Bin Size</th>
+                  <th className="px-4 py-2 text-center">Available</th>
+                  <th className="px-4 py-2 text-center">Dispatched</th>
+                </tr>
+              </thead>
+              <tbody>
+                {binSizes.map((binSize) => {
+                  const key = `${wasteType}_${binSize}`;
+                  const counts = binCounts[key] || { availableCount: 0, dispatchedCount: 0 };
 
-              // Get colors for the current waste type
-              const colors = wasteTypeColors[wasteType] || {
-                icon: 'text-gray-500',
-                bg: 'bg-gray-50',
-                text: 'text-gray-600',
-              };
+                  // Get colors for the current waste type
+                  const colors = wasteTypeColors[wasteType] || {
+                    icon: 'text-gray-500',
+                    bg: 'bg-gray-50',
+                    text: 'text-gray-600',
+                  };
 
-              return (
-                <div
-                  key={key}
-                  className={`w-full bg-white rounded-lg shadow-lg flex flex-col items-center p-4 transform hover:scale-105 transition-transform border border-blue-200`}
-                >
-                  <div className={`${colors.icon} mb-2`}>
-                    <FaTrash className="text-4xl" />
-                  </div>
-                  <h3 className="text-lg font-semibold text-gray-700">
-                    {binSize.charAt(0).toUpperCase() + binSize.slice(1)} Bin
-                  </h3>
-                  <div className="flex gap-4 mt-2 w-full">
-                    <div className={`flex-1 text-center ${colors.bg} p-1 rounded-lg`}>
-                      <p className="text-sm text-gray-500">Available</p>
-                      <p className="text-xl font-bold text-blue-600">{counts.availableCount}</p>
-                    </div>
-                    <div className="flex-1 text-center bg-green-50 p-1 rounded-lg">
-                      <p className="text-xs text-gray-500">Dispatched</p>
-                      <p className="text-xl font-bold text-green-600">{counts.dispatchedCount}</p>
-                    </div>
-                  </div>
-                </div>
-              );
-            })}
+                  return (
+                    <tr key={key} className="border-t">
+                      <td className="px-4 py-2 font-semibold text-gray-700">
+                        {binSize.charAt(0).toUpperCase() + binSize.slice(1)} Bin
+                      </td>
+                      
+                      <td className={`px-4 py-2 text-center ${colors.bg}`}>
+                        <span className="text-xl font-bold text-blue-600">{counts.availableCount}</span>
+                      </td>
+                      <td className="px-4 py-2 text-center bg-green-50">
+                        <span className="text-xl font-bold text-green-600">{counts.dispatchedCount}</span>
+                      </td>
+                    </tr>
+                  );
+                })}
+              </tbody>
+            </table>
           </div>
         </div>
       ))}
