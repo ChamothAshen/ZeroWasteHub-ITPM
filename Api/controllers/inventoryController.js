@@ -154,6 +154,57 @@ export const getTodayWeight = async (req, res) => {
     });
   }
 };
+
+export const getMonthlyWeight = async (req, res) => {
+  try {
+    const today = new Date();
+    const startOfMonth = new Date(today.getFullYear(), today.getMonth(), 1);
+    const endOfMonth = new Date(today.getFullYear(), today.getMonth() + 1, 0, 23, 59, 59, 999);
+
+    const result = await Inventory.aggregate([
+      {
+        $match: {
+          date: { $gte: startOfMonth, $lte: endOfMonth },
+        },
+      },
+      {
+        $unwind: "$entries",
+      },
+      {
+        $group: {
+          _id: "$entries.category",
+          totalWeight: {
+            $sum: {
+              $toDouble: "$entries.weights",
+            },
+          },
+        },
+      },
+      {
+        $project: {
+          _id: 0,
+          category: "$_id",
+          totalWeight: 1,
+        },
+      },
+    ]);
+
+    const month = today.toLocaleString('default', { month: 'long' });
+
+    res.status(200).json({
+      success: true,
+      message: `Weight by category for ${month}`,
+      month: month,
+      data: result,
+    });
+  } catch (err) {
+    res.status(500).json({
+      success: false,
+      message: `Error fetching this month's category weights: ${err.message}`,
+    });
+  }
+};
+
 export const getTodayInventory = async (req, res) => {
   try {
     const today = new Date();
@@ -183,6 +234,77 @@ export const getTodayInventory = async (req, res) => {
     res.status(500).json({
       success: false,
       message: `Error fetching today's category weights: ${err.message}`
+    });
+  }
+};
+
+export const getAllMonthsWeight = async (req, res) => {
+  try {
+    const result = await Inventory.aggregate([
+      {
+        $unwind: "$entries", // Break down entries into individual documents
+      },
+      {
+        $group: {
+          _id: {
+            month: { $month: "$date" },
+            year: { $year: "$date" },
+            category: "$entries.category",
+          },
+          totalWeight: {
+            $sum: {
+              $toDouble: "$entries.weights", // Sum up weights for each category per month
+            },
+          },
+        },
+      },
+      {
+        $group: {
+          _id: {
+            month: "$_id.month",
+            year: "$_id.year",
+          },
+          categories: {
+            $push: {
+              category: "$_id.category",
+              totalWeight: "$totalWeight",
+            },
+          },
+        },
+      },
+      {
+        $project: {
+          _id: 0,
+          month: "$_id.month",
+          year: "$_id.year",
+          categories: 1,
+        },
+      },
+      {
+        $sort: { year: 1, month: 1 }, // Sort by year and month
+      },
+    ]);
+
+    // Add month names to the result
+    const formattedResult = result.map((item) => {
+      const monthName = new Date(item.year, item.month - 1).toLocaleString("default", {
+        month: "long",
+      });
+      return {
+        ...item,
+        monthName,
+      };
+    });
+
+    res.status(200).json({
+      success: true,
+      message: "Weight by category for all months",
+      data: formattedResult,
+    });
+  } catch (err) {
+    res.status(500).json({
+      success: false,
+      message: `Error fetching weights by category for all months: ${err.message}`,
     });
   }
 };
